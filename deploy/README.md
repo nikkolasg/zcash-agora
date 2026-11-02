@@ -128,7 +128,7 @@ keep copies, and the audit compares). See isoloir's
 ## 8. CI secrets
 
 Both workflows check out the `isoloir` submodule, which is a private
-repository: add a read-only deploy key of `tartuffeme/isoloir` as the
+repository: add a read-only deploy key of `lanterne-labs/isoloir` as the
 repository secret `ISOLOIR_DEPLOY_KEY` (the private half; the public half
 on isoloir's deploy keys). `release.yml` pushes the image to
 `ghcr.io/<org>/isoloir` with the workflow's own token; `site.yml` needs

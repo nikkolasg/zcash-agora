@@ -1,3 +1,3 @@
 [submodule "isoloir"]
 	path = isoloir
-	url = git@github.com:tartuffeme/isoloir.git
+	url = git@github.com:lanterne-labs/isoloir.git

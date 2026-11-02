@@ -138,7 +138,7 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
         : `<div class="verdict ko" role="alert"><h2>${plural(result.problems.length, 'problem')}</h2><ul>${result.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul><a class="btn secondary" href="https://github.com/lanterne-labs/zcash-agora/issues/new">Report it</a></div>`) : ''}
       ${!running && failure ? `<div class="verdict ko" role="alert"><h2>The check stopped</h2><p>${esc(failure)}</p></div>` : ''}
       ${!running && (!result || done) && enabled ? `<p><button class="btn" id="audit-start">${result || failure ? 'Audit again' : 'Audit the vote'}</button></p>` : ''}
-      <p class="cite">The code of the check: <a href="https://github.com/tartuffeme/isoloir/blob/main/js/src/audit.ts">@isoloir/web audit</a>, the same judge as <code>isoloir audit</code>. To run it outside a browser, with circuits you built yourself: <a href="https://github.com/lanterne-labs/zcash-agora/blob/main/scripts/audit.sh">scripts/audit.sh</a>.</p>`;
+      <p class="cite">The code of the check: <a href="https://github.com/lanterne-labs/isoloir/blob/main/js/src/audit.ts">@isoloir/web audit</a>, the same judge as <code>isoloir audit</code>. To run it outside a browser, with circuits you built yourself: <a href="https://github.com/lanterne-labs/zcash-agora/blob/main/scripts/audit.sh">scripts/audit.sh</a>.</p>`;
     container.querySelector('#audit-start')?.addEventListener('click', start);
     container.querySelector('#audit-stop')?.addEventListener('click', () => ctl?.abort());
   };

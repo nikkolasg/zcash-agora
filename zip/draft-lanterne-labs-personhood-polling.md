@@ -329,9 +329,9 @@ anyone. They propose that the ecosystem measure both and look.
 
 [^BCP14]: [Information on BCP 14 — "RFC 2119: Key words for use in RFCs to Indicate Requirement Levels" and "RFC 8174: Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"](https://www.rfc-editor.org/info/bcp14)
 
-[^isoloir-spec]: [isoloir — protocol specification](https://github.com/tartuffeme/isoloir/blob/main/SPEC.md)
+[^isoloir-spec]: [isoloir — protocol specification](https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md)
 
-[^isoloir]: [isoloir: anonymous polls with passport eligibility](https://github.com/tartuffeme/isoloir)
+[^isoloir]: [isoloir: anonymous polls with passport eligibility](https://github.com/lanterne-labs/isoloir)
 
 [^agora]: [Zcash Agora](https://github.com/lanterne-labs/zcash-agora)
 

@@ -11,7 +11,7 @@ one), appended to a public log timestamped in Bitcoin, and recounted by
 anyone. It is a companion to coinholder polling, not a replacement:
 both counts are shown side by side, and neither binds anyone.
 
-The protocol is [isoloir](https://github.com/tartuffeme/isoloir)
+The protocol is [isoloir](https://github.com/lanterne-labs/isoloir)
 (pinned as a submodule). This repository holds what Zcash Agora adds:
 
 | Directory | What |
