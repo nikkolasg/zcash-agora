@@ -16,14 +16,13 @@
     <a href="/technical/">Technical</a>
     <a href="/comparison/">Comparison</a>
     <a href="/eligibility/">Eligibility</a>
-    <a href="/audit/">Recount</a>
     <a class="cta" href="/vote/">Vote</a>
   </nav>
 </div></header>
 
 <main><div class="wrap">
 <h1>Who can vote</h1>
-<p class="lede">Anyone with a valid biometric passport, of any country, of any age. One passport, one registration, for every poll on this ledger.</p>
+<p class="lede">Anyone with a valid biometric passport, of any country, of any age. One person, one vote, in every poll on this ledger.</p>
 
 <h2>The rule</h2>
 <ul>
@@ -39,15 +38,15 @@
 <h2>What it costs, honestly</h2>
 <ul>
   <li><strong>Some people cannot take part.</strong> No biometric passport, no NFC phone, a passport whose issuing country does not publish its signing certificates: no vote. We know that is a real exclusion, and that it falls unevenly on the world.</li>
-  <li><strong>The issuing state could learn that you registered.</strong> The unique number is derived from the document without a secret salt (a salted one would let a passport register twice). A state can compute the numbers of its own passports and compare them with the public list. It would learn that you registered, never how or whether you voted. If that risk is unacceptable to you, do not register.</li>
+  <li><strong>The issuing state could learn that you registered.</strong> The unique number is derived from the document data, the site and the registry. A state that keeps the chip data of its passports can compute their numbers and compare them with the public list: it would learn that you registered, never how you voted. ZKPassport also offers a <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted number</a>, computed with a secret spread over independent servers, that no one can recompute from the passport alone; it needs a face match at registration, and we are evaluating it.</li>
   <li><strong>You trust ZKPassport's app and certificate registry.</strong> The SDK and the verifier are open source and the ledger re-verifies every proof; the registry of state certificates is public and checkable. We still name it as a dependency.</li>
 </ul>
 
 <h2>Why we accept those costs</h2>
-<p>The alternative today is not a perfect count of people. It is no count of people at all: a poll where the unit is ZEC, where holdings under 0.125 ZEC carry nothing, and where the number of humans behind a result is unknowable. We judge a count of passport holders, with its exclusions stated, better than a count of capital alone. Not better than a perfect count of persons; better than the status quo.</p>
+<p>Humans matter more than coins. A poll that weighs a voice by a balance lets the coin speak; this one lets the human speak, whatever they hold and even if they hold nothing. A count of passport holders, with its exclusions stated, is a count of people. That is what we are after, and passports are the first way we found to get it.</p>
 
 <div class="card warn">
-<strong>Passports are one Sybil-resistance mechanism, not the mechanism.</strong> The registry is a provider and a rule; a new provider is a new verifier, not a new protocol. If a proof of personhood exists that is more inclusive and as hard to forge (another document type, a web-of-trust scheme with real guarantees, a proof-of-humanity you would stake your reputation on), we want to hear about it, and the ledger can host a second registry next to this one. The one thing we will not do is count accounts and call them people.
+<strong>Passports are one proof of personhood, not the proof.</strong> The registry is a provider and a rule; a new provider is a new verifier, not a new protocol. If a proof of personhood exists that is more inclusive and as hard to forge (another document type, a web-of-trust with real guarantees, a proof-of-humanity you would stake your reputation on), we want to hear about it, and the ledger can host a second registry next to this one. What every registry here has in common: it counts people.
 </div>
 
 <h2>What you are not asked</h2>
@@ -62,7 +61,7 @@
 <p><a class="btn" href="/vote/">Register and vote</a></p>
 </div></main>
 <footer class="bottom"><div class="wrap wide">
-  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is not run by, funded by, or affiliated with any Zcash organization, and it is not an operator of the coinholder vote. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/audit/">Recount it yourself</a></p>
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is independent of every Zcash organization and of the coinholder vote's operators. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/vote/#audit">Audit the vote</a></p>
 </div></footer>
 <script src="/assets/nav.js"></script>
 

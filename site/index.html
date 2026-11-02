@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zcash Agora</title>
-<meta name="description" content="One passport, one voice. Anonymous polls for the Zcash ecosystem, counted per head and shown next to the count per coin.">
+<meta name="description" content="One person, one vote. Private, anonymous polls for the Zcash ecosystem, counted per head and shown next to the count per coin.">
 <link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/anim.css">
 </head>
 <body>
 <header class="top"><div class="wrap wide">
@@ -16,71 +17,41 @@
     <a href="/technical/">Technical</a>
     <a href="/comparison/">Comparison</a>
     <a href="/eligibility/">Eligibility</a>
-    <a href="/audit/">Recount</a>
     <a class="cta" href="/vote/">Vote</a>
   </nav>
 </div></header>
 
 <main>
 <div class="wrap hero">
-  <div class="tag">One passport, one voice</div>
+  <div class="tag" style="background:none;color:var(--accent-ink);padding:0">One person, one vote</div>
   <h1>What do the <em>people</em> of Zcash think?</h1>
-  <p class="lede">Zcash polls today count coins: a ballot weighs what its caster holds. Zcash Agora counts people: one valid passport, one anonymous ballot, sealed until the close by a clock nobody here controls, and recounted by anyone. The two counts are shown side by side. Neither decides. Both inform.</p>
+  <p class="lede">Zcash polls count coins: a ballot weighs the ZEC behind it. Zcash Agora counts people: one person, one vote, cast in private. Your ballot is sealed until the close by a clock nobody here controls, opened under a pseudonym that links to no one, and recounted by anyone. The people's count is shown next to the coins' count. Neither decides. Both inform.</p>
   <p><a class="btn" href="/vote/">Vote in the current poll</a> &nbsp; <a class="btn secondary" href="/how-it-works/">How it works</a></p>
-</div>
-
-<div class="wrap wide">
-  <h2>The two counts: Zcash Shielded Assets</h2>
-  <p class="muted">The same question, asked two ways. The coinholder poll ran in February 2026. The people's poll opens on 16 November 2026 and closes on 14 December 2026, 12:00 UTC.</p>
-  <div class="two">
-    <div class="count coins">
-      <h3>Per coin · coinholder poll</h3>
-      <div class="big">98.6%</div>
-      <div class="unit">of the ZEC that voted was against ZSAs</div>
-      <div class="bar"><span style="width:98.6%"></span></div>
-      <dl>
-        <dt>Unit</dt><dd>ZEC held in the Orchard pool at a snapshot (1 ballot per 0.125 ZEC)</dd>
-        <dt>Turnout</dt><dd>about 7.25% of the circulating supply</dd>
-        <dt>People</dt><dd><strong>unknown</strong>: the protocol has no notion of a person</dd>
-        <dt>Source</dt><dd><a href="https://forum.zcashcommunity.com/t/coinholder-protocol-feature-sentiment-poll/54487">Coinholder Protocol Feature Sentiment Poll</a>, as reported on the forum</dd>
-      </dl>
-    </div>
-    <div class="count people">
-      <h3>Per head · Zcash Agora</h3>
-      <div class="big">—</div>
-      <div class="unit">of the people who voted want ZSAs</div>
-      <div class="bar"><span style="width:0%"></span></div>
-      <dl>
-        <dt>Unit</dt><dd>one person with a valid passport, whatever they hold</dd>
-        <dt>Turnout</dt><dd>people who voted over people registered</dd>
-        <dt>Holdings</dt><dd><strong>unknown</strong>: the poll never asks</dd>
-        <dt>Source</dt><dd>the public log, <a href="/audit/">recomputable by anyone</a> after the close</dd>
-      </dl>
-    </div>
-  </div>
-  <p class="muted">The coinholder figures are the numbers quoted in the forum debate of October 2026 and are given here as they were quoted; the thread above is the primary source. If you have the exact turnout and weight figures from the poll's published tally, <a href="https://github.com/lanterne-labs/zcash-agora/issues">tell us</a> and we will cite them instead.</p>
+  <p class="muted">Proof of personhood is, for now, a passport verified by <a href="https://zkpassport.id">ZKPassport</a> on your phone. It is one way to prove you are a person; the registry takes others as they come.</p>
 </div>
 
 <div class="wrap">
   <h2>Why a second count</h2>
-  <p>"98.6% against" is a true sentence about the voting weight. It says nothing about how many humans that weight belongs to, and nobody knows, because a coinholder poll cannot know. Zcash was not built as a shareholder meeting: its roots are cypherpunk, and the protections it gives are for persons, equally, whatever they hold. A decision that looks at one count only is blind in one eye. <a href="/why/">The full argument</a>.</p>
-  <p>This is not a replacement for coinholder polling and it does not pretend to bind anyone. It is the other half of the picture, measured with at least the same rigour: every registration, every ballot, every refusal and the result are in a public log that anyone can recount.</p>
+  <p>Take Zcash Shielded Assets. The coinholder poll of February 2026 is quoted as "98.6% against", a true sentence about the ZEC that voted. The forum's running tally counted 197 ballots on that question two days before the close, each one a voting key, not a person. The same forum has 14,742 registered members, 842 of them active in the past month. Whatever the people think about ZSAs, that poll did not ask them.</p>
+  <p>Zcash was not built as a shareholder meeting. Its roots are cypherpunk, and the protections it gives are for persons, equally, whatever they hold. A decision that looks at one count only is blind in one eye. <a href="/why/">The full argument</a>.</p>
+  <p>This is the other half of the picture, measured with at least the same rigour, and in private: every registration, every ballot, every refusal and the result are in a public log that anyone can recount, and no ballot can be read before the close by anyone.</p>
 
   <h2>How a vote goes</h2>
-  <ol class="steps">
-    <li><strong>Prove you are one person, once.</strong> Scan your passport's chip with the ZKPassport app on your phone. The app proves on the phone that the passport is valid and derives a number unique to it. No name, no nationality, no photo leaves the phone.</li>
-    <li><strong>Vote behind the curtain.</strong> Your browser proves, without revealing which registration is yours, that you are in the registry, and seals your choice to a future time with the drand randomness beacon. Nobody, including us, can open it before the poll closes.</li>
-    <li><strong>Anyone recounts.</strong> At the close, the beacon's round is published, every ballot opens under an anonymous pseudonym, and the count is a function of public data. Download the log, run the audit, get the same number.</li>
-  </ol>
-  <p><a href="/how-it-works/">In plain words</a> · <a href="/technical/">In technical words</a> · <a href="/comparison/">Compared with the coinholder stack</a></p>
+  <div class="boxes">
+    <div class="box2"><span class="big">1 · Prove you are one person, once.</span>Scan your passport with the ZKPassport app. Only "valid passport" and a unique number leave your phone.</div>
+    <div class="box2"><span class="big">2 · Vote behind the curtain.</span>Your browser proves you are on the list without saying who, and seals your choice to the closing time.</div>
+    <div class="box2"><span class="big">3 · The clock opens the ballots.</span>At the close the drand network publishes its round; every ballot opens under its pseudonym.</div>
+    <div class="box2"><span class="big">4 · Anyone recounts.</span>The log is public and timestamped in Bitcoin. Your browser can redo every check.</div>
+  </div>
+  <p style="text-align:center"><a class="btn secondary" href="/how-it-works/">See it, step by step</a> &nbsp; <a href="/comparison/">Compared with the coinholder stack</a></p>
 
-  <div class="card warn">
-    <strong>Passports are one way to count people, not the only one.</strong> They exclude people without a biometric passport or an NFC phone, and the issuing state could learn that one of its passports registered (never how it voted). We think a count of capital alone is worse than a count of passport holders, and we are open to other proofs of personhood. <a href="/eligibility/">Who can vote, and why</a>.
+  <div class="card">
+    <strong>The first poll</strong> asks the question with the clearest coinholder answer and the least known human one: <em>do you want Zcash Shielded Assets in the protocol?</em> Open from 16 November to 14 December 2026, 12:00 UTC. It is a suggestion, not a verdict; later polls can take up the questions of the moment, such as the future of Zcash Community Grants or the dev fund.
   </div>
 </div>
 </main>
 <footer class="bottom"><div class="wrap wide">
-  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is not run by, funded by, or affiliated with any Zcash organization, and it is not an operator of the coinholder vote. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/audit/">Recount it yourself</a></p>
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is independent of every Zcash organization and of the coinholder vote's operators. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/vote/#audit">Audit the vote</a></p>
 </div></footer>
 <script src="/assets/nav.js"></script>
 

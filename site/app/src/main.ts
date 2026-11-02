@@ -6,6 +6,7 @@ import {
 import QRCode from 'qrcode';
 import { config } from './config.js';
 import { zkpassportScan, devScan } from './zkpassport.js';
+import { mountAudit } from './audit.js';
 
 const app = document.getElementById('app')!;
 const h = (html: string) => { app.innerHTML = html; };
@@ -29,6 +30,7 @@ function header(s: SessionState): string {
 function notOpenYet(): void {
   h(`<h1>Vote</h1>
   <div class="card warn"><strong>The ledger has not started yet.</strong> The first poll opens on 16 November 2026. Until then there is nothing to register in: the ledger's keys are made at genesis and this page pins them. Read <a href="/how-it-works/">how it works</a> meanwhile.</div>`);
+  loadWasm().then((w) => mountAudit(document.getElementById('audit-root')!, w, false)).catch(() => {});
 }
 
 function errorBox(e: unknown): string {
@@ -51,6 +53,7 @@ async function main() {
   h(`<h1>Vote</h1><p class="muted">Loading the voting booth…</p>`);
 
   const wasm = await loadWasm();
+  mountAudit(document.getElementById('audit-root')!, wasm, true);
   const prover = new WorkerProver(
     () => new Worker(new URL('@isoloir/web/prove.worker', import.meta.url), { type: 'module' }) as unknown as import('@isoloir/web').WorkerLike,
     async (circuit) => {
@@ -106,6 +109,19 @@ async function main() {
         body += `<div class="phase"><h2>Registered</h2><p>The ledger acknowledged your registration for checkpoint ${s.registration.checkpoint}. It appears in the registry tree at the next checkpoint; then you can vote.</p></div>`;
       } else if (s.registration.state === 'rejected') {
         body += `<div class="phase"><h2>Refused</h2><p class="err">${esc(s.registration.reason ?? '')} ${esc(s.registration.detail ?? '')}</p></div>`;
+      } else if (s.key && !s.key.backedUp) {
+        body += `<div class="phase"><h2>Your key is not confirmed yet</h2>
+          <p>A key was made on this device but its 12 words were not confirmed. Confirm them to register, or start over.</p>
+          <div class="row"><button class="btn" id="scan" ${busy ? 'disabled' : ''}>Show my 12 words</button>
+          <button class="btn secondary" id="forget">Start over</button></div></div>`;
+      } else if (s.key && s.registration.state === 'failed') {
+        body += `<div class="phase"><h2>Registration did not get through</h2><p class="err">${esc(s.registration.reason ?? '')}${s.registration.stale ? ' (the passport proof is too old: scan again)' : ''}</p>
+          <div class="row"><button class="btn" id="scan" ${busy ? 'disabled' : ''}>${s.registration.stale ? 'Scan again and register' : 'Post the registration again'}</button>
+          <button class="btn secondary" id="forget">Start over</button></div></div>`;
+      } else if (s.key) {
+        body += `<div class="phase"><h2>Register this key</h2><p>Your key is confirmed. ${session.scanReady() ? 'The passport proof is ready: post the registration.' : 'Scan your passport, then the registration is posted.'}</p>
+          <div class="row"><button class="btn" id="scan" ${busy ? 'disabled' : ''}>${session.scanReady() ? 'Register' : (config.dev ? 'Register (trial: type an identifier)' : 'Scan my passport')}</button>
+          <button class="btn secondary" id="forget">Start over</button></div></div>`;
       } else {
         body += `<div class="phase"><h2>Register once, vote in every poll</h2>
           <p>Scan your passport with the <a href="https://zkpassport.id">ZKPassport</a> app. The proof is made on your phone; this page only receives a number unique to the document.</p>
@@ -191,11 +207,28 @@ async function main() {
 
   const wire = () => {
     document.getElementById('scan')?.addEventListener('click', () => run(async () => {
-      if (!config.dev) pending = { kind: 'scan', text: 'Opening the request…' };
-      await session.scanPassport((req) => obtainProof(req, session));
-      const words = session.createKeyFromWords();
-      pending = { kind: 'words', words };
+      if (!session.scanReady()) {
+        if (!config.dev) pending = { kind: 'scan', text: 'Opening the request…' };
+        await session.scanPassport((req) => obtainProof(req, session));
+      }
+      const k = session.state().key;
+      if (!k) {
+        pending = { kind: 'words', words: session.createKeyFromWords() };
+      } else if (!k.backedUp && session.words()) {
+        // A key from before a refresh, never confirmed: show its words again.
+        pending = { kind: 'words', words: session.words()! };
+      } else if (session.state().registration.state === 'failed' && !session.state().registration.stale) {
+        pending = null;
+        await session.resendRegistration();
+      } else {
+        pending = null;
+        await session.submitRegistration();
+      }
     }));
+    document.getElementById('forget')?.addEventListener('click', () => {
+      if (!window.confirm('Forget this key and start over? If it was registered, that registration stays in the log and this passport cannot register again.')) return;
+      pending = null; lastError = null; session.forgetKey(); render();
+    });
     document.getElementById('wrote')?.addEventListener('click', () => {
       const words = session.words()!;
       pending = { kind: 'confirm', words, positions: session.wordChallenge() };
@@ -208,6 +241,11 @@ async function main() {
       const c = session.confirmWords(positions, answers);
       if (!c.ok) throw new IsoloirError('bad_words', `positions ${c.wrong.join(', ')} do not match`);
       pending = null;
+      if (!session.scanReady()) {
+        if (!config.dev) pending = { kind: 'scan', text: 'Opening the request…' };
+        await session.scanPassport((req) => obtainProof(req, session));
+        pending = null;
+      }
       await session.submitRegistration();
     }));
     document.getElementById('restore')?.addEventListener('click', () => run(async () => {

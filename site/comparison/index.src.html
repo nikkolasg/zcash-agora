@@ -11,105 +11,78 @@
 {{header}}
 <main><div class="wrap wide">
 <h1>Compared with the coinholder stack</h1>
-<p class="lede">The two systems answer different questions and should not be confused; but they are both voting systems for the same ecosystem, and they can be compared property by property. This page does that from the public documents only: the coinholder stack's draft ZIPs and code, isoloir's specification, and drand's and ZKPassport's documentation. Every claim about the coinholder stack links to the sentence it rests on. Where we derive something from several sentences, we say so. Nothing here is a disclosure; it is a reading of specifications that have been public since March 2026.</p>
-
-<div class="card">
-<strong>Sources.</strong>
-<span class="cite">
-[V1] <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md">draft-valargroup-shielded-voting</a> (zcash/zips <a href="https://github.com/zcash/zips/pull/1200">#1200</a>) ·
-[V2] <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md">draft-valargroup-submission-server</a> ·
-[V3] <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md">draft-valargroup-shielded-voting-setup</a> (<a href="https://github.com/zcash/zips/pull/1203">#1203</a>) ·
-[V4] <a href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md">draft-valargroup-shielded-voting-wallet-api</a> ·
-[V5] <a href="https://github.com/valargroup/token-holder-voting-config/blob/main/prod/dynamic-voting-config.json">production voting config</a> ·
-[V6] <a href="https://github.com/valargroup/zcash_voting">zcash_voting</a> ·
-[I] <a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md">isoloir SPEC</a>, <a href="https://github.com/tartuffeme/isoloir/blob/main/DESIGN.md">DESIGN</a> ·
-[D] <a href="https://docs.drand.love/docs/timelock-encryption/">drand timelock</a>, <a href="https://drand.love/partners/">League of Entropy</a> ·
-[Z] <a href="https://docs.zkpassport.id/intro">ZKPassport</a>.
-</span>
-</div>
+<p class="lede">The two systems answer different questions. They are also both voting systems for the same ecosystem, so they can be compared property by property. Every claim about the coinholder stack links to the public sentence it rests on, in the draft ZIPs and code that have been public since March 2026. Where we derive something from several sentences, we say so.</p>
 
 <h2>The table</h2>
+<p class="muted">"Weight" means how many ZEC the voter holds at the snapshot: in the coinholder stack a ballot counts for that amount.</p>
 <table>
-<tr><th style="width:18%">Property</th><th style="width:41%">Coinholder voting (Valar Group stack)</th><th style="width:41%">Zcash Agora (isoloir)</th></tr>
+<tr><th style="width:17%">Property</th><th style="width:41%">Coinholder voting (Valar Group stack)</th><th style="width:42%">Zcash Agora</th></tr>
 
 <tr><td>What is counted</td>
-<td>ZEC in the Orchard pool at a snapshot height: one ballot per 0.125 ZEC, holdings below that carry no weight; Sapling and transparent funds carry none [V1 "Ballot Scaling"; V3 "Eligibility"].</td>
-<td>Persons: one valid passport, one ballot of weight one; holdings are never asked [I §5, §7].</td></tr>
+<td>ZEC in the Orchard pool at a snapshot, <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#ballot-scaling">one ballot per 0.125 ZEC</a>. Sapling and transparent funds <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#eligibility">count for nothing</a>.</td>
+<td>Persons: one valid passport, one vote. Holdings are never asked.</td></tr>
 
 <tr><td>Who can read a ballot before the close</td>
-<td class="bad">Any <em>t</em> of the <em>n</em> validators, <em>t</em> = ⌈n/2⌉+1, who "reconstruct the key and decrypt individual share ciphertexts" [V1 "Privacy Implications", trust assumptions]. The production config lists 14 vote servers, labelled Valar Group, Zcash Foundation, Shielded Labs, Zodl, Keplr, Zcash Labs and others [V5], and the submission-server draft says each validator embeds one [V2 "Why Servers Are Co-located with Validators"]; with n = 14 that is 8 of them.</td>
-<td class="ok">Nobody. Ballots are time-locked to a drand round whose signature does not exist before the close; there is no decryption key in the system [I §7.2]. The only party that could produce the signature early is a threshold of the League of Entropy's nodes (Cloudflare, EPFL, Kudelski, Protocol Labs, the Ethereum Foundation, UCL and others), none of which is a Zcash organization, and what they would learn is what everyone learns at the round [D].</td></tr>
+<td>The ballot is encrypted to a key shared among the validators, <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">any ⌈n/2⌉+1 of whom can reconstruct it</a>. The <a href="https://github.com/valargroup/token-holder-voting-config/blob/main/prod/dynamic-voting-config.json">production list</a> has 14 (Valar Group, Zcash Foundation, Shielded Labs, Zodl, Keplr, Zcash Labs and others), so 8 of them.
+<ul><li><strong>If the threshold holds:</strong> nobody reads a ballot before the close.</li><li><strong>If 8 of the 14 cooperate</strong>, or are compromised, now or later: every ballot, with its exact weight.</li></ul></td>
+<td class="ok">Ballots are time-locked to a <a href="https://docs.drand.love/docs/timelock-encryption/">drand</a> round whose signature does not exist before the closing time. The key is drand's, produced by the <a href="https://drand.love/partners/">League of Entropy</a> (Cloudflare, EPFL, Kudelski, Protocol Labs, the Ethereum Foundation and others), none of them a Zcash party.
+<ul><li><strong>If drand's threshold holds:</strong> nobody reads a ballot before the close, including us.</li><li><strong>If a threshold of drand nodes colluded:</strong> they could open the ballots early and learn exactly what everyone learns at the close: a choice under a pseudonym. No weight, no identity, and nothing they can change.</li></ul></td></tr>
 
-<tr><td>Is the choice (yes/no) hidden?</td>
-<td class="bad">No. "Vote decisions are public inputs to the Vote Reveal Proof and appear in every share reveal transaction on-chain" [V2 "Privacy Implications: Decision and share count visibility"]; submission servers "learn … the proposal identifier, and the vote decision" for every share they handle [V2 "Per-server information"]. What is encrypted is the <em>weight</em>, not the choice.</td>
-<td class="ok">Yes, until the close: the choice is inside the time-locked blob; the proof only shows a commitment to it [I §7.2, §9.1]. After the close the choice is public under a pseudonym.</td></tr>
+<tr><td>Is the choice hidden?</td>
+<td class="bad">No. <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">"Vote decisions are public inputs … and appear in every share reveal transaction on-chain"</a>; the submission servers see the decision of every share they handle. What is encrypted is the weight.</td>
+<td class="ok">Yes, until the close: the choice is inside the time-locked blob. After the close it is public under a pseudonym.</td></tr>
 
 <tr><td>Is the weight hidden?</td>
-<td class="bad">By obfuscation under a collusion assumption. A ballot's weight is split into 16 shares, "the ballot count is split roughly evenly" [V2 "Open Design Questions"], each encrypted to the committee key and each "sent to exactly ⌈s/2⌉ of the s available submission servers" [V2 "Server Selection"]. Every share's upload carries "the blinded share commitments for all N_s shares" [V2 "Per-server information"], the same list for the 16 shares of one ballot. <em>Derivation:</em> a share has ⌈s/2⌉ copies and the honest servers outside a decrypting coalition number at most s−t = ⌊s/2⌋−1, fewer than the copies, so a decrypting coalition holds a copy of every share of every ballot, groups them by the shared commitment list, and decrypts each voter's exact balance. The specification's own "a compromised server learns at most one share's encrypted amount per vote commitment" [V2 "Per-Server Share Isolation"] holds for one server; it does not hold for the coalition that can decrypt.</td>
-<td class="ok">There is no weight. The protocol has no balance to hide and no key to decrypt one with.</td></tr>
+<td>The weight is split into 16 encrypted shares, each <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#server-selection">sent to half of the servers</a>, every share carrying <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">the same list of commitments</a> for the 16.
+<ul><li><strong>If the threshold holds:</strong> a single server learns one share, as the <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#per-server-share-isolation">spec says</a>.</li><li><strong>If 8 of the 14 cooperate:</strong> since every share sits on 7 servers and only 6 are outside the group, they hold every share of every ballot, group them by the shared list, and decrypt each voter's exact ZEC balance. (Our derivation from the two rules above.)</li></ul></td>
+<td class="ok">There is no weight. Nothing about a balance exists in the system.</td></tr>
 
-<tr><td>Link from a ballot to an identity</td>
-<td>The on-chain address is unlinkable to the vote: the holder delegates to a fresh hotkey with a zero-knowledge proof and "an observer … cannot link them without knowledge of nk" [V1 "Unlinkability to on-chain identity"]. But "a vote chain validator sees the source IP, submission timestamp, connection correlation, and P2P propagation pattern of every transaction it receives" [V3 "Privacy Implications"], and the ZIPs give no Tor recommendation (the client library offers routed transports [V6]). Under the collusion above, an IP maps to an exact balance and a choice.</td>
-<td>The passport is unlinkable to the leaf (the proof reveals only the document's unique identifier), and the leaf to the ballot (zero-knowledge membership proof with a per-poll pseudonym) [I §6, §9, §17]. The relay a voter posts to sees an address and a time; the operator does not, when relays are used. Tor or a VPN protects the address; the ballot's secrecy does not depend on it.</td></tr>
+<tr><td>Can a ballot be linked to who cast it?</td>
+<td>To the Zcash address: no, the holder votes with a fresh key proven in zero knowledge (<a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">unlinkability</a>). To the network address: yes, <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">each validator sees the IP, the time and the connection pattern</a> of every transaction it receives, and the ZIPs recommend no Tor. So: the operators can see IP, choice and (under collusion) balance together.</td>
+<td class="ok">No. The passport is unlinkable to the registration (the proof reveals only the document's number), and the registration to the ballot (zero-knowledge membership proof, a per-poll pseudonym). The relay a voter posts to sees an IP and a time; the ledger sees neither.</td></tr>
 
-<tr><td>Permanence of the exposure</td>
-<td class="bad">Share ciphertexts are on the vote chain for good; "post-quantum security of the El Gamal encryption layer is out of scope" [V1 "Non-requirements"]. The key shares do not expire: a future compromise of <em>t</em> operators has the same effect as collusion today.</td>
-<td class="ok">After the round, every ballot is public under a pseudonym by design, so there is nothing left to decrypt later. The links that stay hidden (passport ↔ leaf, leaf ↔ ballot) are protected by zero-knowledge proofs, not by encryption waiting for a key.</td></tr>
-
-<tr><td>Double voting, and who sets the rule</td>
-<td class="bad">A vote proves that its notes were unspent at the snapshot against a nullifier set [V1 "Nullifier Sets"; V3 "Snapshot Configuration"]. That set, and the snapshot roots, are computed by the party that runs the round and the nullifier service [V3 "Snapshot Configuration", "Nullifier Service"]. Wallets "MUST accept a round entry only if at least one signature validates … v1 implementations require a single valid signature per round entry" [V4 "Signature Verification"], and "the admin signature scope covers an entry's ea_pk only" [V4 "Distribution"]. Nothing in the written procedure recomputes the set.</td>
-<td class="ok">One registration per passport identifier, refused otherwise (<code>uid_used</code>), and one ballot per pseudonym; both rules are checked by the ingest, re-checked by the authority before it opens anything, and re-checked by any auditor, from the public log alone [I §6, §7.4, §16]. There is no set computed off-line by one party that the count depends on.</td></tr>
+<tr><td>Double voting</td>
+<td>Prevented by a list of spent notes that <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#snapshot-configuration">one party computes</a> when it opens the round. Wallets accept the round with <a href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>, and the written procedure has no step that recomputes the list.</td>
+<td class="ok">One registration per passport number, refused otherwise, and one ballot per pseudonym; both rules are checked from the public log, by anyone.</td></tr>
 
 <tr><td>Trusted setup</td>
-<td>Halo 2 proofs: no trusted setup. An election-authority key ceremony among the validators produces the committee key [V3 "Genesis Validator Setup"].</td>
-<td>UltraHonk proofs on a universal reference string (Aztec's): no per-circuit ceremony and nothing run by us. No key ceremony at all: the "key" is a public beacon. The passport side rests on ZKPassport's certificate registry, which anyone can check against the issuing states' published certificates [Z].</td></tr>
+<td>Halo 2 proofs: none. A <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#genesis-validator-setup">key ceremony among the validators</a> makes the committee key.</td>
+<td>UltraHonk proofs on Aztec's universal reference string: no ceremony of ours. No key ceremony at all: the "key" is a public beacon.</td></tr>
 
-<tr><td>Can the result be recomputed by anyone?</td>
-<td>Partially. Partial decryptions are posted on chain with proofs and combined by Lagrange interpolation [V1 "High-level summary", phase 5]; an outsider can verify them but cannot produce the sum without the committee. Published results are a verifiable floor conditional on a correct nullifier set.</td>
-<td class="ok">Yes, with no key: the log, the beacon of the round, and the audit tool. Every registration proof, every ballot proof, every refusal and every opening are recomputed; two correct tallies are identical [I §10.4, §16].</td></tr>
+<tr><td>Can anyone recompute the result?</td>
+<td>Partly: partial decryptions are posted with proofs and <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#high-level-summary">combined by the validators</a>; an outsider verifies them but cannot produce the sum without the committee.</td>
+<td class="ok">Yes, with no key: the log, the beacon of the round, and the audit, in your browser. <a href="/vote/#audit">Run it</a>.</td></tr>
 
 <tr><td>Withholding a ballot</td>
-<td>"Like any chain, the voting chain's validators control what enters blocks"; withheld ballots are detectable by comparing cast and revealed counts on chain.</td>
-<td>Every message gets a signed receipt naming its checkpoint before it is logged; a missing body is a public complaint; the relays keep copies and the audit compares [I §11.2, §11.3, §16].</td></tr>
+<td>The validators control what enters blocks; withheld ballots show as a gap between cast and revealed counts on chain.</td>
+<td>Every message gets a signed receipt before it is logged; a missing one is a public complaint; the relays keep copies and the audit compares.</td></tr>
 
 <tr><td>Infrastructure</td>
-<td>A separate proof-of-authority chain, validators, submission servers, PIR servers, all operated by the same organizations ("submission servers are embedded in validator nodes" [V2 "Why Servers Are Co-located with Validators"]).</td>
-<td>One ingest process with Postgres, a public git repository, public Nostr relays, and two networks that are read and never written to by voters: Bitcoin (timestamps) and drand (the clock). No chain, token or sequencer of ours [I §1].</td></tr>
+<td>A proof-of-authority chain, validators, submission servers and PIR servers, <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-servers-are-co-located-with-validators">run by the same organizations</a>.</td>
+<td>One server with a database, a public git repository, public Nostr relays, and two networks read and never written to: Bitcoin for timestamps, drand for the clock.</td></tr>
 
 <tr><td>Who is excluded</td>
-<td>Anyone without Orchard ZEC at the snapshot; holdings under 0.125 ZEC [V1 "Ballot Scaling"].</td>
-<td>Anyone without a biometric passport or an NFC phone [Z; <a href="/eligibility/">eligibility</a>].</td></tr>
+<td>Anyone without Orchard ZEC at the snapshot, or with less than 0.125 ZEC.</td>
+<td>Anyone without a biometric passport or an NFC phone. <a href="/eligibility/">More</a>.</td></tr>
 
-<tr><td>What the issuing authority learns</td>
-<td>Nothing (there is none).</td>
-<td class="bad">The state that issued a passport can compute its non-salted identifier and learn that it registered here; never how it voted [I §6].</td></tr>
-
-<tr><td>Changing one's vote</td>
-<td>Not addressed in the fetched drafts.</td>
-<td class="bad">Not in a time-locked poll: one ballot per voter [I §8].</td></tr>
-
-<tr><td>Binding?</td>
-<td>Advisory, per the polls' own terms.</td>
-<td>Advisory, and shown next to the coinholder count.</td></tr>
+<tr><td>Binding?</td><td>Advisory.</td><td>Advisory, shown next to the coinholder count.</td></tr>
 </table>
 
 <h2>The three points that matter</h2>
 <h3>1. Who holds the key to the outcome</h3>
-<p>In the coinholder stack, the key that opens every ballot is held, in shares, by the organizations with the most at stake in the outcome, and the same organizations run the servers that receive the shares. The protocol relies on those servers not pooling their logs: the specification says a server learns at most one share per vote, and the delivery rule two pages away sends each share to half the servers. A majority coalition that can decrypt also holds every share. That is a trust assumption, not a cryptographic guarantee, and exploiting it leaves no trace.</p>
-<p>In Zcash Agora there is no key. The "key" is the signature of a drand round that will exist at 12:00 UTC on the closing day and not before, produced by a consortium that does not know this poll exists and has no stake in it. If every Zcash organization in the world colluded, they could not open a ballot early.</p>
-
+<p>In the coinholder stack, the key that opens every ballot is held, in shares, by the organizations with the most at stake in the outcome, and the same organizations run the servers that receive the shares. The privacy of a voter's balance rests on those servers keeping their logs apart, while the delivery rule sends every share to half of them.</p>
+<p>In Zcash Agora the key is drand's. The threshold is held by a consortium that has no stake in Zcash and does not know this poll exists, the round it produces is public for everyone at once, and the most that threshold could ever do is open the ballots a little early: there is no balance in them, no identity, and nothing it could alter. The trust assumption is moved to a party with nothing to gain and reduced to a question of timing.</p>
 <h3>2. What is actually encrypted</h3>
-<p>In the coinholder stack the choice is public and the weight is encrypted. The exact balance of a shielded Zcash user, the one quantity the Zcash protocol is built to hide, is what the voting layer puts under a committee key, forever, on a chain, without post-quantum protection. In Zcash Agora there is no balance to protect: the ballot is a choice and nothing else, hidden until the close and anonymous after it.</p>
-
+<p>In the coinholder stack the choice is public and the weight is encrypted: the exact balance of a shielded Zcash user, the one quantity the Zcash protocol is built to hide, is what the voting layer puts under a committee key. In Zcash Agora the ballot is a choice and nothing else, hidden until the close and pseudonymous after it.</p>
 <h3>3. What the count depends on</h3>
-<p>The coinholder count depends on a nullifier set computed by one party and signed, in v1, by one key, with no written recomputation step. The Agora count depends on nothing computed off-line: eligibility is a tree of logged, individually proven registrations, and the audit re-verifies every one of them, passport proof included. Less cryptography was needed, not more: no committee, no ceremony, no PIR, no proof-of-authority chain, no trusted configuration.</p>
+<p>The coinholder count depends on a list of spent notes computed by one party and accepted on one signature. The Agora count depends only on what is in the public log: every eligibility proof, every ballot, every refusal. Less machinery was needed, not more: no committee, no ceremony, no private information retrieval, no chain of our own.</p>
 
-<h2>What we do not claim</h2>
+<h2>Scope of this comparison</h2>
 <ul>
-  <li>We do not claim the coinholder stack miscounted anything, nor that any operator colluded. We have no evidence of either and no way to have any; that is the point about trust assumptions.</li>
-  <li>We do not claim Agora is private against every party: the issuing state learns participation, a relay sees an address, and every ballot is public at the close under its pseudonym. Those are stated on every page.</li>
-  <li>We do not claim a count of passports is the right measure of the ecosystem's will. We claim it is a second measure, and that one eye is better than none.</li>
-  <li>We do not claim this comparison is complete. The coinholder drafts are long and some sections were summarized rather than read verbatim; corrections with a citation are welcome in the <a href="https://github.com/lanterne-labs/zcash-agora/issues">repository</a> and will be applied.</li>
+  <li>It compares the two designs as published. It makes no statement about any operator's conduct; a threshold assumption leaves no trace either way.</li>
+  <li>Agora's own exposures are stated on every page: the issuing state can learn that a passport registered, a relay sees an address, and every ballot is readable at the close under its pseudonym.</li>
+  <li>Passports are one measure of personhood, and this is one count next to another. One eye open is better than none.</li>
+  <li>Corrections with a citation are welcome in the <a href="https://github.com/lanterne-labs/zcash-agora/issues">repository</a> and will be applied.</li>
 </ul>
 </div></main>
 {{footer}}

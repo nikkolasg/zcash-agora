@@ -1,0 +1,125 @@
+/* The illustrations of how it works, and the audit pipeline: inline SVG and
+   CSS animations, themed by the page's variables. Without motion, the last
+   frame shows. */
+.ideas { display: grid; gap: 1.4rem; margin: 1.5rem 0; counter-reset: idea; }
+.idea { position: relative; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-2); padding: 1.6rem 1.3rem 1.3rem; text-align: center; }
+.idea::before { counter-increment: idea; content: counter(idea); position: absolute; top: -0.95rem; left: 50%; transform: translateX(-50%); width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--accent); color: #1c1a16; font-weight: 700; display: grid; place-items: center; }
+.idea h2 { margin: 0 0 .3rem; font-size: 1.35rem; }
+.idea .sub { color: var(--ink-2); margin: 0 0 .6rem; }
+.idea p.ex { color: var(--ink-2); max-width: 44ch; margin: .6rem auto 0; }
+.tag { display: inline-block; background: var(--people); color: #fff; border-radius: 999px; padding: .05rem .55rem; font-size: .9em; font-weight: 600; }
+.anim { display: block; width: 100%; max-width: 26rem; height: auto; margin: .6rem auto 0; font-family: inherit; }
+.anim .label { font-size: 9px; fill: var(--ink-2); }
+.anim .tiny { font-size: 7px; fill: var(--muted); }
+.anim .frame { fill: var(--bg); stroke: var(--line); }
+.anim .frame2 { fill: var(--code-bg); stroke: var(--line); }
+.anim .wire { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 4; fill: none; }
+.anim .env rect { fill: var(--accent); }
+.anim .env path { fill: none; stroke: #1c1a16; stroke-width: 1.4; }
+.anim .good { font-size: 9px; font-weight: 700; fill: var(--people); }
+.anim .warnt { font-size: 9px; font-weight: 700; fill: var(--accent-ink); }
+
+/* 1. The passport: two facts leave, the rest stays. */
+.doc .page { fill: var(--bg); stroke: var(--line); }
+.doc .photo { fill: var(--line); }
+.doc .line { fill: var(--line); }
+.doc .line.hl { fill: var(--people); }
+.doc .doc-head { font-size: 6.5px; font-weight: 700; fill: var(--muted); letter-spacing: .05em; }
+.doc .mrz { font-family: ui-monospace, Menlo, monospace; font-size: 6.5px; fill: var(--muted); }
+.shut .veil { fill: var(--bg); opacity: .92; stroke: var(--line); }
+.shut .lock { fill: none; stroke: var(--ink-2); stroke-width: 1.8; }
+.shut .veil-text { font-size: 7.5px; font-weight: 700; fill: var(--ink-2); }
+.chip rect { fill: var(--people); }
+.chip text { font-size: 8px; font-weight: 700; fill: #fff; }
+.chip { transform: translate(140px, 72px); }
+.chip-two { transform: translate(140px, 100px); }
+.shut { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .chip { animation: chip 7s infinite; } .chip-two { animation: chip2 7s infinite; } .shut { animation: veil 7s infinite; }
+}
+@keyframes chip { 0%,8% { transform: translate(44px, 48px); opacity: 0 } 14% { opacity: 1 } 34%,60% { transform: translate(140px, 72px) } 70%,94% { transform: translate(258px, 72px); opacity: 1 } 100% { transform: translate(258px, 72px); opacity: 0 } }
+@keyframes chip2 { 0%,12% { transform: translate(44px, 60px); opacity: 0 } 18% { opacity: 1 } 38%,60% { transform: translate(140px, 100px) } 70%,94% { transform: translate(258px, 100px); opacity: 1 } 100% { transform: translate(258px, 100px); opacity: 0 } }
+@keyframes veil { 0%,36% { opacity: 0 } 46%,96% { opacity: 1 } 100% { opacity: 0 } }
+
+/* 2. The ballot's way: the address stops at the relays. */
+.relay path { fill: none; stroke: var(--ink-2); stroke-width: 2.2; stroke-linecap: round; }
+.relay circle { fill: var(--ink-2); }
+.other rect { fill: var(--accent); opacity: .55; }
+.other path { fill: none; stroke: #1c1a16; stroke-width: 1.4; }
+.o1 { transform: translate(150px, 96px); } .o2 { transform: translate(178px, 100px); }
+.ip rect { fill: var(--accent-ink); } .ip text { font-size: 7.5px; font-weight: 800; fill: #fff; }
+.ballot { transform: translate(278px, 98px); } .ip { transform: translate(148px, 76px); }
+.pull { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 4; }
+@media (prefers-reduced-motion: no-preference) {
+  .ballot { animation: ballot 7s infinite; } .ip { animation: ip 7s infinite; } .stops { animation: show 7s infinite; } .pull { animation: pull 7s infinite; }
+}
+@keyframes ballot { 0%,10% { transform: translate(29px, 62px); opacity: 0 } 14% { opacity: 1; transform: translate(29px, 62px) } 38%,52% { transform: translate(159px, 92px) } 80%,96% { transform: translate(278px, 98px); opacity: 1 } 100% { transform: translate(278px, 98px); opacity: 0 } }
+@keyframes ip { 0%,10% { transform: translate(18px, 40px); opacity: 0 } 14% { opacity: 1; transform: translate(18px, 40px) } 38%,96% { transform: translate(148px, 76px); opacity: 1 } 100% { transform: translate(148px, 76px); opacity: 0 } }
+@keyframes show { 0%,40% { opacity: 0 } 48%,94% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes pull { 0%,52% { opacity: .2 } 58%,80% { opacity: 1 } 100% { opacity: .2 } }
+
+/* 3. Sealed until the close: the clock opens the box, not a person. */
+.box .body { fill: var(--code-bg); stroke: var(--line); }
+.lid rect { fill: var(--bg-2); stroke: var(--line); }
+.lid { transform-box: fill-box; transform-origin: 0% 100%; transform: rotate(-20deg); }
+.clock circle { fill: var(--bg); stroke: var(--ink-2); stroke-width: 1.8; }
+.clock .hand { stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; transform-box: fill-box; transform-origin: 50% 100%; }
+.padlock { fill: none; stroke: var(--ink-2); stroke-width: 1.8; }
+.bars rect { fill: var(--people); transform-box: fill-box; transform-origin: 50% 100%; }
+.env { opacity: 0; }
+.e0 { transform: translate(20px, 60px) } .e1 { transform: translate(46px, 50px) } .e2 { transform: translate(22px, 88px) } .e3 { transform: translate(50px, 92px) }
+@media (prefers-reduced-motion: no-preference) {
+  .e0 { animation: drop0 8s infinite } .e1 { animation: drop1 8s infinite } .e2 { animation: drop2 8s infinite } .e3 { animation: drop3 8s infinite }
+  .lid { animation: lid 8s infinite } .only { animation: show2 8s infinite } .bars rect { animation: grow 8s infinite } .clock .hand { animation: hand 8s infinite } .padlock { animation: unlock 8s infinite }
+}
+@keyframes drop0 { 0%,4% { opacity: 1; transform: translate(20px, 60px) } 20% { opacity: 1; transform: translate(159px, 34px) } 24%,100% { opacity: 0; transform: translate(159px, 52px) } }
+@keyframes drop1 { 0%,10% { opacity: 1; transform: translate(46px, 50px) } 26% { opacity: 1; transform: translate(159px, 34px) } 30%,100% { opacity: 0; transform: translate(159px, 52px) } }
+@keyframes drop2 { 0%,16% { opacity: 1; transform: translate(22px, 88px) } 32% { opacity: 1; transform: translate(159px, 34px) } 36%,100% { opacity: 0; transform: translate(159px, 52px) } }
+@keyframes drop3 { 0%,22% { opacity: 1; transform: translate(50px, 92px) } 38% { opacity: 1; transform: translate(159px, 34px) } 42%,100% { opacity: 0; transform: translate(159px, 52px) } }
+@keyframes hand { 0%,40% { transform: rotate(0deg) } 56%,100% { transform: rotate(300deg) } }
+@keyframes unlock { 0%,56% { opacity: 1 } 62%,100% { opacity: 0 } }
+@keyframes lid { 0%,58% { transform: rotate(0deg) } 66%,94% { transform: rotate(-20deg) } 100% { transform: rotate(0deg) } }
+@keyframes show2 { 0%,62% { opacity: 0 } 70%,94% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes grow { 0%,66% { transform: scaleY(0) } 78%,94% { transform: scaleY(1) } 100% { transform: scaleY(0) } }
+
+/* 4. The audit pipeline: each part checks in turn. */
+.pipe { display: flex; align-items: flex-start; justify-content: center; margin: .8rem auto; }
+.pipe .node { display: flex; flex-direction: column; align-items: center; gap: .35rem; width: 3.9rem; flex-shrink: 0; }
+.pipe .disc { position: relative; width: 2.9rem; height: 2.9rem; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--people) 18%, var(--bg-2)); border: 1.5px solid var(--people); color: var(--people); }
+.pipe .disc svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pipe .tick { position: absolute; right: -0.25rem; bottom: -0.25rem; width: 1.1rem; height: 1.1rem; border-radius: 50%; display: grid; place-items: center; background: var(--people); color: #fff; font-size: .65rem; font-weight: 900; }
+.pipe .name { font-size: .68rem; font-weight: 600; color: var(--ink-2); }
+.pipe .link { flex: 1; min-width: .8rem; max-width: 3rem; height: 2px; margin-top: 1.45rem; background: var(--people); }
+.pipe.loop .disc, .pipe.loop .link, .pipe.loop .tick { animation: light 6s infinite; animation-delay: calc(var(--i) * .7s); animation-fill-mode: backwards; }
+.pipe.loop .link { animation-name: light-link; } .pipe.loop .tick { animation-name: light-tick; }
+@media (prefers-reduced-motion: reduce) { .pipe.loop .disc, .pipe.loop .link, .pipe.loop .tick { animation: none; } }
+@keyframes light { 0% { background: var(--bg-2); border-color: var(--line); color: var(--muted) } 8%,80% { background: color-mix(in srgb, var(--people) 18%, var(--bg-2)); border-color: var(--people); color: var(--people) } 100% { background: var(--bg-2); border-color: var(--line); color: var(--muted) } }
+@keyframes light-link { 0% { background: var(--line) } 8%,80% { background: var(--people) } 100% { background: var(--line) } }
+@keyframes light-tick { 0%,4% { transform: scale(0) } 10%,80% { transform: scale(1) } 100% { transform: scale(0) } }
+/* The live audit: nodes wait, run, pass or fail. */
+.pipe .node.wait .disc { background: var(--bg-2); border-color: var(--line); color: var(--muted); }
+.pipe .node.run .disc { border-color: var(--accent); color: var(--accent-ink); }
+.pipe .node.ko .disc { border-color: #b3261e; color: #b3261e; background: color-mix(in srgb, #b3261e 12%, var(--bg-2)); }
+.pipe .link.wait { background: var(--line); }
+.stack { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: .5rem; }
+.stack li { display: flex; align-items: center; gap: .8rem; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); padding: .7rem .9rem; }
+.stack .icon { width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; background: var(--people); color: #fff; flex-shrink: 0; }
+.stack .icon svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.stack li.ko .icon { background: #b3261e; }
+.stack .text { display: flex; flex-direction: column; } .stack .count { color: var(--muted); font-size: .9rem; }
+.verdict { border-radius: 12px; padding: 1.2rem; margin: 1rem 0; text-align: center; }
+.verdict.ok { background: color-mix(in srgb, var(--people) 14%, var(--bg-2)); border: 1px solid var(--people); }
+.verdict.ko { background: color-mix(in srgb, #b3261e 10%, var(--bg-2)); border: 1px solid #b3261e; }
+.verdict h2 { margin: .3rem 0; } .verdict .seal { width: 52px; height: 52px; fill: none; stroke: var(--people); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.verdict ul { text-align: left; }
+.live { display: flex; align-items: center; gap: .8rem; border: 1px solid var(--line); border-radius: 10px; padding: .7rem .9rem; background: var(--bg-2); }
+.live .bar { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; } .live .bar span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+.spin { width: 1rem; height: 1rem; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg) } }
+.boxes { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 1.2rem 0; }
+@media (max-width: 640px) { .boxes { grid-template-columns: 1fr; } }
+.boxes .box2 { border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); padding: 1rem 1.1rem; }
+.boxes .box2 .big { display: block; font-size: 1.15rem; font-weight: 700; margin-bottom: .3rem; color: var(--people); }
+.subnav { display: flex; justify-content: center; gap: .2rem; margin: 0 auto 1.2rem; border: 1px solid var(--line); border-radius: 999px; padding: .25rem; width: max-content; max-width: 100%; flex-wrap: wrap; }
+.subnav a { text-decoration: none; color: var(--ink-2); padding: .35rem .9rem; border-radius: 999px; font-size: .95rem; }
+.subnav a[aria-current="page"] { background: var(--accent); color: #1c1a16; font-weight: 600; }
