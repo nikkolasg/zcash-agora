@@ -21,7 +21,7 @@
 <h2>Eligibility</h2>
 <ul>
   <li><strong>Provider:</strong> <a href="https://docs.zkpassport.id/intro">ZKPassport</a>. The app reads the passport chip over NFC, verifies the issuing state's signature chain against ZKPassport's certificate registry, and produces an UltraHonk proof on the phone. The rule here: <code>document_type: passport</code>, <code>require_expiry: true</code> (the document is unexpired on the day of the proof), no minimum age, no nationality constraint.</li>
-  <li><strong>Unique identifier:</strong> the <em>salted</em> identifier, derived (Poseidon2) from the document data, the registry's domain (<code>zcash-agora.org</code>) and scope (<code>agora/registry/1</code>), and the output of ZKPassport's threshold OPRF (2 of 3 nodes: TACEO, H2O Nodes, Aztec Labs) under mainnet key 1, on a blinded query. The same passport gives the same <code>uid</code> for this registry, so it registers once, ever; the issuing state cannot compute it from its records. The registry pins the OPRF public key (<code>eligibility.oprf_key</code>) and every verifier checks the proof's key against it, never against what the nodes serve. ZKPassport requires a face match for salted identifiers.</li>
+  <li><strong>Unique identifier:</strong> the <em>salted</em> identifier, derived (Poseidon2) from the document data, the registry's domain (<code>lanterne-labs.github.io</code>) and scope (<code>agora/registry/1</code>), and the output of ZKPassport's threshold OPRF (2 of 3 nodes: TACEO, H2O Nodes, Aztec Labs) under mainnet key 1, on a blinded query. The same passport gives the same <code>uid</code> for this registry, so it registers once, ever; the issuing state cannot compute it from its records. The registry pins the OPRF public key (<code>eligibility.oprf_key</code>) and every verifier checks the proof's key against it, never against what the nodes serve. ZKPassport requires a face match for salted identifiers.</li>
   <li><strong>Binding:</strong> the proof's <code>custom_data</code> is <code>H(T_reg, registry, R)</code> for a throwaway secp256k1 key <code>R</code> drawn before the scan; <code>R</code> signs the registration body (BIP340). A relay that saw the proof cannot replay it under a leaf of its own (<a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md#6-registration">§6</a>).</li>
   <li><strong>Leaf:</strong> <code>ID = H(T_id, registry, s)</code> for the voter secret <code>s</code> (from a passkey's PRF output or 12 BIP39 words), in a Poseidon2 Merkle tree of depth 20 (<a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md#5-registries">§5</a>, <a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md#14-the-voter-secret">§14</a>).</li>
   <li><strong>Verification:</strong> the ingest runs ZKPassport's verifier (a Node sidecar on the open SDK) on every registration; so does the authority before opening anything, and so does the audit.</li>
@@ -71,8 +71,8 @@
 
 <h2>Parameters of this ledger</h2>
 <dl class="kv">
-  <dt>Origin</dt><dd><code>zcash-agora.org/agora</code></dd>
-  <dt>Log key</dt><dd>published at genesis, pinned in the voting app, never read from the mirror</dd>
+  <dt>Origin</dt><dd><code>lanterne-labs.github.io/zcash-agora</code></dd>
+  <dt>Log key</dt><dd>pinned in the voting app (<code>site/agora.config.json</code>, <code>verifierKey</code>), never read from the mirror</dd>
   <dt>Channels</dt><dd><code>wss://relay.damus.io</code>, <code>wss://nos.lol</code>, <code>wss://relay.primal.net</code>; no direct endpoint</dd>
   <dt>Registry 1</dt><dd>ZKPassport, passport, unexpired, no other rule; salted identifier under OPRF key 1 (pinned); depth 20</dd>
   <dt>Poll 1</dt><dd>"Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol?" · options "I want ZSAs", "I do not want ZSAs", blank · tlock quicknet round 34815412 · closed · one ballot per voter · opens 2026-11-16 12:00 UTC · closes 2026-12-14 12:00 UTC</dd>

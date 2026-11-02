@@ -73,8 +73,10 @@ type any identifier instead of scanning).
 - Site: written. The voting page is built on `@isoloir/web`; the ZKPassport
   adapter follows the SDK's documented flow and must be exercised with a
   real passport before the poll opens.
-- Hosting, domain (`zcash-agora.org` is a placeholder throughout) and the
-  org rename to `lanterne-labs`: to decide.
+- Site: GitHub Pages at `<org>.github.io/zcash-agora`. Servers: Railway
+  (project `mirror`, services `agora-ingest`, `agora-authority`, `Postgres`).
+  The org rename to `lanterne-labs` is pending; the ledger origin already
+  names it.
 
 ## Licence
 

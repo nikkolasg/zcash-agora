@@ -14,7 +14,7 @@ Three roles, three places:
 | operator | any machine with access to the ingest's database | submits the setups in `../ledger` |
 
 Decisions that cannot be changed after genesis: the **origin**
-(`zcash-agora.org/agora`), the **log key**, and for each registry its
+(`lanterne-labs.github.io/zcash-agora`), the **log key**, and for each registry its
 **domain and scope** (the passport identifier is derived from them: a
 different scope is a different set of identifiers, and people could
 register twice). Choose the domain before step 1.
@@ -35,7 +35,7 @@ On the ingest host, with the isoloir binary (`../.github/workflows/release.yml`
 builds one per platform; or `cargo build --release -p isoloir` in `../isoloir`):
 
 ```sh
-isoloir keygen log --origin zcash-agora.org/agora     # ISOLOIR_LOG_SEED (secret), log_key (public)
+isoloir keygen log --origin lanterne-labs.github.io/zcash-agora   # ISOLOIR_LOG_SEED (secret), log_key (public)
 isoloir keygen nostr                                  # ISOLOIR_NOSTR_KEY (secret), the ingest's pubkey
 isoloir keygen nostr                                  # a second one for the authority
 ```

@@ -9,3 +9,5 @@ trial/
 .DS_Store
 .env.*
 *.log
+deploy/.mirror_deploy_key
+*.key
