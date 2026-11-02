@@ -11,12 +11,12 @@
 <header class="top"><div class="wrap wide">
   <a class="brand" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
   <nav class="main">
+    <a class="cta" href="/vote/">Vote</a>
     <a href="/why/">Why</a>
     <a href="/how-it-works/">How it works</a>
-    <a href="/technical/">Technical</a>
     <a href="/comparison/">Comparison</a>
     <a href="/eligibility/">Eligibility</a>
-    <a class="cta" href="/vote/">Vote</a>
+    <a href="/technical/">Technical</a>
   </nav>
 </div></header>
 
@@ -35,7 +35,7 @@
 <p>A count of people needs a way to tell one person from two accounts. Without it, the count is of accounts, and accounts are free. Forum handles, GitHub accounts, e-mails, phone numbers, wallet addresses: all of them can be made by the dozen, and a poll that counts them measures who had the most afternoons to spare.</p>
 <p>A passport is the one credential most adults on earth hold that a state issued once per person, that carries a cryptographic signature of that state, and that a phone can verify offline. With <a href="https://docs.zkpassport.id/intro">ZKPassport</a>, the verification and the proof happen on your phone; what leaves it is a proof that the rule holds and a number derived from the document. Nothing else.</p>
 
-<h2>What it costs, honestly</h2>
+<h2>What it costs</h2>
 <ul>
   <li><strong>Some people cannot take part.</strong> No biometric passport, no NFC phone, a passport whose issuing country does not publish its signing certificates: no vote. We know that is a real exclusion, and that it falls unevenly on the world.</li>
   <li><strong>The issuing state could learn that you registered.</strong> The unique number is derived from the document data, the site and the registry. A state that keeps the chip data of its passports can compute their numbers and compare them with the public list: it would learn that you registered, never how you voted. ZKPassport also offers a <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted number</a>, computed with a secret spread over independent servers, that no one can recompute from the passport alone; it needs a face match at registration, and we are evaluating it.</li>

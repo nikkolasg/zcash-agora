@@ -9,7 +9,7 @@
 </head>
 <body>
 {{header}}
-<main><div class="wrap wide">
+<main><div class="wrap wide centered">
 <h1>Compared with the coinholder stack</h1>
 <p class="lede">The two systems answer different questions. They are also both voting systems for the same ecosystem, so they can be compared property by property. Every claim about the coinholder stack links to the public sentence it rests on, in the draft ZIPs and code that have been public since March 2026. Where we derive something from several sentences, we say so.</p>
 
@@ -24,7 +24,7 @@
 
 <tr><td>Who can read a ballot before the close</td>
 <td>The ballot is encrypted to a key shared among the validators, <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">any ⌈n/2⌉+1 of whom can reconstruct it</a>. The <a href="https://github.com/valargroup/token-holder-voting-config/blob/main/prod/dynamic-voting-config.json">production list</a> has 14 (Valar Group, Zcash Foundation, Shielded Labs, Zodl, Keplr, Zcash Labs and others), so 8 of them.
-<ul><li><strong>If the threshold holds:</strong> nobody reads a ballot before the close.</li><li><strong>If 8 of the 14 cooperate</strong>, or are compromised, now or later: every ballot, with its exact weight.</li></ul></td>
+<ul><li><strong>If the threshold holds:</strong> nobody reads a ballot before the close.</li><li><strong>If 8 of the 14 cooperate</strong>, or are compromised, now or later: every ballot, with the exact amount of ZEC its voter holds.</li></ul></td>
 <td class="ok">Ballots are time-locked to a <a href="https://docs.drand.love/docs/timelock-encryption/">drand</a> round whose signature does not exist before the closing time. The key is drand's, produced by the <a href="https://drand.love/partners/">League of Entropy</a> (Cloudflare, EPFL, Kudelski, Protocol Labs, the Ethereum Foundation and others), none of them a Zcash party.
 <ul><li><strong>If drand's threshold holds:</strong> nobody reads a ballot before the close, including us.</li><li><strong>If a threshold of drand nodes colluded:</strong> they could open the ballots early and learn exactly what everyone learns at the close: a choice under a pseudonym. No weight, no identity, and nothing they can change.</li></ul></td></tr>
 
@@ -39,7 +39,7 @@
 
 <tr><td>Can a ballot be linked to who cast it?</td>
 <td>To the Zcash address: no, the holder votes with a fresh key proven in zero knowledge (<a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">unlinkability</a>). To the network address: yes, <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">each validator sees the IP, the time and the connection pattern</a> of every transaction it receives, and the ZIPs recommend no Tor. So: the operators can see IP, choice and (under collusion) balance together.</td>
-<td class="ok">No. The passport is unlinkable to the registration (the proof reveals only the document's number), and the registration to the ballot (zero-knowledge membership proof, a per-poll pseudonym). The relay a voter posts to sees an IP and a time; the ledger sees neither.</td></tr>
+<td class="ok">No. The passport is unlinkable to the registration (the proof reveals only the document's number), and the registration to the ballot (zero-knowledge membership proof, a per-poll pseudonym). The relay a voter posts to sees an IP and a time; the ledger sees neither. A voter who posts through the direct HTTPS channel instead of a relay shows the server an IP and a time, and nothing else.</td></tr>
 
 <tr><td>Double voting</td>
 <td>Prevented by a list of spent notes that <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#snapshot-configuration">one party computes</a> when it opens the round. Wallets accept the round with <a href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>, and the written procedure has no step that recomputes the list.</td>

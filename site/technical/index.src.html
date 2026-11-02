@@ -78,7 +78,7 @@
   <dt>Setups</dt><dd><a href="https://github.com/lanterne-labs/zcash-agora/tree/main/ledger">ledger/</a> in the repository, checked offline with <code>isoloir check</code></dd>
 </dl>
 
-<h2>Limits, honestly</h2>
+<h2>Limits</h2>
 <ul>
   <li><strong>The operator is one process.</strong> It can refuse service and it decides what each checkpoint holds. It cannot read, alter or forge a ballot, register anyone, or drop an acknowledged message quietly. It could fork the log for some readers; the audit collects notes from relays and mirror and fails on two notes of one index with different roots (<a href="https://github.com/tartuffeme/isoloir/blob/main/DESIGN.md#31-next-fork-detection-without-third-parties">DESIGN 3.1</a>). Anchoring the log in a chain (Catena) is designed, not deployed.</li>
   <li><strong>Ballots are public at the close, pseudonymously.</strong> A voter who gives up <code>s</code> proves their ballot after the close; the same holds for a coinholder voter who gives up a hotkey. The time-lock delays such a proof; it does not prevent it.</li>

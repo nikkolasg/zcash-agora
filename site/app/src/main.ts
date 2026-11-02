@@ -102,7 +102,9 @@ async function main() {
       } else if (pending?.kind === 'confirm') {
         body += `<div class="phase"><h2>3 · Check</h2><p>Type words ${pending.positions.join(', ')}:</p>
           <div class="row">${pending.positions.map((p) => `<input type="text" autocomplete="off" autocapitalize="none" data-pos="${p}" placeholder="word ${p}">`).join('')}</div>
-          <div class="row"><button class="btn" id="confirm">Confirm and register</button></div></div>`;
+          <div class="row"><button class="btn" id="confirm">Confirm and register</button>
+          <button class="btn danger" id="skip">Skip the check</button></div>
+          <p class="muted">Skipping means the words are not confirmed: you can still vote from this browser, and from nowhere else. Clearing this browser's storage loses the key for good.</p></div>`;
       } else if (s.registration.state === 'posting' || s.registration.state === 'sent') {
         body += `<div class="phase"><h2>Registering…</h2><p class="muted">Posting the proof through the relays and waiting for the ledger's signed receipt (up to a minute per relay).</p></div>`;
       } else if (s.registration.state === 'acked') {
@@ -241,6 +243,17 @@ async function main() {
       const c = session.confirmWords(positions, answers);
       if (!c.ok) throw new IsoloirError('bad_words', `positions ${c.wrong.join(', ')} do not match`);
       pending = null;
+      if (!session.scanReady()) {
+        if (!config.dev) pending = { kind: 'scan', text: 'Opening the request…' };
+        await session.scanPassport((req) => obtainProof(req, session));
+        pending = null;
+      }
+      await session.submitRegistration();
+    }));
+    document.getElementById('skip')?.addEventListener('click', () => run(async () => {
+      if (!window.confirm('Register without confirming the words? You will be able to vote from this browser only, in this poll and the next ones, and a cleared browser loses the key.')) return;
+      pending = null;
+      session.declineBackup();
       if (!session.scanReady()) {
         if (!config.dev) pending = { kind: 'scan', text: 'Opening the request…' };
         await session.scanPassport((req) => obtainProof(req, session));
