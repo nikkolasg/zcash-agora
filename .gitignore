@@ -8,3 +8,4 @@ trial/
 .env
 .DS_Store
 .env.*
+*.log
