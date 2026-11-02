@@ -35,7 +35,7 @@ trap cleanup EXIT INT TERM
 # The static pages on 8788; the voting page (dev server, trial mode) on 5173 proxies everything else to them.
 (cd "$ROOT/site" && python3 -m http.server 8788 --bind 127.0.0.1 >/dev/null 2>&1) &
 rm -f "$ROOT/site/app/.env.trial"
-SERVE=1 "$ROOT/scripts/trial.sh" 2>&1 | grep -v isoloir_relay &
+SERVE=1 "$ROOT/scripts/trial.sh" 2>&1 | grep --line-buffered -v isoloir_relay &
 until [ -f "$ROOT/site/app/.env.trial" ]; do sleep 2; done
 (cd "$ROOT/site/app" && npx vite --mode trial --port 5173 --strictPort >/dev/null 2>&1) &
 until curl -s -o /dev/null http://localhost:5173/vote/; do sleep 1; done
