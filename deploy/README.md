@@ -120,3 +120,12 @@ for anyone (no passport, no registration), and cannot drop a message
 quietly (every message is acknowledged with a signed receipt, the relays
 keep copies, and the audit compares). See isoloir's
 [DESIGN.md](../isoloir/DESIGN.md) for the full map.
+
+## 8. CI secrets
+
+Both workflows check out the `isoloir` submodule, which is a private
+repository: add a read-only deploy key of `tartuffeme/isoloir` as the
+repository secret `ISOLOIR_DEPLOY_KEY` (the private half; the public half
+on isoloir's deploy keys). `release.yml` pushes the image to
+`ghcr.io/<org>/isoloir` with the workflow's own token; `site.yml` needs
+GitHub Pages enabled with "GitHub Actions" as the source.

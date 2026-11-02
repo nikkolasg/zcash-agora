@@ -7,3 +7,4 @@ trial/
 *.local
 .env
 .DS_Store
+.env.*
