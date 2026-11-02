@@ -73,7 +73,7 @@ sleep 8   # a checkpoint with the registrations, so ballots can prove against th
 if [ -n "${SERVE:-}" ]; then
   echo "mirror on http://127.0.0.1:8787 ; relay ws://127.0.0.1:7777 ; direct http://127.0.0.1:8080"
   echo "verifierKey=$LOG_KEY"
-  (cd "$TRIAL/mirror" && python3 -m http.server 8787 --bind 127.0.0.1 >"$TRIAL/http.log" 2>&1) &
+  python3 "$ROOT/scripts/serve-mirror.py" "$TRIAL/mirror" 8787 >"$TRIAL/http.log" 2>&1 &
   cat >"$ROOT/site/app/.env.trial" <<E
 VITE_AGORA_ORIGIN=trial.local/agora
 VITE_AGORA_VERIFIER_KEY=$LOG_KEY
