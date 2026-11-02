@@ -29,15 +29,16 @@ pg_isready -q || { echo "Postgres is not running (brew services start postgresql
 [ -d "$ROOT/site/app/node_modules" ] || (cd "$ROOT/site/app" && npm install --no-audit --no-fund)
 python3 "$ROOT/site/build-pages.py" >/dev/null
 
-cleanup() { kill $(jobs -p) 2>/dev/null || true; pkill -f "vite --mode trial" 2>/dev/null || true; }
+PIDS=""
+cleanup() { [ -n "$PIDS" ] && kill $PIDS 2>/dev/null; kill $(jobs -p) 2>/dev/null; pkill -P $$ 2>/dev/null; true; }
 trap cleanup EXIT INT TERM
 
 # The static pages on 8788; the voting page (dev server, trial mode) on 5173 proxies everything else to them.
-(cd "$ROOT/site" && python3 -m http.server 8788 --bind 127.0.0.1 >/dev/null 2>&1) &
+(cd "$ROOT/site" && exec python3 -m http.server 8788 --bind 127.0.0.1 >/dev/null 2>&1) & PIDS="$PIDS $!"
 rm -f "$ROOT/site/app/.env.trial"
 SERVE=1 "$ROOT/scripts/trial.sh" 2>&1 | grep --line-buffered -v isoloir_relay &
 until [ -f "$ROOT/site/app/.env.trial" ]; do sleep 2; done
-(cd "$ROOT/site/app" && npx vite --mode trial --port 5173 --strictPort >/dev/null 2>&1) &
+(cd "$ROOT/site/app" && exec npx vite --mode trial --port 5173 --strictPort >/dev/null 2>&1) & PIDS="$PIDS $!"
 until curl -s -o /dev/null http://localhost:5173/vote/; do sleep 1; done
 echo
 echo "==> Zcash Agora, test mode: http://localhost:5173/  (vote: http://localhost:5173/vote/)"

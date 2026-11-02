@@ -20,7 +20,7 @@ rm -rf "$TRIAL"; mkdir -p "$TRIAL/mirror"
 dropdb --if-exists "${DB##*/}" >/dev/null 2>&1 || true; createdb "${DB##*/}"
 cd "$ROOT/isoloir"   # circuits are built from the isoloir repository root
 
-cleanup() { kill $(jobs -p) 2>/dev/null || true; }
+cleanup() { kill $(jobs -p) 2>/dev/null; pkill -P $$ 2>/dev/null; true; }
 trap cleanup EXIT
 
 "$ISOLOIR" relay --listen 127.0.0.1:7777 >"$TRIAL/relay.log" 2>&1 &
