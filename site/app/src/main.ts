@@ -79,7 +79,7 @@ async function main() {
 
   const render = () => {
     const s = session.state();
-    let body = header(s);
+    let body = (config.dev ? `<div class="card warn"><strong>Test mode.</strong> This ledger runs on your machine with isoloir's <em>dev</em> registry: you register by typing an identifier, no passport. A production ingest refuses such a registry; the real poll takes ZKPassport proofs only.</div>` : '') + header(s);
     if (s.error) body += `<p class="err">${esc(s.error.code)}: ${esc(s.error.detail)}</p>`;
     if (lastError) body += errorBox(lastError);
 

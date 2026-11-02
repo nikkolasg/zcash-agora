@@ -78,3 +78,16 @@ type any identifier instead of scanning).
 ## Licence
 
 Code MIT or Apache-2.0; texts CC-BY-4.0. See [LICENSE](LICENSE).
+
+## Try it, passport-free
+
+```sh
+scripts/try.sh        # http://localhost:5173/ ; CLOSE_IN=300 for a five-minute poll
+```
+
+The whole ledger runs locally with isoloir's *dev* registry (type any
+identifier instead of scanning a passport); three command-line voters
+have already voted; you register and vote from the real page; at the
+close the ballots open with the real drand beacon and the result shows.
+A dev registry is refused by any ingest not started with `--dev`, and the
+production registry is ZKPassport: test mode cannot leak into production.

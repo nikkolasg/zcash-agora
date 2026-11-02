@@ -18,6 +18,6 @@ export default defineConfig({
     headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' },
     fs: { allow: ['..', '../../isoloir/js'] },
     // The site's stylesheet and pages live outside this app: python3 -m http.server 8788 in ../ serves them in dev.
-    proxy: { '/assets': 'http://127.0.0.1:8788' }
+    proxy: { '^/(?!vote/|src/|@|node_modules/).*': 'http://127.0.0.1:8788' }
   }
 });
