@@ -49,7 +49,7 @@
 <td>Persons: one valid passport, one ballot of weight one; holdings are never asked [I §5, §7].</td></tr>
 
 <tr><td>Who can read a ballot before the close</td>
-<td class="bad">Any <em>t</em> of the <em>n</em> validators, <em>t</em> = ⌈n/2⌉+1, who "reconstruct the key and decrypt individual share ciphertexts" [V1 "Privacy Implications", trust assumptions]. The validators are, per the production config, 14 named organizations (Valar Group, Zcash Foundation, Shielded Labs, Zodl, Keplr, Zcash Labs and others) [V5]; so 8 of them.</td>
+<td class="bad">Any <em>t</em> of the <em>n</em> validators, <em>t</em> = ⌈n/2⌉+1, who "reconstruct the key and decrypt individual share ciphertexts" [V1 "Privacy Implications", trust assumptions]. The production config lists 14 vote servers, labelled Valar Group, Zcash Foundation, Shielded Labs, Zodl, Keplr, Zcash Labs and others [V5], and the submission-server draft says each validator embeds one [V2 "Why Servers Are Co-located with Validators"]; with n = 14 that is 8 of them.</td>
 <td class="ok">Nobody. Ballots are time-locked to a drand round whose signature does not exist before the close; there is no decryption key in the system [I §7.2]. The only party that could produce the signature early is a threshold of the League of Entropy's nodes (Cloudflare, EPFL, Kudelski, Protocol Labs, the Ethereum Foundation, UCL and others), none of which is a Zcash organization, and what they would learn is what everyone learns at the round [D].</td></tr>
 
 <tr><td>Is the choice (yes/no) hidden?</td>
