@@ -6,7 +6,7 @@
   "license": "MIT OR Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tartuffeme/isoloir"
+    "url": "https://github.com/lanterne-labs/isoloir"
   },
   "files": [
     "isoloir_wasm_bg.wasm",
