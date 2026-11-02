@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who can vote, and why</title>
+<meta name="description" content="Eligibility in Zcash Agora: one valid passport, one voice. Why passports, who is excluded, what the issuing state learns, and the door left open to other proofs of personhood.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="top"><div class="wrap wide">
+  <a class="brand" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
+  <nav class="main">
+    <a href="/why/">Why</a>
+    <a href="/how-it-works/">How it works</a>
+    <a href="/technical/">Technical</a>
+    <a href="/comparison/">Comparison</a>
+    <a href="/eligibility/">Eligibility</a>
+    <a href="/audit/">Recount</a>
+    <a class="cta" href="/vote/">Vote</a>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+<h1>Who can vote</h1>
+<p class="lede">Anyone with a valid biometric passport, of any country, of any age. One passport, one registration, for every poll on this ledger.</p>
+
+<h2>The rule</h2>
+<ul>
+  <li>A passport (not an identity card, not a residence permit, for now) with a chip, unexpired on the day you register.</li>
+  <li>No minimum age, no nationality rule. The poll asks what people think; it does not ask which people.</li>
+  <li>The registry remembers a number unique to your passport, so the same passport cannot register twice. It does not remember your name, your nationality, your birth date or your photo, because it never receives them.</li>
+</ul>
+
+<h2>Why a passport at all</h2>
+<p>A count of people needs a way to tell one person from two accounts. Without it, the count is of accounts, and accounts are free. Forum handles, GitHub accounts, e-mails, phone numbers, wallet addresses: all of them can be made by the dozen, and a poll that counts them measures who had the most afternoons to spare.</p>
+<p>A passport is the one credential most adults on earth hold that a state issued once per person, that carries a cryptographic signature of that state, and that a phone can verify offline. With <a href="https://docs.zkpassport.id/intro">ZKPassport</a>, the verification and the proof happen on your phone; what leaves it is a proof that the rule holds and a number derived from the document. Nothing else.</p>
+
+<h2>What it costs, honestly</h2>
+<ul>
+  <li><strong>Some people cannot take part.</strong> No biometric passport, no NFC phone, a passport whose issuing country does not publish its signing certificates: no vote. We know that is a real exclusion, and that it falls unevenly on the world.</li>
+  <li><strong>The issuing state could learn that you registered.</strong> The unique number is derived from the document without a secret salt (a salted one would let a passport register twice). A state can compute the numbers of its own passports and compare them with the public list. It would learn that you registered, never how or whether you voted. If that risk is unacceptable to you, do not register.</li>
+  <li><strong>You trust ZKPassport's app and certificate registry.</strong> The SDK and the verifier are open source and the ledger re-verifies every proof; the registry of state certificates is public and checkable. We still name it as a dependency.</li>
+</ul>
+
+<h2>Why we accept those costs</h2>
+<p>The alternative today is not a perfect count of people. It is no count of people at all: a poll where the unit is ZEC, where holdings under 0.125 ZEC carry nothing, and where the number of humans behind a result is unknowable. We judge a count of passport holders, with its exclusions stated, better than a count of capital alone. Not better than a perfect count of persons; better than the status quo.</p>
+
+<div class="card warn">
+<strong>Passports are one Sybil-resistance mechanism, not the mechanism.</strong> The registry is a provider and a rule; a new provider is a new verifier, not a new protocol. If a proof of personhood exists that is more inclusive and as hard to forge (another document type, a web-of-trust scheme with real guarantees, a proof-of-humanity you would stake your reputation on), we want to hear about it, and the ledger can host a second registry next to this one. The one thing we will not do is count accounts and call them people.
+</div>
+
+<h2>What you are not asked</h2>
+<ul>
+  <li>Whether you hold ZEC, or how much.</li>
+  <li>Your name, nationality, age, or address.</li>
+  <li>An account anywhere.</li>
+</ul>
+
+<h2>One registration, every poll</h2>
+<p>You register once per ledger. Every poll on it uses the same registry, and your pseudonym in each poll is derived separately, so nothing links your ballot in one poll to your ballot in another. Keep the key your browser made (passkey or 12 words): it is what lets you vote in the next poll from another device.</p>
+<p><a class="btn" href="/vote/">Register and vote</a></p>
+</div></main>
+<footer class="bottom"><div class="wrap wide">
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is not run by, funded by, or affiliated with any Zcash organization, and it is not an operator of the coinholder vote. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/audit/">Recount it yourself</a></p>
+</div></footer>
+<script src="/assets/nav.js"></script>
+
+</body>
+</html>

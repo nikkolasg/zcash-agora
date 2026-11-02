@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why Zcash Agora exists</title>
+<meta name="description" content="Coinholder polls count capital. Zcash Agora counts people. Why the ecosystem needs both numbers.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="top"><div class="wrap wide">
+  <a class="brand" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
+  <nav class="main">
+    <a href="/why/">Why</a>
+    <a href="/how-it-works/">How it works</a>
+    <a href="/technical/">Technical</a>
+    <a href="/comparison/">Comparison</a>
+    <a href="/eligibility/">Eligibility</a>
+    <a href="/audit/">Recount</a>
+    <a class="cta" href="/vote/">Vote</a>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+<h1>Why this exists</h1>
+<p class="lede">A poll that weighs every voice by a balance answers one question: what does the money want? It cannot answer the other question the same decisions raise: what do the people want? Zcash Agora exists to ask the second one, with the same rigour as the first, and to put the two answers side by side.</p>
+
+<h2>Two questions, not one</h2>
+<p>Since 2025, Zcash has taken governance signals from coinholder polls: holders prove a shielded balance at a snapshot and vote with its weight. That is a legitimate instrument. Capital has skin in the game, and it should be heard.</p>
+<p>But it is one instrument, and it measures one thing. In the February 2026 sentiment poll, the figure everyone quotes, 98.6% against Zcash Shielded Assets, is a share of the voting <em>weight</em>, cast by a turnout of roughly 7% of the circulating supply. The number of distinct humans behind it is unknown, and not by accident: the protocol has no notion of a person. Whether that weight belonged to a few hundred people or to a few dozen is not a footnote. It changes what the number means.</p>
+<p>In the ZCG debate of October 2026 the same figure is used as "the coinholders have spoken". They have. The people have not been asked.</p>
+
+<h2>Zcash is not a shareholder meeting</h2>
+<p>Zcash's roots are cypherpunk. Its reason to exist is that persons, not balances, have a right to transact and to be let alone, and that this right is the same for someone with a little and someone with a lot. A governance culture that weighs voices by holdings is a culture Zcash can borrow, but it is not the one it came from. A count of persons is closer to it.</p>
+<p>None of that makes the coinholder count illegitimate. It makes it incomplete. A decision taken on one of the two numbers is a decision taken blind in one eye.</p>
+
+<h2>What this is, and what it is not</h2>
+<ul>
+  <li><strong>It is a companion.</strong> Every poll here is shown next to the coinholder poll on the same question when one exists, with the unit each one counts, its turnout, and what each one cannot know.</li>
+  <li><strong>It is not binding.</strong> Nothing here allocates a zatoshi or changes a rule. It is a measurement offered to the people who will decide.</li>
+  <li><strong>It is not run by the parties it measures.</strong> Zcash Agora is a Lanterne Labs project, not a Zcash organization, not an operator of the coinholder vote, and not funded by the dev fund.</li>
+  <li><strong>It is verifiable.</strong> Every registration, every ballot, every refusal and the result are in a public, signed, Bitcoin-timestamped log. <a href="/audit/">Anyone can recount it</a>. We would be embarrassed to ask the ecosystem to trust a second number that cannot be checked as well as the first.</li>
+</ul>
+
+<h2>Why passports</h2>
+<p>A count of people needs a way to tell one person from two accounts. Forum handles, GitHub accounts, e-mail addresses and wallet addresses are free to create in any number. A passport is a credential that a state issues once per person and that a phone can verify offline, with a zero-knowledge proof that discloses nothing beyond "this is a valid passport, and here is a number unique to it".</p>
+<p>It is one mechanism, with real costs: it excludes people without a biometric passport or an NFC phone, and the issuing state could learn that one of its passports registered (never how it voted). We weighed those costs against the status quo, a count of capital alone, and found the status quo worse. We are open to other proofs of personhood; the registry format accepts them. <a href="/eligibility/">The details</a>.</p>
+
+<h2>Why the ballots are sealed by a clock, not by a committee</h2>
+<p>The coinholder stack encrypts ballots to a key whose shares are held by a committee of Zcash organizations: the people with the most at stake in the outcome hold the key to the outcome. We did not want a key at all. Here, a ballot is encrypted to a future round of the drand randomness beacon, run by a consortium of organizations (Cloudflare, EPFL, Kudelski Security, Protocol Labs and others) that has nothing to do with Zcash. The round's signature does not exist before the close, so nobody can open a ballot early, including us. After the close, it is public, and that is what lets anyone recount. <a href="/comparison/">The full comparison</a>.</p>
+
+<h2>The first poll</h2>
+<p>We start with the question that has the clearest coinholder answer and the least known human one: <em>do you want Zcash Shielded Assets in the protocol?</em> It is a suggestion, not a verdict. If the people's count looks like the coinholder count, that is worth knowing. If it does not, that is worth knowing more. Later polls can take up the questions of the moment, such as the future of Zcash Community Grants, the dev fund, or any proposal the ecosystem wants a second count on.</p>
+<p><a class="btn" href="/vote/">Vote</a></p>
+</div></main>
+<footer class="bottom"><div class="wrap wide">
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is not run by, funded by, or affiliated with any Zcash organization, and it is not an operator of the coinholder vote. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/audit/">Recount it yourself</a></p>
+</div></footer>
+<script src="/assets/nav.js"></script>
+
+</body>
+</html>

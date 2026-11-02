@@ -1,0 +1,27 @@
+{
+  "name": "zcash-agora-vote",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The Zcash Agora voting page: @isoloir/web with a ZKPassport adapter, built into ../vote/",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aztec/bb.js": "5.0.0",
+    "@isoloir/web": "file:../../isoloir/js",
+    "@noir-lang/noir_js": "1.0.0-beta.22",
+    "@zkpassport/sdk": "^0.19.3",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

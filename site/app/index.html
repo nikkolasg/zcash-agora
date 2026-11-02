@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vote · Zcash Agora</title>
+<meta name="description" content="Register once with your passport, vote anonymously, keep your receipt.">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="./src/vote.css">
+<script src="./coi-serviceworker.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap wide">
+  <a class="brand" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
+  <nav class="main">
+    <a href="/why/">Why</a><a href="/how-it-works/">How it works</a><a href="/technical/">Technical</a><a href="/comparison/">Comparison</a><a href="/eligibility/">Eligibility</a><a href="/audit/">Recount</a><a class="cta" href="/vote/" aria-current="page">Vote</a>
+  </nav>
+</div></header>
+<main><div class="wrap" id="app">
+  <h1>Vote</h1>
+  <p class="muted" id="status">Loading the ledger…</p>
+  <noscript><p>The voting booth runs in your browser: it needs JavaScript and WebAssembly.</p></noscript>
+</div></main>
+<footer class="bottom"><div class="wrap wide">
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/audit/">Recount it yourself</a></p>
+</div></footer>
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>

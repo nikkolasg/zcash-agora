@@ -1,0 +1,8 @@
+{"v":1,"version":1,"origin":"zcash-agora.org/agora",
+ "log_key":"FILLED-AT-GENESIS",
+ "ingest":"FILLED-AT-GENESIS",
+ "channels":[{"type":"nostr","url":"wss://relay.damus.io","state":"active"},
+             {"type":"nostr","url":"wss://nos.lol","state":"active"},
+             {"type":"nostr","url":"wss://relay.primal.net","state":"active"},
+             {"type":"direct","url":"https://ingest.zcash-agora.org","state":"active"}],
+ "checkpoint_period":60,"anchor_age":86400}

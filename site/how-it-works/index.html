@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it works, in plain words</title>
+<meta name="description" content="How a Zcash Agora vote works: one passport, one anonymous ballot sealed until the close, a public count anyone can redo.">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="top"><div class="wrap wide">
+  <a class="brand" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
+  <nav class="main">
+    <a href="/why/">Why</a>
+    <a href="/how-it-works/">How it works</a>
+    <a href="/technical/">Technical</a>
+    <a href="/comparison/">Comparison</a>
+    <a href="/eligibility/">Eligibility</a>
+    <a href="/audit/">Recount</a>
+    <a class="cta" href="/vote/">Vote</a>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+<h1>How it works</h1>
+<p class="lede">In plain words. The <a href="/technical/">technical page</a> says the same with the names of the pieces.</p>
+
+<h2>The promise</h2>
+<p>An <em>isoloir</em> is the French word for a voting booth: the curtain you step behind so nobody sees your ballot. Zcash Agora is a voting booth for the internet, with four promises:</p>
+<ol>
+  <li><strong>Only real people vote, and each one once.</strong> You prove, with your passport, that you are one person. You cannot register the same passport twice.</li>
+  <li><strong>Nobody sees your ballot before the close. Not even us.</strong> Your choice is locked with a key that does not exist yet: the signature a public randomness network will publish at the closing time, and not before.</li>
+  <li><strong>Nobody can tell which ballot is yours. Ever.</strong> After the close, ballots open, but each one is signed by an anonymous pseudonym that cannot be linked to your passport, your registration, or your pseudonym in another poll.</li>
+  <li><strong>Anyone can recount.</strong> Everything, including refused messages, is in a public log, signed and timestamped in Bitcoin. The result is a calculation on public data. You do not have to trust our number: redo it.</li>
+</ol>
+
+<h2>What you need</h2>
+<ul>
+  <li>A passport with a chip (the small symbol on the cover). Most passports issued since the 2010s have one.</li>
+  <li>A phone that can read it (NFC: any recent iPhone or Android) with the free <a href="https://zkpassport.id">ZKPassport</a> app.</li>
+  <li>Any browser, on the phone or a computer, to vote.</li>
+</ul>
+<p>No wallet, no ZEC, no account. You will not be asked your name.</p>
+
+<h2>Step by step</h2>
+<ol class="steps">
+  <li><strong>Open the vote page.</strong> It shows a QR code. Scan it with the ZKPassport app.</li>
+  <li><strong>Scan your passport.</strong> The app reads the chip over NFC and, on your phone, produces a proof that the passport is valid and unexpired, plus a number unique to the passport. Your name, photo, date of birth and nationality never leave the phone; the proof contains none of them.</li>
+  <li><strong>Keep your key.</strong> Your browser makes a secret key, the one thing that will later link you to your ballot, and only on your device. You can save it as a passkey (synced by your phone or password manager) or write down 12 words. Lose it and you can still not vote twice, but you cannot vote from another device.</li>
+  <li><strong>Register.</strong> The proof and your key's fingerprint go, through public relays, to the ledger. The ledger checks the proof, refuses the passport if it already registered, and adds you to the list of voters. The list is public, but it holds only unique numbers, never names.</li>
+  <li><strong>Vote.</strong> Pick an option. Your browser proves, in a way that reveals nothing about which registration is yours, that you are on the list, and seals your choice to the closing time. It takes a few seconds on a phone, a bit longer on an old one.</li>
+  <li><strong>Get a receipt.</strong> The ledger answers with a signed acknowledgement naming the place your ballot will have in the log. Your browser later checks the log and raises a public complaint if the ballot is missing.</li>
+  <li><strong>The close.</strong> At the closing time the randomness network publishes its round. Every ballot opens. The count is published, with the exact list of what was counted and what was not, and anyone can redo it.</li>
+</ol>
+
+<h2>Who learns what</h2>
+<table>
+  <tr><th>Who</th><th>Learns</th><th>Does not learn</th></tr>
+  <tr><td>Us (the ledger's operator)</td><td>that a passport number registered, that a pseudonym voted; the content of every ballot after the close, as everyone does</td><td>who you are; which ballot is yours; any ballot's content before the close</td></tr>
+  <tr><td>ZKPassport</td><td>that a proof for this site was made: its bridge carries the proof from the app to your browser. Its documentation states that your personal data is processed on the phone and never leaves it</td><td>your identity, whether you then registered, how you voted</td></tr>
+  <tr><td>The state that issued your passport</td><td>could compute your passport's number and learn that it registered here</td><td>how you voted, or whether you voted at all</td></tr>
+  <tr><td>The drand randomness network</td><td>nothing: it publishes a signature every three seconds, for everyone, and never hears about this poll</td><td>anything about you or the poll</td></tr>
+  <tr><td>The public relay your browser posts to</td><td>your network address and when you posted</td><td>who you are; your choice before the close</td></tr>
+  <tr><td>Everyone</td><td>after the close, every ballot under its pseudonym, the count, and the full log</td><td>which person cast which ballot</td></tr>
+</table>
+<p>If you do not want a relay to see your network address, use Tor or a VPN. Your ballot's secrecy does not depend on it.</p>
+
+<h2>Things to know</h2>
+<ul>
+  <li><strong>One ballot, no changes.</strong> In this poll you cannot change your vote after casting it. (A correction would open at the close like any ballot and reveal a pattern, so the design forbids it.)</li>
+  <li><strong>Your ballot becomes public at the close, anonymously.</strong> That is deliberate: it is what lets anyone recount without a key holder. What becomes public is a choice next to a pseudonym, not a person.</li>
+  <li><strong>Keep your 12 words private.</strong> Whoever has them can prove which ballot is yours (after the close) and vote in future polls as you.</li>
+  <li><strong>It binds no one.</strong> This is a measurement. The ecosystem decides what to make of it.</li>
+</ul>
+<p><a class="btn" href="/vote/">Vote</a> &nbsp; <a href="/technical/">The technical version</a></p>
+</div></main>
+<footer class="bottom"><div class="wrap wide">
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is not run by, funded by, or affiliated with any Zcash organization, and it is not an operator of the coinholder vote. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/audit/">Recount it yourself</a></p>
+</div></footer>
+<script src="/assets/nav.js"></script>
+
+</body>
+</html>

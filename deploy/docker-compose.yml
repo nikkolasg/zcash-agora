@@ -1,0 +1,74 @@
+# The Zcash Agora ledger: Postgres, the ingest, the authority, and Caddy in
+# front of the direct channel. See README.md in this directory for the
+# order of operations; nothing here runs before the keys and the mirror exist.
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agora
+      POSTGRES_USER: agora
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agora -d agora"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # The only writer of the log. Reads the relays, judges every message,
+  # checkpoints, pushes the mirror, stamps the checkpoints in Bitcoin.
+  ingest:
+    build: ../isoloir
+    image: ghcr.io/lanterne-labs/isoloir:${ISOLOIR_TAG:-local}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://agora:${POSTGRES_PASSWORD}@db/agora
+      ISOLOIR_LOG_SEED: ${ISOLOIR_LOG_SEED:?keygen log}
+      ISOLOIR_NOSTR_KEY: ${ISOLOIR_NOSTR_KEY:?keygen nostr}
+      ISOLOIR_MIRROR_GIT: ${ISOLOIR_MIRROR_GIT:?the mirror repository, ssh}
+      ISOLOIR_MIRROR_SSH_KEY: ${ISOLOIR_MIRROR_SSH_KEY:?a write deploy key of the mirror}
+      ISOLOIR_ETH_RPC: ${ISOLOIR_ETH_RPC:-}
+      PORT: "8080"
+    volumes:
+      - mirror:/app/mirror
+    command: ["isoloir", "ingest", "--mirror-dir", "/app/mirror", "--zkverifier", "/app/zkverifier/verify.mjs", "--listen", "0.0.0.0:8080"]
+
+  # Opens the time-locked ballots at the drand round after the close and
+  # posts the tally. No key: anyone can run this against the public mirror
+  # (deploy/README.md §6). It verifies the whole log first.
+  authority:
+    image: ghcr.io/lanterne-labs/isoloir:${ISOLOIR_TAG:-local}
+    restart: unless-stopped
+    depends_on:
+      - ingest
+    environment:
+      DATABASE_URL: postgresql://agora:${POSTGRES_PASSWORD}@db/agora
+      ISOLOIR_LOG_KEY: ${ISOLOIR_LOG_KEY:?the log's verifier key, pinned}
+      ISOLOIR_NOSTR_KEY: ${ISOLOIR_AUTHORITY_NOSTR_KEY:?a Nostr key of its own}
+      ISOLOIR_ETH_RPC: ${ISOLOIR_ETH_RPC:-}
+    volumes:
+      - mirror:/app/mirror:ro
+    command: ["isoloir", "authority", "--mirror", "/app/mirror", "--circuits", "/app/mirror/circuits", "--zkverifier", "/app/zkverifier/verify.mjs", "--drand", "https://api.drand.sh", "--db", "postgresql://agora:${POSTGRES_PASSWORD}@db/agora", "--every", "60"]
+
+  # TLS for the direct channel (ledger.json names it) and /v1/health.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    environment:
+      INGEST_HOST: ${INGEST_HOST:-ingest.zcash-agora.org}
+
+volumes:
+  db:
+  mirror:
+  caddy:

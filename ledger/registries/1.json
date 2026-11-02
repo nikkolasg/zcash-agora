@@ -1,0 +1,4 @@
+{"v":1,"id":1,"version":1,"name":"Zcash Agora: one passport, one voice",
+ "eligibility":{"provider":"zkpassport","domain":"zcash-agora.org",
+   "scope":"agora/registry/1","document_type":"passport","require_expiry":true},
+ "validity":3600,"depth":20}

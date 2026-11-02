@@ -1,0 +1,3 @@
+[submodule "isoloir"]
+	path = isoloir
+	url = git@github.com:tartuffeme/isoloir.git

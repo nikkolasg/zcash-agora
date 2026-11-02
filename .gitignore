@@ -1,0 +1,9 @@
+node_modules/
+site/app/dist/
+site/vote/assets/
+site/vote/index.html
+site/vote/*.wasm
+trial/
+*.local
+.env
+.DS_Store
