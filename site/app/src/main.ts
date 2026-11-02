@@ -29,7 +29,7 @@ function header(s: SessionState): string {
 
 function notOpenYet(): void {
   h(`<h1>Vote</h1>
-  <div class="card warn"><strong>The ledger has not started yet.</strong> The first poll opens on 16 November 2026. Until then there is nothing to register in: the ledger's keys are made at genesis and this page pins them. Read <a href="/how-it-works/">how it works</a> meanwhile.</div>`);
+  <div class="card warn"><strong>The ledger has not started yet.</strong> The first poll opens on 16 November 2026. Until then there is nothing to register in: the ledger's keys are made at genesis and this page pins them. Read <a href="../how-it-works/">how it works</a> meanwhile.</div>`);
   loadWasm().then((w) => mountAudit(document.getElementById('audit-root')!, w, false)).catch(() => {});
 }
 
@@ -129,7 +129,7 @@ async function main() {
           <p>Scan your passport with the <a href="https://zkpassport.id">ZKPassport</a> app. The proof is made on your phone; this page only receives a number unique to the document.</p>
           <div class="row"><button class="btn" id="scan" ${busy ? 'disabled' : ''}>${config.dev ? 'Register (trial: type an identifier)' : 'Scan my passport'}</button>
           <button class="btn secondary" id="restore" ${busy ? 'disabled' : ''}>I already registered: restore my 12 words</button></div>
-          <details><summary>What this page learns, and does not</summary><p>Learns: that a passport number registered. Does not learn: your name, nationality, age, photo, or how you will vote. <a href="/eligibility/">Details</a>.</p></details></div>`;
+          <details><summary>What this page learns, and does not</summary><p>Learns: that a passport number registered. Does not learn: your name, nationality, age, photo, or how you will vote. <a href="../eligibility/">Details</a>.</p></details></div>`;
       }
     }
 

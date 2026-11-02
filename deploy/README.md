@@ -21,11 +21,13 @@ register twice). Choose the domain before step 1.
 
 ## 0. Before anything: the domain
 
-The site is static (GitHub Pages, `../site`). The ingest's direct
-channel needs a host of its own (`ingest.zcash-agora.org` here) because
-Pages cannot proxy. The ZKPassport `domain` in `../ledger/registries/1.json`
-is the site's host: the passport request is made from the page and the
-SDK binds the proof to it.
+The site is static (GitHub Pages, `../site`, at the base path
+`site/agora.config.json` names). The ledger lists public Nostr relays
+only, no direct endpoint: voters never reach the operator's server, so
+the ingest needs no public hostname (Caddy serves `/v1/health` only).
+The ZKPassport `domain` in `../ledger/registries/1.json` is the site's
+host: the passport request is made from the page and the SDK binds the
+proof to it.
 
 ## 1. Keys
 
@@ -83,9 +85,11 @@ The poll's `round` is the drand quicknet round at or after `closes`
 
 ## 5. DNS and the site
 
-- `ingest.zcash-agora.org` → the compose host (Caddy gets the certificate).
-- `zcash-agora.org` → GitHub Pages (`../site/CNAME`); enable Pages on the
-  repository with the `site.yml` workflow as the source.
+- Enable Pages on the repository with "GitHub Actions" as the source;
+  `site.yml` deploys to `<owner>.github.io/<repo>/`. A custom domain is
+  a `site/CNAME` file plus `site.base` set to `/` in `agora.config.json`.
+- The compose host needs no DNS name for voters; `INGEST_HOST` is for
+  the health endpoint only.
 
 ## 6. The authority
 

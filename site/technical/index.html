@@ -3,20 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<base href="/zcash-agora/">
 <title>Zcash Agora, technically</title>
 <meta name="description" content="The protocol behind Zcash Agora: isoloir, ZKPassport eligibility, Noir/UltraHonk ballots, drand time-lock, an RFC 6962 log timestamped in Bitcoin.">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <header class="top"><div class="wrap wide">
-  <a class="brand" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
+  <a class="brand" href=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
   <nav class="main">
-    <a class="cta" href="/vote/">Vote</a>
-    <a href="/why/">Why</a>
-    <a href="/how-it-works/">How it works</a>
-    <a href="/comparison/">Comparison</a>
-    <a href="/eligibility/">Eligibility</a>
-    <a href="/technical/">Technical</a>
+    <a class="cta" href="vote/">Vote</a>
+    <a href="why/">Why</a>
+    <a href="how-it-works/">How it works</a>
+    <a href="comparison/">Comparison</a>
+    <a href="eligibility/">Eligibility</a>
+    <a href="technical/">Technical</a>
   </nav>
 </div></header>
 
@@ -60,7 +62,7 @@
 </ul>
 
 <h2>Transport</h2>
-<p>Every message is a signed Nostr event (NIP-01, kinds 7100 to 7106) whatever carries it. This ledger lists three public relays and a direct HTTPS endpoint. A voter ranks the relays by a hash of <code>s</code>; registrations go to the first, ballots to the next, so no single relay sees both (<a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md#111-channels">§11.1</a>). With relays the browser never contacts the operator; with the direct endpoint the operator sees the voter's address and timing, and no third party keeps a copy.</p>
+<p>Every message is a signed Nostr event (NIP-01, kinds 7100 to 7106) whatever carries it. This ledger lists three public relays and no direct endpoint: a voter's browser never contacts the operator, and the page itself makes no request to any server of ours. A voter ranks the relays by a hash of <code>s</code>; registrations go to the first, ballots to the next, so no single relay sees both (<a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md#111-channels">§11.1</a>). With relays the browser never contacts the operator; with the direct endpoint the operator sees the voter's address and timing, and no third party keeps a copy.</p>
 
 <h2>Results</h2>
 <p>The poll is <code>closed</code>: no tally before the close. At the first checkpoint at or after <code>closes</code> the ingest logs a <code>close</code> entry. The authority (ours, or anyone's) fetches the beacon, verifies it under the chain's public key, opens every counted ballot, and posts <code>{values, counted, void, beacon}</code>; the ingest re-checks every opening before logging it. Two correct tallies are identical, and a browser checks the beacon itself while the openings are an auditor's job (<a href="https://github.com/tartuffeme/isoloir/blob/main/SPEC.md#104-the-tally-entry-tlock">§10.4</a>).</p>
@@ -82,7 +84,7 @@
 <dl class="kv">
   <dt>Origin</dt><dd><code>zcash-agora.org/agora</code></dd>
   <dt>Log key</dt><dd>published at genesis, pinned in the voting app, never read from the mirror</dd>
-  <dt>Channels</dt><dd><code>wss://relay.damus.io</code>, <code>wss://nos.lol</code>, <code>wss://relay.primal.net</code>, <code>https://ingest.zcash-agora.org</code></dd>
+  <dt>Channels</dt><dd><code>wss://relay.damus.io</code>, <code>wss://nos.lol</code>, <code>wss://relay.primal.net</code>; no direct endpoint</dd>
   <dt>Registry 1</dt><dd>ZKPassport, passport, unexpired, no other rule; salted identifier under OPRF key 1 (pinned); depth 20</dd>
   <dt>Poll 1</dt><dd>"Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol?" · options "I want ZSAs", "I do not want ZSAs", blank · tlock quicknet round 34815412 · closed · one ballot per voter · opens 2026-11-16 12:00 UTC · closes 2026-12-14 12:00 UTC</dd>
   <dt>Circuit</dt><dd><code>choice4_tlock_linked_d20</code>, vk hash <code>0x33147e4950bdaa207d0123bef10466cb79c642cc78e70b4f51a6f251cc26c229</code></dd>
@@ -98,12 +100,12 @@
   <li><strong>Scale.</strong> The ingest holds the log in memory (about 100k ballots); the browser rebuilds the registry tree (about 100k voters); a tree of depth 20 holds a million leaves.</li>
   <li><strong>Not post-quantum.</strong> The time-lock is pairing-based. Since every ballot becomes public at the round anyway, a future quantum adversary learns nothing more than the public does; the registration proofs and the ballot proofs hide the passport ↔ leaf and leaf ↔ ballot links, and their security assumptions are those of UltraHonk on BN254.</li>
 </ul>
-<p><a href="/vote/#audit">Audit the vote</a> · <a href="/comparison/">Compared with the coinholder stack</a></p>
+<p><a href="vote/#audit">Audit the vote</a> · <a href="comparison/">Compared with the coinholder stack</a></p>
 </div></main>
 <footer class="bottom"><div class="wrap wide">
-  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is independent of every Zcash organization and of the coinholder vote's operators. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="/vote/#audit">Audit the vote</a></p>
+  <p>Zcash Agora is a <a href="https://github.com/lanterne-labs">Lanterne Labs</a> project, built on <a href="https://github.com/tartuffeme/isoloir">isoloir</a>. It is independent of every Zcash organization and of the coinholder vote's operators. Polls here bind no one. <a href="https://github.com/lanterne-labs/zcash-agora">Source</a> · <a href="vote/#audit">Audit the vote</a></p>
 </div></footer>
-<script src="/assets/nav.js"></script>
+<script src="assets/nav.js"></script>
 
 </body>
 </html>

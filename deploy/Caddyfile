@@ -1,6 +1,6 @@
 {$INGEST_HOST} {
 	encode gzip
-	# The direct channel (SPEC §11.1): POST /v1/messages, GET /v1/acks/<id>; and /v1/health.
+	# /v1/health; no direct channel is listed in the ledger, voters use the relays.
 	reverse_proxy ingest:8080
 	header Access-Control-Allow-Origin "*"
 	header Access-Control-Allow-Methods "GET, POST, OPTIONS"

@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<base href="{{base}}">
 <title>Zcash Agora</title>
 <meta name="description" content="One person, one vote. Private, anonymous polls for the Zcash ecosystem, counted per head and shown next to the count per coin.">
-<link rel="stylesheet" href="/assets/style.css">
-<link rel="stylesheet" href="/assets/anim.css">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/anim.css">
 </head>
 <body>
 {{header}}
@@ -15,14 +17,14 @@
   <div class="tag" style="background:none;color:var(--accent-ink);padding:0">One person, one vote</div>
   <h1>What do the <em>people</em> of Zcash think?</h1>
   <p class="lede">Zcash polls count coins: a ballot weighs the ZEC behind it. Zcash Agora counts people: one person, one vote, cast in private. Your ballot is sealed until the close by a clock nobody here controls, opened under a pseudonym that links to no one, and recounted by anyone. The people's count is shown next to the coins' count. Neither decides. Both inform.</p>
-  <p><a class="btn" href="/vote/">Vote in the current poll</a> &nbsp; <a class="btn secondary" href="/how-it-works/">How it works</a></p>
+  <p><a class="btn" href="vote/">Vote in the current poll</a> &nbsp; <a class="btn secondary" href="how-it-works/">How it works</a></p>
   <p class="muted">Proof of personhood is, for now, a passport verified by <a href="https://zkpassport.id">ZKPassport</a> on your phone. It is one way to prove you are a person; the registry takes others as they come.</p>
 </div>
 
 <div class="wrap">
   <h2>Why a second count</h2>
-  <p>Take Zcash Shielded Assets. The coinholder poll of February 2026 is quoted as "98.6% against", a true sentence about the ZEC that voted. The forum's running tally counted 197 ballots on that question two days before the close, each one a voting key, not a person. The same forum has 14,742 registered members, 842 of them active in the past month. Whatever the people think about ZSAs, that poll did not ask them.</p>
-  <p>Both counts are legitimate. Coinholders carry the risk of the currency, and their view is worth measuring well. Zcash's roots are also cypherpunk, where the protections are for persons, equally, whatever they hold. A decision that looks at one count only is blind in one eye. <a href="/why/">The full argument</a>.</p>
+  <p>Take Zcash Shielded Assets. The coinholder poll of February 2026 is quoted as "98.6% against", a true sentence about the ZEC that voted. The poll's vote server listed 197 ballots on that question two days before the close, as a forum member tallied from it: each ballot is one vote transaction from one voting key, so at most 197 voters, likely fewer. The same forum has 14,742 registered members, 842 of them active in the past month. Whatever the people think about ZSAs, that poll did not ask them.</p>
+  <p>Both counts are legitimate. Coinholders carry the risk of the currency, and their view is worth measuring well. Zcash's roots are also cypherpunk, where the protections are for persons, equally, whatever they hold. A decision that looks at one count only is blind in one eye. <a href="why/">The full argument</a>.</p>
   <p>This is the other half of the picture, measured with at least the same rigour, and in private: every registration, every ballot, every refusal and the result are in a public log that anyone can recount, and no ballot can be read before the close by anyone.</p>
 
   <h2>How a vote goes</h2>
@@ -32,7 +34,7 @@
     <div class="box2"><span class="big">3 · The clock opens the ballots.</span>At the close the drand network publishes its round; every ballot opens under its pseudonym.</div>
     <div class="box2"><span class="big">4 · Anyone recounts.</span>The log is public and timestamped in Bitcoin. Your browser can redo every check.</div>
   </div>
-  <p style="text-align:center"><a class="btn secondary" href="/how-it-works/">See it, step by step</a> &nbsp; <a href="/comparison/">Compared with the coinholder stack</a></p>
+  <p style="text-align:center"><a class="btn secondary" href="how-it-works/">See it, step by step</a> &nbsp; <a href="comparison/">Compared with the coinholder stack</a></p>
 
   <div class="card">
     <strong>The first poll</strong> asks the question with the clearest coinholder answer and the least known human one: <em>do you want Zcash Shielded Assets in the protocol?</em> Open from 16 November to 14 December 2026, 12:00 UTC. It is a suggestion, not a verdict; later polls can take up the questions of the moment, such as the future of Zcash Community Grants or the dev fund.

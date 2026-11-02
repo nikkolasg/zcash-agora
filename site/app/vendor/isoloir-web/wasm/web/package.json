@@ -1,0 +1,21 @@
+{
+  "name": "isoloir-wasm",
+  "type": "module",
+  "description": "isoloir for the browser: the voter's side of the protocol (keys, registration, ballots, checkpoints, receipts, tallies) compiled to WebAssembly, JSON in and JSON out",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tartuffeme/isoloir"
+  },
+  "files": [
+    "isoloir_wasm_bg.wasm",
+    "isoloir_wasm.js",
+    "isoloir_wasm.d.ts"
+  ],
+  "main": "isoloir_wasm.js",
+  "types": "isoloir_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

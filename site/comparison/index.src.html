@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<base href="{{base}}">
 <title>Compared with coinholder voting</title>
 <meta name="description" content="A property-by-property comparison of Zcash Agora with the shielded coinholder voting stack, from the public draft ZIPs and code.">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 {{header}}
@@ -39,7 +41,7 @@
 
 <tr><td>Can a ballot be linked to who cast it?</td>
 <td>To the Zcash address: no, the holder votes with a fresh key proven in zero knowledge (<a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">unlinkability</a>). To the network address: yes, <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">each validator sees the IP, the time and the connection pattern</a> of every transaction it receives, and the ZIPs recommend no Tor. So: the operators can see IP, choice and (under collusion) balance together.</td>
-<td class="ok">No. The passport is unlinkable to the registration (the proof reveals only the document's number), and the registration to the ballot (zero-knowledge membership proof, a per-poll pseudonym). The relay a voter posts to sees an IP and a time; the ledger sees neither. A voter who posts through the direct HTTPS channel instead of a relay shows the server an IP and a time, and nothing else.</td></tr>
+<td class="ok">No. The passport is unlinkable to the registration (the proof reveals only the document's number), and the registration to the ballot (zero-knowledge membership proof, a per-poll pseudonym). The relay a voter posts to sees an IP and a time; the ledger sees neither. The ledger lists no direct channel and the page calls no server of ours.</td></tr>
 
 <tr><td>Double voting</td>
 <td>Prevented by a list of spent notes that <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#snapshot-configuration">one party computes</a> when it opens the round. Wallets accept the round with <a href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>, and the written procedure has no step that recomputes the list.</td>
@@ -51,7 +53,7 @@
 
 <tr><td>Can anyone recompute the result?</td>
 <td>Partly: partial decryptions are posted with proofs and <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#high-level-summary">combined by the validators</a>; an outsider verifies them but cannot produce the sum without the committee.</td>
-<td class="ok">Yes, with no key: the log, the beacon of the round, and the audit, in your browser. <a href="/vote/#audit">Run it</a>.</td></tr>
+<td class="ok">Yes, with no key: the log, the beacon of the round, and the audit, in your browser. <a href="vote/#audit">Run it</a>.</td></tr>
 
 <tr><td>Withholding a ballot</td>
 <td>The validators control what enters blocks; withheld ballots show as a gap between cast and revealed counts on chain.</td>
@@ -63,7 +65,7 @@
 
 <tr><td>Who is excluded</td>
 <td>Anyone without Orchard ZEC at the snapshot, or with less than 0.125 ZEC.</td>
-<td>Anyone without a biometric passport or an NFC phone, or unwilling to do a face match in the app. <a href="/eligibility/">More</a>.</td></tr>
+<td>Anyone without a biometric passport or an NFC phone, or unwilling to do a face match in the app. <a href="eligibility/">More</a>.</td></tr>
 
 <tr><td>Binding?</td><td>Advisory.</td><td>Advisory, shown next to the coinholder count.</td></tr>
 </table>

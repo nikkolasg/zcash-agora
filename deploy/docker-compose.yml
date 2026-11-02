@@ -55,7 +55,7 @@ services:
       - mirror:/app/mirror:ro
     command: ["isoloir", "authority", "--mirror", "/app/mirror", "--circuits", "/app/mirror/circuits", "--zkverifier", "/app/zkverifier/verify.mjs", "--drand", "https://api.drand.sh", "--db", "postgresql://agora:${POSTGRES_PASSWORD}@db/agora", "--every", "60"]
 
-  # TLS for the direct channel (ledger.json names it) and /v1/health.
+  # TLS for /v1/health (the ledger lists no direct channel: voters use the relays).
   caddy:
     image: caddy:2
     restart: unless-stopped

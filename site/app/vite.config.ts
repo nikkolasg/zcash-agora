@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
+import cfg from '../agora.config.json' with { type: 'json' };
 
 // Built into ../vote/ (served at /vote/ by GitHub Pages). The wasm and the
 // prover worker are plain assets; bb.js needs cross-origin isolation for
 // threads, which coi-serviceworker.js adds on hosts that cannot set headers.
-export default defineConfig({
-  base: '/vote/',
+export default defineConfig(({ mode }) => ({
+  // Served at <site base>/vote/ (GitHub Pages: a repository sub-path); the trial dev server at /vote/.
+  base: mode === 'trial' ? '/vote/' : `${cfg.site.base}vote/`,
   build: {
     outDir: '../vote',
     emptyOutDir: false,
@@ -24,4 +26,4 @@ export default defineConfig({
       '^/(?!vote/|src/|@|node_modules/).*': 'http://127.0.0.1:8788'
     }
   }
-});
+}));
