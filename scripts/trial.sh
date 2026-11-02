@@ -85,11 +85,11 @@ fi
 
 WAIT=$((CLOSES - $(date +%s) + 12)); [ "$WAIT" -gt 0 ] && sleep "$WAIT"
 echo "--- the poll closed; opening the ballots with the drand beacon"
-"$ISOLOIR" authority --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --drand https://api.drand.sh --db "$DB" --nostr-key "$ISOLOIR_NOSTR_KEY" --once
+"$ISOLOIR" authority --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --drand https://api.drand.sh --db "$DB" --nostr-key "$ISOLOIR_NOSTR_KEY" --dev --once
 sleep 8
 echo "--- tally"; cat "$TRIAL/mirror/polls/1/tallies/latest.json"; echo
 echo "--- audit"
-"$ISOLOIR" audit --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --relays --skip-passports
+"$ISOLOIR" audit --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --relays --skip-passports --dev
 if [ -n "${SERVE:-}" ]; then
   echo "--- the result is on the vote page; the servers stay up until Ctrl-C"
   wait

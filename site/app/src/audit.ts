@@ -39,6 +39,8 @@ export async function runAudit(wasm: IsoloirWasm, onProgress: (p: AuditProgress)
       throw last;
     },
     relays: new WebSocketTransport(),
+    // A local trial's dev registry is accepted (a warning); in production it is a problem.
+    allowDev: config.dev,
     onProgress,
     signal
   });
