@@ -106,7 +106,7 @@
 .stack .icon { width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; background: var(--people); color: #fff; flex-shrink: 0; }
 .stack .icon svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .stack li.ko .icon { background: #b3261e; }
-.stack .text { display: flex; flex-direction: column; } .stack .count { color: var(--muted); font-size: .9rem; }
+.stack .text { display: flex; flex-direction: column; } .stack .n { color: var(--muted); font-size: .9rem; }
 .verdict { border-radius: 12px; padding: 1.2rem; margin: 1rem 0; text-align: center; }
 .verdict.ok { background: color-mix(in srgb, var(--people) 14%, var(--bg-2)); border: 1px solid var(--people); }
 .verdict.ko { background: color-mix(in srgb, #b3261e 10%, var(--bg-2)); border: 1px solid #b3261e; }

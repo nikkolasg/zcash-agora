@@ -173,7 +173,7 @@ async function main() {
       body += `<div class="phase result"><h2>Result${t.tally.final ? '' : ' (provisional)'}</h2>
         <p class="muted">${t.checked === 'beacon' ? (t.beacon_ok ? 'The drand beacon of the poll\'s round verified in this browser; the openings are checked by auditors.' : 'The beacon did not verify.') : ''} ${r.counted} ballots counted${t.tally.void?.length ? `, ${t.tally.void.length} void` : ''}.</p>
         ${r.slots.map((x) => `<div><strong>${esc(x.label ?? (x.blank ? 'Blank' : `slot ${x.slot}`))}</strong>: ${x.count} (${r.counted ? Math.round((1000 * x.count) / r.counted) / 10 : 0}%)<div class="bar"><span style="width:${(100 * x.count) / max}%"></span></div></div>`).join('')}
-        <p><a href="/audit/">Recount it yourself</a>.</p></div>`;
+        <p><a href="#audit">Audit the vote</a> in this browser.</p></div>`;
     } else if (s.pollStatus === 'closed') {
       body += `<div class="phase"><h2>Closed</h2><p class="muted">The poll closed ${when(s.poll!.closes)}. The result appears once the drand round is published and the ballots opened.</p></div>`;
     }
