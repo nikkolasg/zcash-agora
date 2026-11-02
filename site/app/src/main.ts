@@ -118,8 +118,10 @@ async function main() {
     // 2. Ready: vote, or show the receipt / the result.
     if (s.phase === 'ready' || s.phase === 'joining') {
       const b = s.ballot;
-      if (s.phase === 'joining') body += `<p class="muted">Your registration was acknowledged; waiting for the checkpoint that places it in the tree…</p>`;
-      if (b.state === 'idle' && s.pollStatus === 'open' && s.kind && s.poll) {
+      if (s.phase === 'joining') body += `<div class="phase"><h2>Almost there</h2><p class="muted">Your registration was acknowledged; waiting for the checkpoint that places it in the registry tree (a minute at most). The ballot form appears then.</p></div>`;
+      if (s.phase === 'joining') {
+        // Not in the tree yet: no ballot can prove membership.
+      } else if (b.state === 'idle' && s.pollStatus === 'open' && s.kind && s.poll) {
         const opts = s.poll.kind.options;
         body += `<div class="phase"><h2>Cast your ballot</h2>
           <form id="ballot"><div class="options">
@@ -160,7 +162,13 @@ async function main() {
       body += `<div class="phase"><h2>Closed</h2><p class="muted">The poll closed ${when(s.poll!.closes)}. The result appears once the drand round is published and the ballots opened.</p></div>`;
     }
 
+    // A state event re-renders the page: keep what the voter typed or picked.
+    const typed = new Map<string, string>();
+    app.querySelectorAll<HTMLInputElement>('input[data-pos]').forEach((i) => typed.set(i.dataset.pos!, i.value));
+    const picked = app.querySelector<HTMLInputElement>('input[name=pick]:checked')?.value ?? null;
     h(body);
+    app.querySelectorAll<HTMLInputElement>('input[data-pos]').forEach((i) => { const v = typed.get(i.dataset.pos!); if (v) i.value = v; });
+    if (picked !== null) { const r = app.querySelector<HTMLInputElement>(`input[name=pick][value="${picked}"]`); if (r) r.checked = true; }
     if (pending?.kind === 'scan' && pending.url) {
       QRCode.toCanvas(document.getElementById('qr') as HTMLCanvasElement, pending.url, { width: 260, margin: 1 }).catch(() => {});
     }
