@@ -1,6 +1,7 @@
-# The site: static pages in site/, plus the voting app (site/app, Vite)
-# built on @isoloir/web from the submodule (its wasm needs Rust). Deployed
-# to GitHub Pages.
+# The site: static pages in site/, plus the voting app (site/app, Vite) built
+# on the vendored @isoloir/web (site/app/vendor, scripts/vendor-web.sh).
+# Deployed to GitHub Pages at <owner>.github.io/<repo>/ (site/agora.config.json
+# names the base path). Needs node only: no private checkout.
 name: site
 on:
   push:
@@ -22,22 +23,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
-          ssh-key: ${{ secrets.ISOLOIR_DEPLOY_KEY }}
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: isoloir
+          submodules: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: cargo install wasm-pack --locked
-      - run: npm ci && npm run wasm:web && npm run build
-        working-directory: isoloir/js
       - run: npm ci && npm run build
         working-directory: site/app
+      - run: python3 site/build-pages.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
