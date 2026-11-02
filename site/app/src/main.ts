@@ -10,7 +10,7 @@ import { zkpassportScan, devScan } from './zkpassport.js';
 const app = document.getElementById('app')!;
 const h = (html: string) => { app.innerHTML = html; };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-const when = (t: number) => new Date(t * 1000).toUTCString().replace(':00 GMT', ' UTC');
+const when = (t: number) => new Date(t * 1000).toUTCString().replace(/ GMT$/, ' UTC');
 
 function mirrorSources(): MirrorSource[] | string {
   const m = config.mirror;
