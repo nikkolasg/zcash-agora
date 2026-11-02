@@ -8,7 +8,7 @@ inclusion proofs and the browser verifies them before it uses them.
 | File | What | Fixed for ever |
 |---|---|---|
 | `ledger.json` | origin, log key, ingest key, channels (three public Nostr relays and a direct HTTPS endpoint), checkpoint period | origin, log key |
-| `registries/1.json` | who may vote: any passport that ZKPassport can verify, not expired. No minimum age, no nationality rule. | domain, scope (the passport identifier derives from them) |
+| `registries/1.json` | who may vote: any passport that ZKPassport can verify, not expired. No minimum age, no nationality rule. The identifier is salted by ZKPassport's threshold OPRF under mainnet key 1 (`oprf_key`, pinned), so the issuing state cannot recompute it. | domain, scope, identifier type (the passport identifier derives from them) |
 | `polls/1.json` | the ZSA question: single choice, two options and a blank, time-locked to drand quicknet, one result at the close, one ballot per voter | everything but `title` and `closes` (which may only move later, SPEC §13) |
 
 `FILLED-AT-GENESIS` fields are the keys made in `../deploy/README.md` §1.

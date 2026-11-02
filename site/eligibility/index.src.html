@@ -17,7 +17,7 @@
 <ul>
   <li>A passport (not an identity card, not a residence permit, for now) with a chip, unexpired on the day you register.</li>
   <li>No minimum age, no nationality rule. The poll asks what people think; it does not ask which people.</li>
-  <li>The registry remembers a number unique to your passport, so the same passport cannot register twice. It does not remember your name, your nationality, your birth date or your photo, because it never receives them.</li>
+  <li>The registry remembers a number unique to your passport, so the same passport cannot register twice. It does not remember your name, your nationality, your birth date or your photo, because it never receives them. The number is salted with a secret held by independent servers, so not even the state that issued the passport can tell whether it registered.</li>
 </ul>
 
 <h2>Why a passport at all</h2>
@@ -27,7 +27,8 @@
 <h2>What it costs</h2>
 <ul>
   <li><strong>Some people cannot take part.</strong> No biometric passport, no NFC phone, a passport whose issuing country does not publish its signing certificates: no vote. We know that is a real exclusion, and that it falls unevenly on the world.</li>
-  <li><strong>The issuing state could learn that you registered.</strong> The unique number is derived from the document data, the site and the registry. A state that keeps the chip data of its passports can compute their numbers and compare them with the public list: it would learn that you registered, never how you voted. ZKPassport also offers a <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted number</a>, computed with a secret spread over independent servers, that no one can recompute from the passport alone; it needs a face match at registration, and we are evaluating it.</li>
+  <li><strong>A face match at registration.</strong> The unique number is <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted</a>: it mixes in the output of a secret split over three independent servers (TACEO, H2O Nodes, Aztec Labs), so the state that issued your passport cannot recompute it from its records and learn that you registered. ZKPassport requires a face match in the app for that mode, so registering takes a selfie, checked on the phone against the passport's photo.</li>
+  <li><strong>You trust the OPRF servers for liveness.</strong> Two of the three must answer for a registration to be made; the ledger pins their public key, so verification needs nothing from them later.</li>
   <li><strong>You trust ZKPassport's app and certificate registry.</strong> The SDK and the verifier are open source and the ledger re-verifies every proof; the registry of state certificates is public and checkable. We still name it as a dependency.</li>
 </ul>
 

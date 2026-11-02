@@ -25,6 +25,8 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
     const day = new Date(session.serverNow());
     const zk = new ZKPassport(e.domain);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // The registry's identifier type: salted under its pinned OPRF key (the app then requires a face match), or the document's own.
+    const salted = !!e.oprf_key;
     let q: any = await zk.request({
       name: brand.name,
       logo: brand.logo,
@@ -32,7 +34,8 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
       scope: e.scope,
       mode: 'compressed',
       validity: req.validity,
-      uniqueIdentifierType: NullifierType.NON_SALTED
+      uniqueIdentifierType: salted ? NullifierType.SALTED : NullifierType.NON_SALTED,
+      ...(salted ? { oprfKeyId: e.oprf_key!.id } : {})
     });
     if (e.min_age) q = q.gte('age', e.min_age);
     if (e.nationality?.length) q = q.in('nationality', e.nationality);
@@ -49,7 +52,8 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
       r.onProofGenerated((p: unknown) => proofs.push(p));
       r.onResult(({ uniqueIdentifier, uniqueIdentifierType, result }: { uniqueIdentifier?: string; uniqueIdentifierType?: NullifierType; result: unknown }) => {
         if (!uniqueIdentifier) return reject(new Error('the app sent no unique identifier'));
-        if (uniqueIdentifierType !== NullifierType.NON_SALTED) return reject(new Error('the identifier is not the document\'s own (non-salted)'));
+        const want = salted ? NullifierType.SALTED : NullifierType.NON_SALTED;
+        if (uniqueIdentifierType !== want) return reject(new Error(`the identifier is not of the registry's type (${salted ? 'salted' : 'non-salted'})`));
         // The ingest verifies the proofs itself (zkverifier/verify.mjs); the "verified" flag of the app is not used.
         resolve({ uid: uniqueIdentifier, proof: { proofs, result }, proofDate: Math.floor(session.serverNow() / 1000) });
       });

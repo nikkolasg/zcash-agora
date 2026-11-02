@@ -91,11 +91,11 @@ forget who that person is. The mechanism below is designed so that:
   publication is deliberate: it is what makes the count recomputable by
   anyone, and it reveals a choice without a weight, a balance, an address or
   a person attached. Section "What is public" states this precisely.
-- The passport's issuing state can compute the registration identifier of
-  its own passports and so learn that a holder registered in the registry;
-  it cannot learn whether or how they voted. This is the price of
-  one-passport-one-registration without a salted identifier, and it is
-  stated to voters before they register.
+- The passport's issuing state cannot tell whether a holder registered:
+  the registration identifier is salted by ZKPassport's threshold OPRF
+  under a key the registry pins, so computing it takes the passport's
+  chip data and two of the three OPRF operators. The price is a face
+  match in the ZKPassport app at registration.
 - The network address of a voter is seen by the public relay the voter
   posts to (and by no one else when relays are used). Voters MAY use Tor or
   a VPN; the system does not depend on it for ballot secrecy, only for
@@ -138,12 +138,17 @@ provider with:
 - `document_type`: `passport`;
 - `require_expiry`: true (the document is not expired on the day of the
   proof);
-- no `min_age` and no `nationality` constraint.
+- no `min_age` and no `nationality` constraint;
+- `oprf_key`: ZKPassport's mainnet OPRF key 1, pinned, so that the
+  identifier is salted.
 
 A voter registers by proving, on their phone with the ZKPassport app
 [^zkpassport], that their passport satisfies the rule, and obtains a unique
 identifier `uid` derived from the document, the registry's domain and its
-scope (not salted). The ingest verifies the proof with the provider's open
+scope, and the output of the threshold OPRF (2 of 3 nodes) under the
+pinned key on a blinded query. The identifier is the same for the same
+passport and registry, and the issuing state cannot compute it from its
+records. The ingest verifies the proof with the provider's open
 verifier, refuses a `uid` already registered, and logs a leaf
 `ID = H(T_id, registry, s)` bound to a voter secret `s` known only to the
 voter's devices. The proof is bound to a throwaway registration key that
@@ -245,11 +250,11 @@ accounts, not people. Forum accounts, GitHub accounts, e-mail addresses and
 wallet addresses are free to create in any number. A passport is a credential
 that a state issues once per person and that a phone can verify offline,
 with a zero-knowledge proof that discloses nothing but the fact the rule
-demands. It is one Sybil-resistance mechanism among several; it excludes
-people without a biometric passport or an NFC phone, and it lets the issuing
-state learn participation. The authors judge the status quo, a count of
-capital alone, worse than a count of passport holders, and the registry
-format accepts other providers whenever one is ready.
+demands. It is one proof of personhood among several; it excludes people
+without a biometric passport or an NFC phone, and the salted identifier
+takes a face match in the app. Humans matter more than coins: the registry
+counts people, and its format accepts other providers whenever one is
+ready.
 
 **Why time-lock rather than a threshold committee.** A committee that holds
 decryption shares is a trust assumption with a Zcash-shaped incentive: its
@@ -294,7 +299,10 @@ anyone. They propose that the ecosystem measure both and look.
   provider's open verifier against the registry's rule and the certificate
   registry. A compromise of ZKPassport's certificate registry could admit
   forged passports; the audit re-verifies every registration and a pinned
-  certificate root is listed among isoloir's extensions.
+  certificate root is listed among isoloir's extensions. The OPRF key is
+  pinned in the registry, so a verifier needs nothing from the OPRF nodes;
+  two of the three nodes must be reachable to register, and two colluding
+  with an issuing state could recompute that state's identifiers.
 - **drand.** A threshold of League nodes could sign a round early and open
   the ballots early; what they would learn is public at the round. They
   cannot alter a ballot or the count.

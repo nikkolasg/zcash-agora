@@ -28,12 +28,13 @@ The protocol is [isoloir](https://github.com/tartuffeme/isoloir)
 Any biometric passport that [ZKPassport](https://zkpassport.id) can
 verify, unexpired, of any country, at any age. The proof is made on the
 phone and discloses nothing but a number unique to the document, so the
-same passport registers once. This is **one** Sybil-resistance mechanism:
-it excludes people without such a passport or an NFC phone, and the
-issuing state could learn that one of its passports registered (never
-how it voted). We judge the status quo, a count of capital alone, worse
-than a count of passport holders, and the registry format accepts other
-providers whenever a better proof of personhood exists.
+same passport registers once. The number is salted by ZKPassport's
+threshold OPRF under a pinned key, so the issuing state cannot recompute
+it from its records. This is **one** proof of personhood: it excludes
+people without such a passport or an NFC phone, and the salted number
+needs a face match in the app. Humans matter more than coins; the
+registry format accepts other providers whenever a better proof of
+personhood exists.
 
 ## What is public, and when
 
