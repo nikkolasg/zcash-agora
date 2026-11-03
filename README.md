@@ -11,6 +11,10 @@ one), appended to a public log timestamped in Bitcoin, and recounted by
 anyone. It is a companion to coinholder polling, not a replacement:
 both counts are shown side by side, and neither binds anyone.
 
+- **Vote and read the results:** <https://nikkolasg.github.io/zcash-agora/>
+- **The public log:** [nikkolasg/zcash-agora-mirror](https://github.com/nikkolasg/zcash-agora-mirror), every registration, ballot, checkpoint and tally, readable and recountable by anyone
+- **First poll:** Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol? Opens 16 November 2026 12:00 UTC, closes 14 December 2026 12:00 UTC.
+
 The protocol is [isoloir](https://github.com/lanterne-labs/isoloir)
 (pinned as a submodule). This repository holds what Zcash Agora adds:
 
@@ -45,7 +49,20 @@ personhood exists.
 | a ballot's content | nobody, not the operator | public, under an unlinkable per-poll pseudonym |
 | the count | nobody | public, recomputable by anyone from the log and the drand round |
 
-## Run it locally
+## Try it, passport-free
+
+```sh
+scripts/try.sh        # http://localhost:5173/ ; CLOSE_IN=300 for a five-minute poll
+```
+
+The whole ledger runs locally with isoloir's *dev* registry (type any
+identifier instead of scanning a passport); three command-line voters
+have already voted; you register and vote from the real page; at the
+close the ballots open with the real drand beacon and the result shows.
+A dev registry is refused by any ingest not started with `--dev`, and the
+production registry is ZKPassport: test mode cannot leak into production.
+
+## Develop
 
 Needs Rust, Postgres on localhost, node 22, `nargo` 1.0.0-beta.22
 (`noirup -v 1.0.0-beta.22`) and `bb` 5.0.0 (`npm i @aztec/bb.js@5.0.0`;
@@ -73,24 +90,10 @@ type any identifier instead of scanning).
 - Site: written. The voting page is built on `@isoloir/web`; the ZKPassport
   adapter follows the SDK's documented flow and must be exercised with a
   real passport before the poll opens.
-- Site: GitHub Pages at `nikkolasg.github.io/zcash-agora`. Servers: Railway
-  (project `mirror`, services `agora-ingest`, `agora-authority`, `Postgres`).
-  The mirror and isoloir live under `lanterne-labs`; this repository under
-  `nikkolasg`.
+- Hosting: the site on GitHub Pages, the log on the mirror repository, the
+  ingest and the authority on a small Railway project with its own Postgres.
+  The authority is not privileged: anyone can run one from the public log.
 
 ## Licence
 
 Code MIT or Apache-2.0; texts CC-BY-4.0. See [LICENSE](LICENSE).
-
-## Try it, passport-free
-
-```sh
-scripts/try.sh        # http://localhost:5173/ ; CLOSE_IN=300 for a five-minute poll
-```
-
-The whole ledger runs locally with isoloir's *dev* registry (type any
-identifier instead of scanning a passport); three command-line voters
-have already voted; you register and vote from the real page; at the
-close the ballots open with the real drand beacon and the result shows.
-A dev registry is refused by any ingest not started with `--dev`, and the
-production registry is ZKPassport: test mode cannot leak into production.
