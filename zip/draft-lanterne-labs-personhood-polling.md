@@ -333,7 +333,7 @@ anyone. They propose that the ecosystem measure both and look.
 
 [^isoloir]: [isoloir: anonymous polls with passport eligibility](https://github.com/lanterne-labs/isoloir)
 
-[^agora]: [Zcash Agora](https://github.com/lanterne-labs/zcash-agora)
+[^agora]: [Zcash Agora](https://github.com/nikkolasg/zcash-agora)
 
 [^tlock]: [tlock: Timelock Encryption/Decryption Made Practical](https://github.com/drand/tlock), and [drand documentation: Timelock encryption](https://docs.drand.love/docs/timelock-encryption/)
 

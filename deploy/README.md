@@ -14,7 +14,7 @@ Three roles, three places:
 | operator | any machine with access to the ingest's database | submits the setups in `../ledger` |
 
 Decisions that cannot be changed after genesis: the **origin**
-(`lanterne-labs.github.io/zcash-agora`), the **log key**, and for each registry its
+(`nikkolasg.github.io/zcash-agora`), the **log key**, and for each registry its
 **domain and scope** (the passport identifier is derived from them: a
 different scope is a different set of identifiers, and people could
 register twice). Choose the domain before step 1.
@@ -35,7 +35,7 @@ On the ingest host, with the isoloir binary (`../.github/workflows/release.yml`
 builds one per platform; or `cargo build --release -p isoloir` in `../isoloir`):
 
 ```sh
-isoloir keygen log --origin lanterne-labs.github.io/zcash-agora   # ISOLOIR_LOG_SEED (secret), log_key (public)
+isoloir keygen log --origin nikkolasg.github.io/zcash-agora   # ISOLOIR_LOG_SEED (secret), log_key (public)
 isoloir keygen nostr                                  # ISOLOIR_NOSTR_KEY (secret), the ingest's pubkey
 isoloir keygen nostr                                  # a second one for the authority
 ```
@@ -125,11 +125,9 @@ quietly (every message is acknowledged with a signed receipt, the relays
 keep copies, and the audit compares). See isoloir's
 [DESIGN.md](../isoloir/DESIGN.md) for the full map.
 
-## 8. CI secrets
+## 8. CI
 
-Both workflows check out the `isoloir` submodule, which is a private
-repository: add a read-only deploy key of `lanterne-labs/isoloir` as the
-repository secret `ISOLOIR_DEPLOY_KEY` (the private half; the public half
-on isoloir's deploy keys). `release.yml` pushes the image to
-`ghcr.io/<org>/isoloir` with the workflow's own token; `site.yml` needs
+Both workflows check out the `isoloir` submodule over https (a public
+repository, no secret). `release.yml` pushes the image to
+`ghcr.io/<owner>/isoloir` with the workflow's own token; `site.yml` needs
 GitHub Pages enabled with "GitHub Actions" as the source.

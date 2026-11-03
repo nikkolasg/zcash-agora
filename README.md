@@ -52,7 +52,7 @@ Needs Rust, Postgres on localhost, node 22, `nargo` 1.0.0-beta.22
 `ISOLOIR_BB` points at `build/<arch>-<os>/bb`).
 
 ```sh
-git clone --recursive git@github.com:lanterne-labs/zcash-agora.git && cd zcash-agora
+git clone --recursive https://github.com/nikkolasg/zcash-agora.git && cd zcash-agora
 (cd isoloir && cargo build --release -p isoloir)
 ISOLOIR_BB=… scripts/trial.sh          # relay, ingest, registry, a 90-second tlock poll, 3 voters, the drand opening, the audit
 ```
@@ -73,10 +73,10 @@ type any identifier instead of scanning).
 - Site: written. The voting page is built on `@isoloir/web`; the ZKPassport
   adapter follows the SDK's documented flow and must be exercised with a
   real passport before the poll opens.
-- Site: GitHub Pages at `<org>.github.io/zcash-agora`. Servers: Railway
+- Site: GitHub Pages at `nikkolasg.github.io/zcash-agora`. Servers: Railway
   (project `mirror`, services `agora-ingest`, `agora-authority`, `Postgres`).
-  The org rename to `lanterne-labs` is pending; the ledger origin already
-  names it.
+  The mirror and isoloir live under `lanterne-labs`; this repository under
+  `nikkolasg`.
 
 ## Licence
 
