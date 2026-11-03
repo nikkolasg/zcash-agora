@@ -255,6 +255,9 @@ export function zkPassportVerifier(sdk, rpcUrl) {
                 return null;
             b = b.gte('expiry_date', date);
         }
+        // A salted identifier comes with the strict face match (verify.mjs).
+        if (e.oprf_key)
+            b = b.facematch('strict');
         b = b.bind('custom_data', req.custom_data);
         const { query } = b.done();
         // The one identifier type the registry names (verify.mjs).

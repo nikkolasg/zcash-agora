@@ -37,6 +37,8 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
       uniqueIdentifierType: salted ? NullifierType.SALTED : NullifierType.NON_SALTED,
       ...(salted ? { oprfKeyId: e.oprf_key!.id } : {})
     });
+    // The SDK gives no salted identifier without the strict face match: the app matches the holder's face to the chip's photo, on the phone.
+    if (salted) q = q.facematch('strict');
     if (e.min_age) q = q.gte('age', e.min_age);
     if (e.nationality?.length) q = q.in('nationality', e.nationality);
     if (e.document_type) q = q.eq('document_type', e.document_type);
