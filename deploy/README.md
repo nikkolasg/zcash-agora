@@ -47,7 +47,7 @@ never reads it from the mirror.
 
 ## 2. The mirror repository
 
-Create an empty **public** repository (`lanterne-labs/zcash-agora-mirror`),
+Create an empty **public** repository (`nikkolasg/zcash-agora-mirror`),
 add a deploy key with write access, and put its private half in
 `ISOLOIR_MIRROR_SSH_KEY`. Browsers read it through jsDelivr by commit
 (`../site/agora.config.json`, `mirror.repo`). The ingest clones it at
@@ -100,7 +100,7 @@ every ballot, and posts the tally. Any third party can do the same, from
 the public mirror, with circuits they built themselves:
 
 ```sh
-isoloir authority --mirror https://cdn.jsdelivr.net/gh/lanterne-labs/zcash-agora-mirror@main \
+isoloir authority --mirror https://cdn.jsdelivr.net/gh/nikkolasg/zcash-agora-mirror@main \
   --circuits ./my-circuits --zkverifier ../isoloir/zkverifier/verify.mjs \
   --log-key "<log_key>" --nostr-key <a Nostr key> --drand https://api.drand.sh --once
 ```

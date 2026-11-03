@@ -3,7 +3,7 @@
   "origin": "nikkolasg.github.io/zcash-agora",
   "verifierKey": "nikkolasg.github.io/zcash-agora+09d174f1+ARIZWzyeGSiq/4xtPS/MBVLYB9C8FeFPJDXs6rePxTch",
   "mirror": {
-    "repo": "lanterne-labs/zcash-agora-mirror",
+    "repo": "nikkolasg/zcash-agora-mirror",
     "branch": "main"
   },
   "registry": 1,
