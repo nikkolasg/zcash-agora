@@ -1,6 +1,6 @@
     ZIP: unassigned
     Title: Personhood Polling: counting people, not coins, in Zcash ecosystem polls
-    Owners: Lanterne Labs <lanternelabs@protonmail.com>
+    Owners: Lanterne Labs <lanternelabs@proton.me>
     Credits: the isoloir protocol and its contributors
              the drand League of Entropy
              ZKPassport
