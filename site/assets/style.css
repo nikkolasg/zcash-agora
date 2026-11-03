@@ -113,3 +113,30 @@ footer.bottom a { color: inherit; }
 .wrap.centered ul { display: inline-block; text-align: left; margin-left: auto; margin-right: auto; }
 .wrap.centered td ul { display: block; text-align: center; padding-left: 0; list-style-position: inside; }
 .btn.danger { background: transparent; border: 1px solid #b3261e; color: #b3261e; }
+
+/* The comparison page: two sides, six questions. */
+.cmp h1, .cmp h2, .cmp > .lede { text-align: center; }
+.cmp > .lede { margin-left: auto; margin-right: auto; }
+.cmp .two { gap: 1.2rem; align-items: start; }
+.side { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.2rem; background: var(--bg-2); }
+.side h3, .side h4 { margin: 0 0 .6rem; font-size: .95rem; text-transform: uppercase; letter-spacing: .06em; }
+.side.coins h3, .side.coins h4 { color: var(--coins); } .side.people h3, .side.people h4 { color: var(--people); }
+.side p:last-child, .side ul:last-child { margin-bottom: 0; }
+.side ul { padding-left: 1.1rem; }
+.who { font-size: .95rem; margin-top: .8rem; }
+.faq { margin: 2.2rem 0; }
+.faq h3 { font-size: 1.25rem; text-align: center; margin: 0 0 .8rem; }
+.cmp a.q { color: inherit; text-decoration-style: dotted; }
+.cmp a.q:hover { color: var(--accent); }
+.anim.actors { max-width: none; width: 100%; margin: 0 auto .4rem; }
+.anim.fig { max-width: 34rem; margin: 1rem auto 0; }
+.anim .vals rect { fill: var(--bg); stroke: var(--ink-2); stroke-width: 1; }
+.anim .vals rect.bad { fill: var(--coins); stroke: var(--coins); opacity: .85; }
+.anim .chain rect { fill: var(--code-bg); stroke: var(--line); }
+.anim .ring .orbit { fill: none; stroke: var(--line); stroke-dasharray: 2 3; }
+.anim .ring > circle:not(.orbit) { fill: var(--people); }
+.anim .pick line { stroke: var(--coins); stroke-width: 1; opacity: .7; }
+.two.single { grid-template-columns: 1fr; }
+.side.wide .pair { display: grid; grid-template-columns: 3fr 2fr; gap: 1.2rem; align-items: center; }
+@media (max-width: 760px) { .side.wide .pair { grid-template-columns: 1fr; } }
+.anim .envl rect { fill: var(--accent); } .anim .envl path { fill: none; stroke: #1c1a16; stroke-width: 1.4; }

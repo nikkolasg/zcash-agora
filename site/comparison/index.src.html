@@ -6,84 +6,260 @@
 <meta name="referrer" content="no-referrer">
 <base href="{{base}}">
 <title>Compared with coinholder voting</title>
-<meta name="description" content="A property-by-property comparison of Zcash Agora with the shielded coinholder voting stack, from the public draft ZIPs and code.">
+<meta name="description" content="Who is involved in each system, and six questions answered for both: Zcash Agora next to the shielded coinholder voting stack, from the public draft ZIPs and code.">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/anim.css">
 </head>
 <body>
 {{header}}
-<main><div class="wrap wide centered">
+<main><div class="wrap wide cmp">
 <h1>Compared with the coinholder stack</h1>
-<p class="lede">The two systems answer different questions. They are also both voting systems for the same ecosystem, so they can be compared property by property. Every claim about the coinholder stack links to the public sentence it rests on, in the draft ZIPs and code that have been public since March 2026. Where we derive something from several sentences, we say so.</p>
+<p class="lede">The two systems answer different questions: what the coins want, and what the people want. Both are voting systems for the same ecosystem, so the same questions can be put to each. Every claim about the coinholder stack links to the sentence it rests on in the <a href="https://github.com/valargroup/zips">draft ZIPs</a> and the <a href="https://github.com/valargroup/token-holder-voting-config">published configuration</a>; where we derive something from several sentences, we say so.</p>
 
-<h2>The table</h2>
-<p class="muted">"Weight" means how many ZEC the voter holds at the snapshot: in the coinholder stack a ballot counts for that amount.</p>
-<table>
-<tr><th style="width:17%">Property</th><th style="width:41%">Coinholder voting (Valar Group stack)</th><th style="width:42%">Zcash Agora</th></tr>
+<h2>Who is involved</h2>
+<div class="two single">
+<div class="side coins wide">
+<h3>Coinholder voting</h3>
+<div class="pair"><svg viewBox="0 0 380 230" class="anim actors" role="img" aria-label="The coinholder stack: a wallet, a poll runner, fourteen validators that are also the submission servers, three PIR servers, and a vote chain">
+  <!-- poll runner -->
+  <rect x="130" y="8" width="100" height="30" rx="5" class="frame2"/>
+  <text x="180" y="21" text-anchor="middle" class="label">The poll runner</text>
+  <text x="180" y="31" text-anchor="middle" class="tiny">one party: snapshot, genesis, round config</text>
+  <!-- wallet -->
+  <rect x="34" y="78" width="40" height="66" rx="7" class="frame2"/><rect x="40" y="87" width="28" height="44" rx="3" class="frame"/>
+  <text x="54" y="160" text-anchor="middle" class="label">Your wallet</text>
+  <text x="54" y="171" text-anchor="middle" class="tiny">Orchard ZEC</text>
+  <text x="54" y="181" text-anchor="middle" class="tiny">at the snapshot</text>
+  <!-- validators grid -->
+  <g class="vals">
+    <rect x="120" y="60" width="18" height="14" rx="2"/><rect x="142" y="60" width="18" height="14" rx="2"/><rect x="164" y="60" width="18" height="14" rx="2"/><rect x="186" y="60" width="18" height="14" rx="2"/><rect x="208" y="60" width="18" height="14" rx="2"/><rect x="230" y="60" width="18" height="14" rx="2"/><rect x="252" y="60" width="18" height="14" rx="2"/>
+    <rect x="120" y="78" width="18" height="14" rx="2"/><rect x="142" y="78" width="18" height="14" rx="2"/><rect x="164" y="78" width="18" height="14" rx="2"/><rect x="186" y="78" width="18" height="14" rx="2"/><rect x="208" y="78" width="18" height="14" rx="2"/><rect x="230" y="78" width="18" height="14" rx="2"/><rect x="252" y="78" width="18" height="14" rx="2"/>
+  </g>
+  <text x="195" y="106" text-anchor="middle" class="label">14 validators = the election authority</text>
+  <text x="195" y="117" text-anchor="middle" class="tiny">Zcash organizations: Valar, ZF, Shielded Labs, Zodl, Keplr…</text>
+  <text x="195" y="128" text-anchor="middle" class="tiny">each holds a key share, runs a submission server, sees your IP</text>
+  <!-- PIR -->
+  <rect x="120" y="150" width="150" height="26" rx="4" class="frame2"/>
+  <text x="195" y="161" text-anchor="middle" class="label">3 PIR servers</text>
+  <text x="195" y="171" text-anchor="middle" class="tiny">answer "is my note unspent?", see your IP</text>
+  <!-- chain -->
+  <g class="chain"><rect x="306" y="64" width="46" height="16" rx="3"/><rect x="306" y="84" width="46" height="16" rx="3"/><rect x="306" y="104" width="46" height="16" rx="3"/></g>
+  <text x="329" y="134" text-anchor="middle" class="label">The vote chain</text>
+  <text x="329" y="145" text-anchor="middle" class="tiny">public: choices,</text>
+  <text x="329" y="155" text-anchor="middle" class="tiny">encrypted amounts,</text>
+  <text x="329" y="165" text-anchor="middle" class="tiny">nullifiers, tally</text>
+  <!-- wires -->
+  <line x1="80" y1="100" x2="114" y2="86" class="wire"/>
+  <text x="92" y="56" text-anchor="middle" class="tiny">16 shares,</text>
+  <text x="92" y="66" text-anchor="middle" class="tiny">each to 7 of 14</text>
+  <line x1="80" y1="130" x2="114" y2="160" class="wire"/>
+  <line x1="276" y1="82" x2="302" y2="82" class="wire"/>
+  <line x1="180" y1="40" x2="180" y2="56" class="wire"/>
+  <line x1="232" y1="24" x2="326" y2="60" class="wire"/>
+  <text x="318" y="30" text-anchor="middle" class="tiny">one signature</text>
+  <text x="200" y="212" text-anchor="middle" class="warnt">key holders, servers and IP observers: the same 14</text>
+</svg>
+<ul class="who">
+  <li><strong>Your wallet</strong> proves it held Orchard ZEC at a snapshot block and votes with a fresh key.</li>
+  <li><strong>The poll runner</strong>, one party, picks the snapshot, writes the chain's genesis and signs the round configuration wallets trust.</li>
+  <li><strong>14 validators</strong> run the vote chain, hold the shares of the key that opens the amounts, and each runs a submission server that receives your shares.</li>
+  <li><strong>3 PIR servers</strong> answer wallets that ask whether their notes are still unspent.</li>
+  <li><strong>The vote chain</strong> is a public ledger of their own.</li>
+</ul></div>
+</div>
+<div class="side people wide">
+<h3>Zcash Agora</h3>
+<div class="pair"><svg viewBox="0 0 360 230" class="anim actors" role="img" aria-label="Zcash Agora: your phone and browser, public Nostr relays, one ledger server, a public log on GitHub, and two networks read only: drand and Bitcoin">
+  <!-- drand + bitcoin -->
+  <g class="clock" transform="translate(250 22)"><circle r="12"/><line class="hand" x1="0" y1="0" x2="0" y2="-8"/><line class="hand" x1="0" y1="0" x2="6" y2="3"/></g>
+  <text x="250" y="48" text-anchor="middle" class="label">drand</text>
+  <text x="250" y="58" text-anchor="middle" class="tiny">the clock · not Zcash · read only</text>
+  <text x="322" y="26" text-anchor="middle" class="label">Bitcoin</text>
+  <text x="322" y="36" text-anchor="middle" class="tiny">timestamps</text>
+  <text x="322" y="46" text-anchor="middle" class="tiny">read only</text>
+  <!-- phone -->
+  <rect x="32" y="78" width="40" height="66" rx="7" class="frame2"/><rect x="38" y="87" width="28" height="44" rx="3" class="frame"/>
+  <text x="52" y="160" text-anchor="middle" class="label">Your phone</text>
+  <text x="52" y="171" text-anchor="middle" class="tiny">passport stays on it;</text>
+  <text x="52" y="181" text-anchor="middle" class="tiny">browser proves &amp; seals</text>
+  <!-- relays -->
+  <g class="relay" transform="translate(112 86)"><path d="M0 10v26M-7 4a10 10 0 0 1 14 0M-12 -1a17 17 0 0 1 24 0"/><circle cx="0" cy="10" r="2.5"/></g>
+  <g class="relay" transform="translate(136 76)"><path d="M0 10v26M-7 4a10 10 0 0 1 14 0M-12 -1a17 17 0 0 1 24 0"/><circle cx="0" cy="10" r="2.5"/></g>
+  <g class="relay" transform="translate(160 86)"><path d="M0 10v26M-7 4a10 10 0 0 1 14 0M-12 -1a17 17 0 0 1 24 0"/><circle cx="0" cy="10" r="2.5"/></g>
+  <text x="136" y="140" text-anchor="middle" class="label">3 public Nostr relays</text>
+  <text x="136" y="151" text-anchor="middle" class="tiny">not ours · see your IP</text>
+  <text x="136" y="161" text-anchor="middle" class="tiny">and a sealed envelope</text>
+  <!-- ledger -->
+  <g class="server"><rect x="206" y="80" width="46" height="14" rx="3" class="frame2"/><rect x="206" y="98" width="46" height="14" rx="3" class="frame2"/><rect x="206" y="116" width="46" height="14" rx="3" class="frame2"/></g>
+  <text x="229" y="146" text-anchor="middle" class="label">The ledger</text>
+  <text x="229" y="157" text-anchor="middle" class="tiny">one server, ours</text>
+  <text x="229" y="167" text-anchor="middle" class="tiny">verifies, signs receipts</text>
+  <text x="229" y="177" text-anchor="middle" class="tiny">no key, no IP</text>
+  <!-- mirror -->
+  <rect x="290" y="80" width="56" height="50" rx="5" class="frame2"/>
+  <text x="318" y="100" text-anchor="middle" class="label">Public log</text>
+  <text x="318" y="111" text-anchor="middle" class="tiny">on GitHub</text>
+  <text x="318" y="121" text-anchor="middle" class="tiny">everything, forever</text>
+  <text x="318" y="146" text-anchor="middle" class="label">Anyone recounts</text>
+  <text x="318" y="157" text-anchor="middle" class="tiny">in the browser</text>
+  <!-- wires -->
+  <line x1="78" y1="104" x2="96" y2="104" class="wire"/>
+  <line x1="176" y1="104" x2="200" y2="104" class="wire"/>
+  <text x="188" y="96" text-anchor="middle" class="tiny">reads</text>
+  <line x1="256" y1="104" x2="286" y2="104" class="wire"/>
+  <line x1="250" y1="62" x2="236" y2="76" class="wire"/>
+  <line x1="316" y1="50" x2="316" y2="76" class="wire"/>
+  <text x="195" y="212" text-anchor="middle" class="good">nobody of ours holds a key or sees an address</text>
+</svg>
+<ul class="who">
+  <li><strong>Your phone</strong> runs the ZKPassport app: the passport is read and proven there, with a face match. Your browser proves you are on the list and seals your ballot to the closing time.</li>
+  <li><strong>3 public Nostr relays</strong>, run by others, carry your messages. They see your IP, as any relay does.</li>
+  <li><strong>The ledger</strong>, one server of ours, reads the relays, checks every proof, signs a receipt and appends to the log. It never talks to a voter.</li>
+  <li><strong>The public log</strong>, a git repository, holds every registration, ballot, refusal and tally.</li>
+  <li><strong>drand</strong> and <strong>Bitcoin</strong> are read, never written to: one is the clock that opens the ballots, the other timestamps the log.</li>
+</ul></div>
+</div>
+</div>
 
-<tr><td>What is counted</td>
-<td>ZEC in the Orchard pool at a snapshot, <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#ballot-scaling">one ballot per 0.125 ZEC</a>. Sapling and transparent funds <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#eligibility">count for nothing</a>.</td>
-<td>Persons: one valid passport, one vote. Holdings are never asked.</td></tr>
+<h2>Six questions, both answers</h2>
 
-<tr><td>Who can read a ballot before the close</td>
-<td>The ballot is encrypted to a key shared among the validators, <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">any ⌈n/2⌉+1 of whom can reconstruct it</a>. The <a href="https://github.com/valargroup/token-holder-voting-config/blob/main/prod/dynamic-voting-config.json">production list</a> has 14 (Valar Group, Zcash Foundation, Shielded Labs, Zodl, Keplr, Zcash Labs and others), so 8 of them.
-<ul><li><strong>If the threshold holds:</strong> nobody reads a ballot before the close.</li><li><strong>If 8 of the 14 cooperate</strong>, or are compromised, now or later: every ballot, with the exact amount of ZEC its voter holds.</li></ul></td>
-<td class="ok">Ballots are time-locked to a <a href="https://docs.drand.love/docs/timelock-encryption/">drand</a> round whose signature does not exist before the closing time. The key is drand's, produced by the <a href="https://drand.love/partners/">League of Entropy</a> (Cloudflare, EPFL, Kudelski, Protocol Labs, the Ethereum Foundation and others), none of them a Zcash party.
-<ul><li><strong>If drand's threshold holds:</strong> nobody reads a ballot before the close, including us.</li><li><strong>If a threshold of drand nodes colluded:</strong> they could open the ballots early and learn exactly what everyone learns at the close: a choice under a pseudonym. No weight, no identity, and nothing they can change.</li></ul></td></tr>
+<section class="faq">
+<h3>1. Who can read my ballot before the close?</h3>
+<div class="two">
+<div class="side coins"><h4>Coinholder voting</h4>
+<p>Your <em>choice</em> is never sealed: <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">"vote decisions are public inputs … and appear in every share reveal transaction on-chain"</a>. Every submission server that handles a share of yours sees the decision.</p>
+<p>Your <em>amount</em> is encrypted to a key shared among the validators, <a class="q" href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">any ⌈n/2⌉+1 of whom can reconstruct it</a>. With <a class="q" href="https://github.com/valargroup/token-holder-voting-config/blob/main/prod/dynamic-voting-config.json">14 in production</a>, that is 8 Zcash organizations.</p>
+</div>
+<div class="side people"><h4>Zcash Agora</h4>
+<p>Nobody, including us. The ballot is encrypted to a future round of the <a href="https://docs.drand.love/docs/timelock-encryption/">drand</a> beacon; the key is the round's signature, which does not exist before the closing time. It is produced by the <a href="https://drand.love/partners/">League of Entropy</a> (Cloudflare, EPFL, Kudelski, Protocol Labs and others), none of them a Zcash party, none aware of this poll.</p>
+<p>At the close the round is public for everyone at once, and every ballot opens under its pseudonym.</p>
+</div>
+</div>
+<svg viewBox="0 0 360 120" class="anim fig" role="img" aria-label="Left: fourteen boxes, eight filled, labeled Zcash organizations. Right: a ring of drand nodes around a clock, labeled not Zcash parties, round public at the close">
+  <g class="vals"><rect x="22" y="30" width="18" height="14" rx="2" class="bad"/><rect x="44" y="30" width="18" height="14" rx="2" class="bad"/><rect x="66" y="30" width="18" height="14" rx="2" class="bad"/><rect x="88" y="30" width="18" height="14" rx="2" class="bad"/><rect x="110" y="30" width="18" height="14" rx="2" class="bad"/><rect x="132" y="30" width="18" height="14" rx="2" class="bad"/><rect x="154" y="30" width="18" height="14" rx="2" class="bad"/>
+  <rect x="22" y="48" width="18" height="14" rx="2" class="bad"/><rect x="44" y="48" width="18" height="14" rx="2"/><rect x="66" y="48" width="18" height="14" rx="2"/><rect x="88" y="48" width="18" height="14" rx="2"/><rect x="110" y="48" width="18" height="14" rx="2"/><rect x="132" y="48" width="18" height="14" rx="2"/><rect x="154" y="48" width="18" height="14" rx="2"/></g>
+  <text x="97" y="18" text-anchor="middle" class="label">The key: 8 of 14 Zcash organizations</text>
+  <text x="97" y="80" text-anchor="middle" class="tiny">each with a stake in the outcome</text>
+  <text x="97" y="92" text-anchor="middle" class="tiny">8 together open every amount, any time, now or later</text>
+  <g class="ring" transform="translate(270 48)">
+    <circle r="26" class="orbit"/>
+    <circle cx="0" cy="-26" r="4"/><circle cx="22.5" cy="-13" r="4"/><circle cx="22.5" cy="13" r="4"/><circle cx="0" cy="26" r="4"/><circle cx="-22.5" cy="13" r="4"/><circle cx="-22.5" cy="-13" r="4"/>
+    <g class="clock"><circle r="11"/><line class="hand" x1="0" y1="0" x2="0" y2="-7"/><line class="hand" x1="0" y1="0" x2="5" y2="3"/></g>
+  </g>
+  <text x="270" y="18" text-anchor="middle" class="label">The key: a drand round</text>
+  <text x="270" y="92" text-anchor="middle" class="tiny">made by parties outside Zcash, at the closing time,</text>
+  <text x="270" y="104" text-anchor="middle" class="tiny">public for everyone the moment it exists</text>
+</svg>
+</section>
 
-<tr><td>Is the choice hidden?</td>
-<td class="bad">No. <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">"Vote decisions are public inputs … and appear in every share reveal transaction on-chain"</a>; the submission servers see the decision of every share they handle. What is encrypted is the weight.</td>
-<td class="ok">Yes, until the close: the choice is inside the time-locked blob. After the close it is public under a pseudonym.</td></tr>
+<section class="faq">
+<h3>2. If that threshold is broken, what do they learn about my choice?</h3>
+<div class="two">
+<div class="side coins"><h4>Coinholder voting</h4>
+<p>Nothing new: the choice was public from the start, on the chain and at the servers. No threshold protects it; the ZIP weighs encrypting it and <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-not-encrypt-decisions">declines on circuit cost</a>.</p>
+</div>
+<div class="side people"><h4>Zcash Agora</h4>
+<p>They could open the ballots <em>early</em>, and learn what everyone learns at the close: a choice under a pseudonym that links to no passport and no address. Nothing they can alter, nothing to sell. The worst case of the threshold is a question of timing.</p>
+</div>
+</div>
+</section>
 
-<tr><td>Is the weight hidden?</td>
-<td>The weight is split into 16 encrypted shares, each <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#server-selection">sent to half of the servers</a>, every share carrying <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">the same list of commitments</a> for the 16.
-<ul><li><strong>If the threshold holds:</strong> a single server learns one share, as the <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#per-server-share-isolation">spec says</a>.</li><li><strong>If 8 of the 14 cooperate:</strong> since every share sits on 7 servers and only 6 are outside the group, they hold every share of every ballot, group them by the shared list, and decrypt each voter's exact ZEC balance. (Our derivation from the two rules above.)</li></ul></td>
-<td class="ok">There is no weight. Nothing about a balance exists in the system.</td></tr>
+<section class="faq">
+<h3>3. If that threshold is broken, what do they learn about my coin holdings?</h3>
+<div class="two">
+<div class="side coins"><h4>Coinholder voting</h4>
+<p>Your exact balance. Your weight is split into 16 encrypted shares; each share is sent to <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#server-selection">7 of the 14 servers</a>, and the servers are <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-servers-are-co-located-with-validators">the validators themselves</a>. Any 8 of them therefore hold every share of every voter, see <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#per-server-share-isolation">the same list of 16 commitments</a> on each, group them, and decrypt. (Our derivation from these three rules; the ZIP's own answer is that <a class="q" href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">splitting keeps the EA from linking shares</a>, which holds for the EA alone, not for the EA that also runs the servers.)</p>
+<p>The balance of a shielded user is the one number the Zcash protocol exists to hide.</p>
+</div>
+<div class="side people"><h4>Zcash Agora</h4>
+<p>Nothing. There is no amount anywhere in the system: your holdings are never asked, proven or encrypted. A ballot is a choice and nothing else.</p>
+</div>
+</div>
+<svg viewBox="0 0 360 110" class="anim fig" role="img" aria-label="One share goes to seven of fourteen servers; eight colluding servers always include one of the seven">
+  <g class="vals">
+    <rect x="46" y="44" width="18" height="14" rx="2" class="bad"/><rect x="68" y="44" width="18" height="14" rx="2" class="bad"/><rect x="90" y="44" width="18" height="14" rx="2" class="bad"/><rect x="112" y="44" width="18" height="14" rx="2" class="bad"/><rect x="134" y="44" width="18" height="14" rx="2" class="bad"/><rect x="156" y="44" width="18" height="14" rx="2" class="bad"/><rect x="178" y="44" width="18" height="14" rx="2" class="bad"/><rect x="200" y="44" width="18" height="14" rx="2" class="bad"/>
+    <rect x="222" y="44" width="18" height="14" rx="2"/><rect x="244" y="44" width="18" height="14" rx="2"/><rect x="266" y="44" width="18" height="14" rx="2"/><rect x="288" y="44" width="18" height="14" rx="2"/><rect x="310" y="44" width="18" height="14" rx="2"/><rect x="332" y="44" width="18" height="14" rx="2"/>
+  </g>
+  <g class="envl" transform="translate(12 8)"><rect width="22" height="15" rx="2.5"/><path d="M0 0l11 8 11-8"/></g>
+  <text x="46" y="20" class="tiny">one share of yours</text>
+  <g class="pick"><line x1="34" y1="22" x2="165" y2="42"/><line x1="34" y1="22" x2="187" y2="42"/><line x1="34" y1="22" x2="209" y2="42"/><line x1="34" y1="22" x2="231" y2="42"/><line x1="34" y1="22" x2="253" y2="42"/><line x1="34" y1="22" x2="297" y2="42"/><line x1="34" y1="22" x2="341" y2="42"/></g>
+  <text x="132" y="78" text-anchor="middle" class="warnt">8 colluding</text>
+  <text x="286" y="78" text-anchor="middle" class="tiny">6 honest</text>
+  <text x="180" y="98" text-anchor="middle" class="tiny">every share lands on 7 servers; only 6 are outside the group, so the group always holds it</text>
+</svg>
+</section>
 
-<tr><td>Can a ballot be linked to who cast it?</td>
-<td>To the Zcash address: no, the holder votes with a fresh key proven in zero knowledge (<a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">unlinkability</a>). To the network address: yes, <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">each validator sees the IP, the time and the connection pattern</a> of every transaction it receives, and the ZIPs recommend no Tor. So: the operators can see IP, choice and (under collusion) balance together.</td>
-<td class="ok">No. The passport is unlinkable to the registration (the proof reveals only the document's number), and the registration to the ballot (zero-knowledge membership proof, a per-poll pseudonym). The relay a voter posts to sees an IP and a time; the ledger sees neither. The ledger lists no direct channel and the page calls no server of ours.</td></tr>
-
-<tr><td>Double voting</td>
-<td>Prevented by a list of spent notes that <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#snapshot-configuration">one party computes</a> when it opens the round. Wallets accept the round with <a href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>, and the written procedure has no step that recomputes the list.</td>
-<td class="ok">One registration per passport number, refused otherwise, and one ballot per pseudonym; both rules are checked from the public log, by anyone.</td></tr>
-
-<tr><td>Trusted setup</td>
-<td>Halo 2 proofs: none. A <a href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#genesis-validator-setup">key ceremony among the validators</a> makes the committee key.</td>
-<td>UltraHonk proofs on Aztec's universal reference string: no ceremony of ours. No key ceremony at all: the "key" is a public beacon.</td></tr>
-
-<tr><td>Can anyone recompute the result?</td>
-<td>Partly: partial decryptions are posted with proofs and <a href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#high-level-summary">combined by the validators</a>; an outsider verifies them but cannot produce the sum without the committee.</td>
-<td class="ok">Yes, with no key: the log, the beacon of the round, and the audit, in your browser. <a href="vote/#audit">Run it</a>.</td></tr>
-
-<tr><td>Withholding a ballot</td>
-<td>The validators control what enters blocks; withheld ballots show as a gap between cast and revealed counts on chain.</td>
-<td>Every message gets a signed receipt before it is logged; a missing one is a public complaint; the relays keep copies and the audit compares.</td></tr>
-
-<tr><td>Infrastructure</td>
-<td>A proof-of-authority chain, validators, submission servers and PIR servers, <a href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-servers-are-co-located-with-validators">run by the same organizations</a>.</td>
-<td>One server with a database, a public git repository, public Nostr relays, and two networks read and never written to: Bitcoin for timestamps, drand for the clock.</td></tr>
-
-<tr><td>Who is excluded</td>
-<td>Anyone without Orchard ZEC at the snapshot, or with less than 0.125 ZEC.</td>
-<td>Anyone without a biometric passport or an NFC phone, or unwilling to do a face match in the app. <a href="eligibility/">More</a>.</td></tr>
-
-<tr><td>Binding?</td><td>Advisory.</td><td>Advisory, shown next to the coinholder count.</td></tr>
-</table>
-
-<h2>The three points that matter</h2>
-<h3>1. Who holds the key to the outcome</h3>
-<p>In the coinholder stack, the key that opens every ballot is held, in shares, by the organizations with the most at stake in the outcome, and the same organizations run the servers that receive the shares. The privacy of a voter's balance rests on those servers keeping their logs apart, while the delivery rule sends every share to half of them.</p>
-<p>In Zcash Agora the key is drand's. The threshold is held by a consortium that has no stake in Zcash and does not know this poll exists, the round it produces is public for everyone at once, and the most that threshold could ever do is open the ballots a little early: there is no balance in them, no identity, and nothing it could alter. The trust assumption is moved to a party with nothing to gain and reduced to a question of timing.</p>
-<h3>2. What is actually encrypted</h3>
-<p>In the coinholder stack the choice is public and the weight is encrypted: the exact balance of a shielded Zcash user, the one quantity the Zcash protocol is built to hide, is what the voting layer puts under a committee key. In Zcash Agora the ballot is a choice and nothing else, hidden until the close and pseudonymous after it.</p>
-<h3>3. What the count depends on</h3>
-<p>The coinholder count depends on a list of spent notes computed by one party and accepted on one signature. The Agora count depends only on what is in the public log: every eligibility proof, every ballot, every refusal. Less machinery was needed, not more: no committee, no ceremony, no private information retrieval, no chain of our own.</p>
-
-<h2>Scope of this comparison</h2>
+<section class="faq">
+<h3>4. What do they know about my IP address?</h3>
+<div class="two">
+<div class="side coins"><h4>Coinholder voting</h4>
 <ul>
-  <li>It compares the two designs as published. It makes no statement about any operator's conduct; a threshold assumption leaves no trace either way.</li>
-  <li>Agora's own exposures are stated on every page: a relay sees an address, registering takes a face match, and every ballot is readable at the close under its pseudonym.</li>
-  <li>Passports are one measure of personhood, and this is one count next to another. One eye open is better than none.</li>
+<li><strong>Normal operation:</strong> <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">"a vote chain validator sees the source IP, submission timestamp, connection correlation, and P2P propagation pattern of every transaction it receives"</a>; the PIR operator sees <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">your IP and that you take part</a>.</li>
+<li><strong>One corrupted node:</strong> it is also a submission server, so it pairs your IP with your choice and one encrypted share.</li>
+<li><strong>Threshold broken:</strong> IP, choice and exact balance, together, in the hands of the organizations that hold the key.</li>
+</ul>
+</div>
+<div class="side people"><h4>Zcash Agora</h4>
+<ul>
+<li><strong>Normal operation:</strong> the relay you post to sees your IP and a sealed envelope, like any relay. Our ledger reads the relays and never sees a voter's address; the page calls no server of ours.</li>
+<li><strong>One corrupted relay:</strong> it keeps your IP next to the envelope it carried; at the close that envelope opens, so it can pair your IP with your choice. It still learns no passport: registration went to a different relay, and nothing links the two. Tor or a VPN removes even that.</li>
+<li><strong>Threshold broken:</strong> drand never sees you. Same as above, a few days earlier.</li>
+</ul>
+</div>
+</div>
+<svg viewBox="0 0 360 130" class="anim fig" role="img" aria-label="Left: your wallet sends to a validator that sees IP, choice and a key share. Right: your browser posts to a relay that sees IP and a sealed envelope; the ledger reads the relay and sees no IP">
+  <rect x="14" y="40" width="30" height="48" rx="6" class="frame2"/><rect x="19" y="47" width="20" height="32" rx="2" class="frame"/>
+  <text x="29" y="104" text-anchor="middle" class="tiny">your wallet</text>
+  <line x1="48" y1="64" x2="86" y2="64" class="wire"/>
+  <rect x="90" y="46" width="78" height="36" rx="4" class="frame2"/>
+  <text x="129" y="60" text-anchor="middle" class="label">a validator</text>
+  <text x="129" y="72" text-anchor="middle" class="tiny">IP · choice · key share</text>
+  <text x="100" y="120" text-anchor="middle" class="warnt">one party, all three</text>
+  <line x1="180" y1="20" x2="180" y2="122" class="wire"/>
+  <rect x="192" y="40" width="30" height="48" rx="6" class="frame2"/><rect x="197" y="47" width="20" height="32" rx="2" class="frame"/>
+  <text x="207" y="104" text-anchor="middle" class="tiny">your browser</text>
+  <line x1="226" y1="64" x2="248" y2="64" class="wire"/>
+  <g class="relay" transform="translate(262 40)"><path d="M0 10v26M-7 4a10 10 0 0 1 14 0M-12 -1a17 17 0 0 1 24 0"/><circle cx="0" cy="10" r="2.5"/></g>
+  <text x="262" y="90" text-anchor="middle" class="tiny">relay: IP + envelope</text>
+  <line x1="278" y1="64" x2="300" y2="64" class="pull"/>
+  <text x="289" y="58" text-anchor="middle" class="tiny">reads</text>
+  <g class="server"><rect x="304" y="48" width="42" height="10" rx="2" class="frame2"/><rect x="304" y="60" width="42" height="10" rx="2" class="frame2"/><rect x="304" y="72" width="42" height="10" rx="2" class="frame2"/></g>
+  <text x="325" y="90" text-anchor="middle" class="tiny">ledger: no IP</text>
+  <text x="270" y="120" text-anchor="middle" class="good">no party has IP and key</text>
+</svg>
+</section>
+
+<section class="faq">
+<h3>5. What stops someone from voting twice?</h3>
+<div class="two">
+<div class="side coins"><h4>Coinholder voting</h4>
+<p>Nullifiers on the vote chain: a note delegated twice, or a vote cast twice, is rejected by every node, and anyone replaying the chain can check that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">no nullifier appears twice</a>.</p>
+<p>What a note is worth, and whether it was already spent on Zcash, comes from the snapshot: two tree roots that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#snapshot-configuration">the poll runner computes</a> and puts in the genesis block, and a round configuration wallets accept on <a class="q" href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>. The roots are deterministic from Zcash mainnet; checking them is up to each validator.</p>
+</div>
+<div class="side people"><h4>Zcash Agora</h4>
+<p>One passport, one registration: the proof discloses a number unique to the document, and the log refuses a second registration with the same number. One registration, one ballot: each ballot carries a per-poll pseudonym derived from the registered key, and the log refuses a second ballot under the same pseudonym.</p>
+<p>Both rules are checked by the ledger when it appends, and again by <a href="vote/#audit">anyone who recounts</a>: every registration and every refusal is in the public log.</p>
+</div>
+</div>
+</section>
+
+<section class="faq">
+<h3>6. Can I recount the result myself?</h3>
+<div class="two">
+<div class="side coins"><h4>Coinholder voting</h4>
+<p>You can <em>check</em> it: running a full node of the vote chain, you re-add the encrypted shares, verify each validator's partial decryption and <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">recombine them</a>. You cannot <em>produce</em> it: without 8 validators' partial decryptions there is no tally, and a round where they do not come <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">"verifies as having no tally"</a>.</p>
+</div>
+<div class="side people"><h4>Zcash Agora</h4>
+<p>Yes, with no key and no permission: the public log, the drand round of the close, and the audit <a href="vote/#audit">in your browser</a>. It re-verifies every passport proof and every membership proof, opens every ballot with the public round, counts, and compares with the posted tally. If we vanished, the count would still come out.</p>
+</div>
+</div>
+</section>
+
+<h2>Scope</h2>
+<ul>
+  <li>This compares the two designs as published. It says nothing about any operator's conduct; a threshold assumption leaves no trace either way.</li>
+  <li>Agora's own exposures are on every page: a relay sees an address, registering takes a face match, and every ballot is readable at the close under its pseudonym.</li>
+  <li>Passports are one measure of personhood, coins are another. The two counts are meant to be read together.</li>
   <li>Corrections with a citation are welcome in the <a href="https://github.com/nikkolasg/zcash-agora/issues">repository</a> and will be applied.</li>
 </ul>
 </div></main>
