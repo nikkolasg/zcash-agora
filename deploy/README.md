@@ -10,7 +10,7 @@ Three roles, three places:
 | Role | Where | Holds |
 |---|---|---|
 | ingest | a server with Postgres (`docker-compose.yml`) | the log key, its Nostr key, a deploy key of the mirror |
-| authority | the same host, or anyone's machine | nothing: the polls are time-locked to drand, it only opens them after the round |
+| authority | a scheduled job anywhere (Railway cron, hourly), or anyone's machine | nothing: the polls are time-locked to drand, it only opens them after the round |
 | operator | any machine with access to the ingest's database | submits the setups in `../ledger` |
 
 Decisions that cannot be changed after genesis: the **origin**
@@ -93,10 +93,13 @@ The poll's `round` is the drand quicknet round at or after `closes`
 
 ## 6. The authority
 
-`docker compose up -d authority`. It verifies the whole log (every proof,
-every passport) before it opens anything, then at the first checkpoint
-after `closes` it fetches the drand beacon of the poll's round, opens
-every ballot, and posts the tally. Any third party can do the same, from
+`docker compose up -d authority`, or on Railway a service with a cron
+schedule running `isoloir authority --once` (it has nothing to do before
+a close, and one run after it is enough). It verifies the whole log
+(every proof, every passport) before it opens anything, then once
+`closes` has passed it fetches the drand beacon of the poll's round,
+opens every ballot, and posts the tally. The ingest, by contrast, stays
+up: it holds the relay subscriptions and voters wait for its receipt. Any third party can do the same, from
 the public mirror, with circuits they built themselves:
 
 ```sh
