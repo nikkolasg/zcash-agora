@@ -156,3 +156,6 @@ footer.bottom a { color: inherit; }
 .tech h2 { margin-top: 2.6rem; }
 .tech h3 { margin-top: 1.6rem; }
 .tech table { font-size: .9rem; }
+.anim.fig.wide { max-width: 40rem; margin: .8rem auto 1.2rem; }
+.anim .arr { stroke: var(--ink-2); stroke-width: 1.2; fill: none; }
+.anim .ahd { fill: var(--ink-2); }
