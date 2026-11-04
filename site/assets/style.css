@@ -140,3 +140,6 @@ footer.bottom a { color: inherit; }
 .side.wide .pair { display: grid; grid-template-columns: 3fr 2fr; gap: 1.2rem; align-items: center; }
 @media (max-width: 760px) { .side.wide .pair { grid-template-columns: 1fr; } }
 .anim .envl rect { fill: var(--accent); } .anim .envl path { fill: none; stroke: #1c1a16; stroke-width: 1.4; }
+.anim .group { fill: none; stroke: var(--coins); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.anim .role rect { fill: var(--bg); stroke: var(--line); }
+.anim .envs rect { fill: var(--accent); }

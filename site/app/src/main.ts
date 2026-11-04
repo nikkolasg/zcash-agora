@@ -130,7 +130,7 @@ async function main() {
           <p>Scan your passport with the <a href="https://zkpassport.id">ZKPassport</a> app. The proof is made on your phone; this page only receives a number unique to the document.</p>
           <div class="row"><button class="btn" id="scan" ${busy ? 'disabled' : ''}>${config.dev ? 'Register (trial: type an identifier)' : 'Scan my passport'}</button>
           <button class="btn secondary" id="restore" ${busy ? 'disabled' : ''}>I already registered: restore my 12 words</button></div>
-          <details><summary>What this page learns, and does not</summary><p>Learns: that a passport number registered. Does not learn: your name, nationality, age, photo, or how you will vote. <a href="../eligibility/">Details</a>.</p></details></div>`;
+          <details><summary>What this page learns, and does not</summary><p>Learns: that someone with a valid passport registered, under a random-looking identifier. The identifier is derived from your document inside the proof and salted by ZKPassport's threshold OPRF, so neither this ledger nor the state that issued the passport can recompute it from your passport number; it only lets the ledger refuse a second registration with the same document. Does not learn: your passport number, name, nationality, age, photo, or how you will vote. <a href="../eligibility/">Details</a>.</p></details></div>`;
       }
     }
 
