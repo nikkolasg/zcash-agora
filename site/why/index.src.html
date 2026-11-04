@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <base href="{{base}}">
 <title>Why Zcash Agora exists</title>
-<meta name="description" content="Coinholder polls count capital. Zcash Agora counts people. Why the ecosystem needs both numbers.">
+<meta name="description" content="Coinholder polls count capital. Zcash Agora counts people. Why the ecosystem needs both numbers, with the sources.">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -15,34 +15,50 @@
 <h1>Why this exists</h1>
 <p class="lede">A poll that weighs every voice by a balance answers one question: what does the money want? It cannot answer the other question the same decisions raise: what do the people want? Zcash Agora exists to ask the second one, with the same rigour as the first, and to put the two answers side by side.</p>
 
-<h2>Two questions, not one</h2>
-<p>Since 2025, Zcash has taken governance signals from coinholder polls: holders prove a shielded balance at a snapshot and vote with its weight. That is a legitimate instrument. Capital has skin in the game, and it should be heard.</p>
-<p>But it is one instrument, and it measures one thing. In the February 2026 sentiment poll, the figure everyone quotes, 98.6% against Zcash Shielded Assets, is a share of the voting <em>weight</em>, cast by a turnout of roughly 7% of the circulating supply. The number of distinct humans behind it is unknown, and not by accident: the protocol has no notion of a person. Whether that weight belonged to a few hundred people or to a few dozen is not a footnote. It changes what the number means.</p>
-<p>In the ZCG debate of October 2026 the same figure is used as "the coinholders have spoken". They have. The people have not been asked.</p>
+<h2>What the coinholder poll measured</h2>
+<p>Since 2025, Zcash has taken governance signals from coinholder polls: a wallet proves it held shielded ZEC at a snapshot block and votes with that weight. The poll everyone quotes is the <a href="https://forum.zcashcommunity.com/t/coinholder-protocol-feature-sentiment-poll/54487">protocol feature sentiment poll</a> of February 2026, and the figure everyone quotes from it is 98.6% against Zcash Shielded Assets. The same question was put, the same week, to the Zcash Foundation's advisory panel. Here is what sits behind the two figures, from the forum threads themselves.</p>
+<table>
+  <thead><tr><th>ZSAs, February 2026</th><th>Coinholder poll</th><th>ZCAP poll</th></tr></thead>
+  <tbody>
+    <tr><td>Result</td><td>98.6% against</td><td>70.4% for</td></tr>
+    <tr><td>What is counted</td><td>ZEC</td><td>panel members</td></tr>
+    <tr><td>Participation</td><td>about 1.2 million of 16.6 million ZEC, 7.25%</td><td>99 of 173 eligible members, 57%</td></tr>
+    <tr><td>Ballots</td><td>197, two days before the close</td><td>99</td></tr>
+    <tr><td>Persons behind the result</td><td>unknown; at most 197</td><td>99</td></tr>
+  </tbody>
+</table>
+<p class="muted">Sources: the coinholder turnout is <a href="https://forum.zcashcommunity.com/t/nu7-sentiment-polling-results/54756/11">a forum member's calculation</a> from the organizer's "<a href="https://forum.zcashcommunity.com/t/nu7-sentiment-polling-results/54756/10">more than 1 million Orchard coins participated</a>"; the ballot count is <a href="https://forum.zcashcommunity.com/t/coinholder-protocol-feature-sentiment-poll/54487/48">the same member's running tally</a> from the vote server, 18 February, and each ballot is one vote transaction from one voting key, so the number of persons can only be lower; the ZCAP figures are <a href="https://forum.zcashcommunity.com/t/nu7-sentiment-polling-results/54756/7">the Foundation's results post</a>. Anyone can rerun the coinholder tally with <a href="https://github.com/hhanh00/zcash-vote-audit/releases">the audit tool</a>.</p>
+<p>Two polls on one question, two opposite answers, and neither counts the persons of the ecosystem. One counts ZEC. The other counts the members of <a href="https://zfnd.org/zcash-community-advisory-panel/">a panel of about 200</a> that the Zcash Foundation assembles by criteria of its own: past contributors, grant recipients, forum badge holders. For scale, <a href="https://forum.zcashcommunity.com/about">the community forum</a> had 14,742 registered accounts on 2 November 2026 and 842 active in the previous thirty days. Whatever the people of Zcash think about ZSAs, nobody has asked them.</p>
 
-<h2>Two things Zcash cares about</h2>
-<p>Zcash's roots are cypherpunk: persons have a right to transact and to be let alone, and that right is the same for someone with a little and someone with a lot. Zcash is also a currency, and the people who hold it carry its risk; their view of its future is a signal worth measuring, and coinholder polling measures it well.</p>
-<p>The two counts are both legitimate. They answer different questions, and the ecosystem decides best when it can see both. A decision taken on one of the two numbers is a decision taken blind in one eye.</p>
+<h2>How the number is used</h2>
+<p>The coinholder figure has become the governance figure of Zcash. It opens the case to <a href="https://forum.zcashcommunity.com/t/end-zcg-and-send-its-funds-to-the-nsm/58515">end Zcash Community Grants</a>: "In February 2026, coinholders voted 98.6% against Zcash Shielded Assets. ZCAP voted 70.4% for." It is the charge against <a href="https://forum.zcashcommunity.com/t/zcg-gets-too-much-zec-heres-our-plan-to-fix-that/58566">ZCG's own plan</a>, where a grant to ZSA work is "coinholder money" spent "after coinholders voted at 98.6% against", and where one reply asks "do you mean the 98% of the 7.25% turnout from all ZEC in circulation?" Since October 2026 coinholder votes also move money directly, through the <a href="https://forum.zcashcommunity.com/t/q4-2026-coinholder-directed-retroactive-grant-program-call-for-proposals/58598">coinholder-directed retroactive grants</a>: a proposal passes on a simple majority of the ZEC that votes, with a floor of about 2% of the supply.</p>
+<p>None of this is illegitimate. Coinholders carry the risk of the currency, and their view of its future deserves to be measured well. But when the coin count is the only count, two things follow. Whoever holds, or can buy, the most ZEC at the snapshot decides; the point is made from inside the debate, in <a href="https://forum.zcashcommunity.com/t/time-to-end-the-zcash-development-fund/58610">the proposal to end the dev fund</a>: "stake-based power can be bought". And the question of how many people stand behind a position never gets asked, so a figure cast by two hundred keys at most is read as the voice of the ecosystem.</p>
+
+<h2>Why Zcash, of all places, should count persons</h2>
+<p><strong>Its roots are cypherpunk.</strong> Zcash exists so that a person can transact and be let alone, and that protection is the same for someone with a little and someone with a lot. A governance culture that weighs voices by holdings is one Zcash can borrow from shareholder meetings; it is not the one it came from. A count of persons is closer to it.</p>
+<p><strong>A passport cannot be bought in bulk.</strong> One person is one vote whatever they hold, and the vote costs nothing. The coinholder poll required <a href="https://forum.zcashcommunity.com/t/coinholder-protocol-feature-sentiment-poll/54487">moving ZEC into the Orchard pool during a registration window</a>, so holders who keep their coins on an exchange, and people with no ZEC to move, were not counted there either.</p>
+<p><strong>The ecosystem already wants a people count.</strong> ZCAP is one: a few hundred members, chosen by one organization by criteria it sets, voting as members. Zcash Agora is the open version of the same idea: anyone with a passport, no list to be put on, run by nobody in the dispute, and recounted by anyone.</p>
+<p><strong>Its people should not have to vote in public.</strong> A forum poll is public and free to multiply. Here a ballot is sealed until the close and opens under a pseudonym; the registration proves a passport without disclosing it. A privacy coin's people deserve at least the privacy of a voting booth.</p>
+
+<h2>Why this method</h2>
+<p><strong>One passport, one voice.</strong> A count of people needs a way to tell one person from two accounts, and forum handles, GitHub accounts and wallet addresses are free to create in any number. A passport is issued once per person by a state and can be verified on a phone with a zero-knowledge proof. <a href="https://zkpassport.id">ZKPassport</a> produces that proof and a <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted identifier</a> unique to the document, blinded through a threshold network, so that neither this ledger nor the issuing state can recompute it. The costs are real: a biometric passport, an NFC phone, and a face match in the app. It is one proof of personhood; the registry format accepts others. <a href="eligibility/">The details</a>.</p>
+<p><strong>A clock nobody here controls.</strong> The coinholder stack encrypts ballots to a key whose shares are held by a committee of Zcash organizations: the people with the most at stake in the outcome hold the key to the outcome. Here a ballot is <a href="https://github.com/drand/tlock">time-locked</a> to a future round of the <a href="https://drand.love/partners/">drand</a> beacon, run by Cloudflare, EPFL, Kudelski Security, Protocol Labs and a dozen others who have nothing to do with Zcash and do not know their beacon is used for this poll. The round's signature does not exist before the close, so nobody can open a ballot early, including us. After the close it is public, and that is what lets anyone recount.</p>
+<p><strong>A log anyone recounts.</strong> Every registration, every ballot, every refusal and the tally are in one append-only, signed log, <a href="https://github.com/nikkolasg/zcash-agora-mirror">mirrored in a public git repository</a> and timestamped in Bitcoin. <a href="vote/#audit">Your browser can redo every check</a>: the passport proofs, the membership proofs, the opening of every ballot with the public drand round, and the count. If we vanished, the count would still come out. <a href="technical/">The protocol</a>.</p>
+<p><strong>Not run by the parties it measures.</strong> Zcash Agora is a Lanterne Labs project: not a Zcash organization, not an operator of the coinholder vote, not funded by the dev fund. The code is public, from the <a href="https://github.com/lanterne-labs/isoloir">voting protocol</a> to <a href="https://github.com/nikkolasg/zcash-agora">this deployment</a> and <a href="https://github.com/nikkolasg/zcash-agora/blob/main/zip/draft-lanterne-labs-personhood-polling.md">a draft ZIP</a> describing it.</p>
+<p><strong>Honest about what it leaks.</strong> A relay sees your IP address, registering takes a face match, and at the close every ballot is readable under its pseudonym. Nothing is hidden about this; it is laid out next to the coinholder stack, question by question, in <a href="comparison/">the comparison</a>.</p>
 
 <h2>What this is, and what it is not</h2>
 <ul>
   <li><strong>It is a companion.</strong> Every poll here is shown next to the coinholder poll on the same question when one exists, with the unit each one counts, its turnout, and what each one cannot know.</li>
   <li><strong>It is not binding.</strong> Nothing here allocates a zatoshi or changes a rule. It is a measurement offered to the people who will decide.</li>
-  <li><strong>It is not run by the parties it measures.</strong> Zcash Agora is a Lanterne Labs project, not a Zcash organization, not an operator of the coinholder vote, and not funded by the dev fund.</li>
-  <li><strong>It is verifiable.</strong> Every registration, every ballot, every refusal and the result are in a public, signed, Bitcoin-timestamped log. <a href="vote/#audit">Anyone can recount it</a>. A second number deserves at least the scrutiny the first one gets.</li>
+  <li><strong>It is verifiable.</strong> A second number deserves at least the scrutiny the first one gets. <a href="vote/#audit">Anyone can recount it</a>.</li>
+  <li><strong>It is open to other proofs of personhood.</strong> Passports are what works today on a phone; the registry takes other credentials as they come, and the owner's view is that a count gated by passports, even with the people it misses, beats a count gated by capital alone.</li>
 </ul>
-
-<h2>Why passports</h2>
-<p>A count of people needs a way to tell one person from two accounts. Forum handles, GitHub accounts, e-mail addresses and wallet addresses are free to create in any number. A passport is a credential that a state issues once per person and that a phone can verify offline, with a zero-knowledge proof that discloses nothing beyond "this is a valid passport, and here is a number unique to it".</p>
-<p>It is one mechanism, with real costs: it excludes people without a biometric passport or an NFC phone, and it takes a face match in the app, the price of a number that not even the issuing state can recognize. Humans matter more than coins, so we let the human speak. We are open to other proofs of personhood; the registry format accepts them. <a href="eligibility/">The details</a>.</p>
-
-<h2>Why the ballots are sealed by an independent committee</h2>
-<p>The coinholder stack encrypts ballots to a key whose shares are held by a committee of Zcash organizations: the people with the most at stake in the outcome hold the key to the outcome. Here, a ballot is encrypted to a future round of the drand randomness beacon. That is a committee too, but an independent one: Cloudflare, EPFL, Kudelski Security, Protocol Labs and a dozen others, who have nothing to do with Zcash and do not know their beacon is used for this poll. The round's signature does not exist before the close, so nobody can open a ballot early, including us. After the close, it is public, and that is what lets anyone recount. <a href="comparison/">The full comparison</a>.</p>
 
 <h2>The first poll is a test</h2>
 <p>The first poll is a trial of the technology, not a decision on anything. We start with a sample question, the one that has the clearest coinholder answer and the least known human one: <em>do you want Zcash Shielded Assets in the protocol?</em> Its result is a suggestion, not a verdict. If the people's count looks like the coinholder count, that is worth knowing. If it does not, that is worth knowing more.</p>
 <p>What we actually want to learn is whether people in the Zcash ecosystem would use a tool like this: whether they are willing to scan a passport to be counted once as a person, whether the vote and the recount work for them with real phones, and whether a people's count next to the coin count is something the ecosystem wants. If the answer is yes, later polls can take up the questions of the moment, such as the future of Zcash Community Grants, the dev fund, or any proposal the ecosystem wants a second count on.</p>
-<p><a class="btn" href="vote/">Vote</a></p>
+<p><a class="btn" href="vote/">Try the test poll</a></p>
 </div></main>
 {{footer}}
 </body>

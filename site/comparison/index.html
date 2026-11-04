@@ -43,7 +43,7 @@
   <!-- the one committee -->
   <rect x="100" y="22" width="190" height="196" rx="8" class="group"/>
   <text x="195" y="38" text-anchor="middle" class="label">One committee: 14 Zcash organizations</text>
-  <text x="195" y="49" text-anchor="middle" class="tiny">one binary each, three roles at once</text>
+  <text x="195" y="49" text-anchor="middle" class="tiny">the same servers, three roles at once</text>
   <g class="vals">
     <rect x="118" y="58" width="18" height="12" rx="2"/><rect x="140" y="58" width="18" height="12" rx="2"/><rect x="162" y="58" width="18" height="12" rx="2"/><rect x="184" y="58" width="18" height="12" rx="2"/><rect x="206" y="58" width="18" height="12" rx="2"/><rect x="228" y="58" width="18" height="12" rx="2"/><rect x="250" y="58" width="18" height="12" rx="2"/>
     <rect x="118" y="74" width="18" height="12" rx="2"/><rect x="140" y="74" width="18" height="12" rx="2"/><rect x="162" y="74" width="18" height="12" rx="2"/><rect x="184" y="74" width="18" height="12" rx="2"/><rect x="206" y="74" width="18" height="12" rx="2"/><rect x="228" y="74" width="18" height="12" rx="2"/><rect x="250" y="74" width="18" height="12" rx="2"/>
@@ -74,9 +74,9 @@
 </svg>
 <ul class="who">
   <li><strong>Your wallet</strong> proves it held Orchard ZEC at a snapshot block and votes with a fresh key.</li>
-  <li><strong>One committee</strong> of 14 Zcash organizations, each running the same binary, holds three roles at once: the submission servers that receive your shares (and see your IP and your choice), the election authority whose key shares open the amounts (any 8 of 14), and the validators who run the vote chain and produce the tally. The ZIP calls the servers "untrusted" and the committee a threshold; the point is that they are the same machines, so one collusion of 8 breaks all three roles together.</li>
-  <li><strong>The poll runner</strong> is one of them: it picks the snapshot, supplies the two Zcash tree roots that nothing on the chain checks, writes the genesis and signs the round configuration wallets trust.</li>
-  <li><strong>3 PIR servers</strong>, also run from the same organizations, answer wallets that ask whether their notes are still unspent, and see who asks.</li>
+  <li><strong>One committee</strong> of 14 Zcash organizations holds three roles: it receives your shares and sees your IP and your choice; it holds the key that opens the amounts, any 8 of 14; and it runs the vote chain and the tally. One collusion of 8 breaks all three.</li>
+  <li><strong>The poll runner</strong> is one of them: it picks the snapshot, supplies the tree roots (untrusted) and signs the round configuration wallets accept.</li>
+  <li><strong>3 PIR servers</strong>, run by the same organizations, tell wallets whether their notes are still unspent, and see who asks.</li>
   <li><strong>The vote chain</strong> is the committee's public record.</li>
 </ul></div>
 </div>
@@ -267,8 +267,8 @@
 <h3>6. Can I recount the result myself?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>You can <em>check</em> it, with a tool that exists, from a node of your own. Each validator's partial decryption is stored on the chain with a proof that it used that validator's key share, and <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/x/vote/client/cli/query.go"><code>svoted query vote verify-tally</code></a> fetches the encrypted sums, the partial decryptions and the posted totals, checks every proof, recombines and compares. It needs a node's RPC, which the production nodes do not publish (their REST and peer ports are open, the RPC is not), so in practice you build <code>svoted</code>, sync a full node of your own, which re-verifies every proof and nullifier as it syncs, and run the command against it.</p>
-<p>You cannot <em>produce</em> it: without 8 validators' partial decryptions there is no tally, and a round where they do not come <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">"verifies as having no tally"</a>. And the check stops at the chain: it says nothing about whether the snapshot roots were the real ones (question 5).</p>
+<p>You can <em>check</em> it, not <em>produce</em> it. Each validator posts its partial decryption on the chain with a proof, and <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/x/vote/client/cli/query.go"><code>svoted query vote verify-tally</code></a> checks the proofs and recomputes the totals. It needs a node of your own: the production nodes do not expose the RPC it uses.</p>
+<p>Without 8 validators' partial decryptions there is no tally; the round <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">"verifies as having no tally"</a>. And the check says nothing about whether the snapshot roots were the real ones (question 5).</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
 <p>Yes, with no key and no permission: the public log, the drand round of the close, and the audit <a href="vote/#audit">in your browser</a>. It re-verifies every passport proof and every membership proof, opens every ballot with the public round, counts, and compares with the posted tally. If we vanished, the count would still come out.</p>

@@ -120,6 +120,7 @@
 @media (max-width: 640px) { .boxes { grid-template-columns: 1fr; } }
 .boxes .box2 { border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); padding: 1rem 1.1rem; }
 .boxes .box2 .big { display: block; font-size: 1.15rem; font-weight: 700; margin-bottom: .3rem; color: var(--people); }
+.boxes .box2.coins .big { color: var(--coins); }
 .subnav { display: flex; justify-content: center; gap: .2rem; margin: 0 auto 1.2rem; border: 1px solid var(--line); border-radius: 999px; padding: .25rem; width: max-content; max-width: 100%; flex-wrap: wrap; }
 .subnav a { text-decoration: none; color: var(--ink-2); padding: .35rem .9rem; border-radius: 999px; font-size: .95rem; }
 .subnav a[aria-current="page"] { background: var(--accent); color: #1c1a16; font-weight: 600; }
