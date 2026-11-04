@@ -14,20 +14,25 @@ Three roles, three places:
 | operator | any machine with access to the ingest's database | submits the setups in `../ledger` |
 
 Decisions that cannot be changed after genesis: the **origin**
-(`nikkolasg.github.io/zcash-agora`), the **log key**, and for each registry its
+(`zcash-agora`), the **log key**, and for each registry its
 **domain and scope** (the passport identifier is derived from them: a
 different scope is a different set of identifiers, and people could
 register twice). Choose the domain before step 1.
 
-## 0. Before anything: the domain
+## 0. Before anything: the labels
 
 The site is static (GitHub Pages, `../site`, at the base path
 `site/agora.config.json` names). The ledger lists public Nostr relays
 only, no direct endpoint: voters never reach the operator's server, so
 the ingest needs no public hostname (Caddy serves `/v1/health` only).
-The ZKPassport `domain` in `../ledger/registries/1.json` is the site's
-host: the passport request is made from the page and the SDK binds the
-proof to it.
+
+Two labels are fixed for ever and neither has to be a hostname. The
+**origin** (`zcash-agora`) names the log and its key. The ZKPassport
+**domain** in `../ledger/registries/1.json` (`zcash-agora`) is hashed,
+with the scope, into every passport identifier: the SDK carries it to the
+phone in the request link, the app shows it to the holder, and the
+verifier recomputes it from the registry file. Nothing compares it with
+the site's hostname, so the site can move without touching the registry.
 
 ## 1. Keys
 
@@ -35,7 +40,7 @@ On the ingest host, with the isoloir binary (`../.github/workflows/release.yml`
 builds one per platform; or `cargo build --release -p isoloir` in `../isoloir`):
 
 ```sh
-isoloir keygen log --origin nikkolasg.github.io/zcash-agora   # ISOLOIR_LOG_SEED (secret), log_key (public)
+isoloir keygen log --origin zcash-agora   # ISOLOIR_LOG_SEED (secret), log_key (public)
 isoloir keygen nostr                                  # ISOLOIR_NOSTR_KEY (secret), the ingest's pubkey
 isoloir keygen nostr                                  # a second one for the authority
 ```

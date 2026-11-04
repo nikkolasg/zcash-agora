@@ -101,7 +101,6 @@ main { padding: 2.2rem 0 3rem; }
 sup a { text-decoration: none; }
 footer.bottom { border-top: 1px solid var(--line); padding: 1.5rem 0 2.5rem; font-size: .9rem; color: var(--muted); }
 footer.bottom a { color: inherit; }
-.toc { font-size: .95rem; columns: 2; column-gap: 2rem; } @media (max-width: 640px) { .toc { columns: 1; } }
 .toc a { text-decoration: none; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; }
 .kv dt { color: var(--muted); } .kv dd { margin: 0; overflow-wrap: anywhere; }
@@ -143,3 +142,17 @@ footer.bottom a { color: inherit; }
 .anim .group { fill: none; stroke: var(--coins); stroke-width: 1.2; stroke-dasharray: 4 3; }
 .anim .role rect { fill: var(--bg); stroke: var(--line); }
 .anim .envs rect { fill: var(--accent); }
+/* technical page: table of contents */
+.toc { border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); padding: 1rem 1.3rem; margin: 1.5rem 0 2rem; font-size: .95rem; }
+.toc ol { margin: .3rem 0 0; padding-left: 1.4rem; }
+.toc .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2.5rem; }
+.toc .cols > ol { margin-top: .4rem; }
+.toc .cols > ol > li { margin-bottom: .6rem; }
+.toc ol ol { margin: .15rem 0 0; }
+.toc li { margin: .15rem 0; }
+.toc a { text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+@media (max-width: 760px) { .toc .cols { grid-template-columns: 1fr; } }
+.tech h2 { margin-top: 2.6rem; }
+.tech h3 { margin-top: 1.6rem; }
+.tech table { font-size: .9rem; }

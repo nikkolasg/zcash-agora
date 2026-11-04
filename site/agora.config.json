@@ -1,7 +1,7 @@
 {
   "name": "Zcash Agora",
-  "origin": "nikkolasg.github.io/zcash-agora",
-  "verifierKey": "nikkolasg.github.io/zcash-agora+09d174f1+ARIZWzyeGSiq/4xtPS/MBVLYB9C8FeFPJDXs6rePxTch",
+  "origin": "zcash-agora",
+  "verifierKey": "zcash-agora+3d05fc8b+AU7cgiEfcro1BF0KsZfuh1Immhyk2VkYEs5lyDxm/WxW",
   "mirror": {
     "repo": "nikkolasg/zcash-agora-mirror",
     "branch": "main"

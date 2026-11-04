@@ -1,5 +1,5 @@
 {"v":1,"id":1,"version":1,"name":"Zcash Agora: one passport, one voice",
- "eligibility":{"provider":"zkpassport","domain":"nikkolasg.github.io",
+ "eligibility":{"provider":"zkpassport","domain":"zcash-agora",
    "scope":"agora/registry/1","document_type":"passport","require_expiry":true,
    "oprf_key":{"id":"1",
      "x":"18166959201346800007624274454748264099569154910741994195889360204497718998925",

@@ -6,90 +6,212 @@
 <meta name="referrer" content="no-referrer">
 <base href="{{base}}">
 <title>Zcash Agora, technically</title>
-<meta name="description" content="The protocol behind Zcash Agora: isoloir, ZKPassport eligibility, Noir/UltraHonk ballots, drand time-lock, an RFC 6962 log timestamped in Bitcoin.">
+<meta name="description" content="The protocol behind Zcash Agora as a paper: the parties, the vote one step at a time, and a privacy analysis of who can learn what, including the issuing state and the OPRF network.">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 {{header}}
-<main><div class="wrap">
-<h1>Technically</h1>
-<p class="lede">Zcash Agora is a deployment of <a href="https://github.com/lanterne-labs/isoloir">isoloir</a>, an open protocol for anonymous polls with passport eligibility. This page summarizes the protocol and names the parameters of this ledger. The normative text is isoloir's <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md">SPEC.md</a>; section numbers below (§) refer to it. The threat map is <a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md">DESIGN.md</a>.</p>
+<main><div class="wrap tech">
+<h1>The protocol</h1>
+<p class="lede">Zcash Agora is a deployment of <a href="https://github.com/lanterne-labs/isoloir">isoloir</a>, an open protocol for anonymous polls with passport eligibility. This page tells the protocol as a paper would: who the parties are, what happens at each step of a vote, and then what each party can learn, alone or in collusion. Nothing is used before it is introduced. The normative text is isoloir's <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md">specification</a>; the threat model is its <a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md">design note</a>; the files of this deployment are in <a href="https://github.com/nikkolasg/zcash-agora">the Zcash Agora repository</a>.</p>
 
-<h2>In one paragraph</h2>
-<p>A <strong>ledger</strong> is one append-only log (an RFC 6962 Merkle tree with Ed25519-signed checkpoints, C2SP <code>signed-note</code> format), mirrored as static files in a public git repository read by commit, with every checkpoint timestamped in Bitcoin through OpenTimestamps (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#4-the-ledger-and-its-log">§4</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#15-the-mirror">§15</a>). A <strong>registry</strong> is a passport rule and a Merkle tree of the registrations that satisfied it (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#5-registries">§5</a>). A voter registers by proving with ZKPassport that their passport satisfies the rule, obtaining a document-unique identifier <code>uid</code>; the ingest verifies the proof with ZKPassport's open verifier and refuses a <code>uid</code> already seen (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#6-registration">§6</a>). A <strong>ballot</strong> carries a Noir/UltraHonk zero-knowledge proof that a leaf of the registry tree belongs to the prover, a per-poll pseudonym derived from the voter's secret, and the choice committed and time-locked to a drand round (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#9-ballots">§9</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#72-encryption">§7.2</a>). Messages travel through public Nostr relays or the ingest's HTTPS endpoint; every one is acknowledged with a signed receipt naming the checkpoint that will hold it (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#11-transport">§11</a>). At the close, anyone fetches the drand beacon, opens every ballot, and posts the tally; the ingest verifies every opening before logging it (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#104-the-tally-entry-tlock">§10.4</a>). An auditor recomputes everything from the log, the relays and the mirror (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#16-the-audit">§16</a>).</p>
+<nav class="toc">
+<strong>Contents</strong>
+<div class="cols">
+<ol>
+  <li><a href="#parties">The parties</a>
+    <ol>
+      <li><a href="#p-voter">The voter and their devices</a></li>
+      <li><a href="#p-state">The issuing state and ZKPassport</a></li>
+      <li><a href="#p-oprf">The OPRF network</a></li>
+      <li><a href="#p-relays">The relays</a></li>
+      <li><a href="#p-ledger">The ledger and its mirror</a></li>
+      <li><a href="#p-drand">drand, the clock</a></li>
+      <li><a href="#p-bitcoin">Bitcoin, the calendar</a></li>
+      <li><a href="#p-authority">The authority and the auditor</a></li>
+    </ol>
+  </li>
+  <li><a href="#vote">The vote, one step at a time</a>
+    <ol>
+      <li><a href="#v-setup">Setup: a ledger, a registry, a poll</a></li>
+      <li><a href="#v-secret">The voter secret</a></li>
+      <li><a href="#v-register">Registration: one passport, one leaf</a></li>
+      <li><a href="#v-ballot">The ballot and its proof</a></li>
+      <li><a href="#v-seal">Sealing the choice until the close</a></li>
+      <li><a href="#v-transport">Transport and receipts</a></li>
+      <li><a href="#v-log">The log, the mirror, the stamps</a></li>
+      <li><a href="#v-open">The close and the opening</a></li>
+      <li><a href="#v-audit">The audit</a></li>
+    </ol>
+  </li>
+</ol>
+<ol start="3">
+  <li><a href="#privacy">Privacy analysis</a>
+    <ol>
+      <li><a href="#a-links">The three links</a></li>
+      <li><a href="#a-honest">What each party sees when everyone is honest</a></li>
+      <li><a href="#a-corrupt">What a corrupted party gains</a></li>
+      <li><a href="#a-state">What the issuing state can learn</a></li>
+      <li><a href="#a-integrity">What nobody can do</a></li>
+      <li><a href="#a-limits">Limits</a></li>
+    </ol>
+  </li>
+  <li><a href="#params">This deployment</a></li>
+  <li><a href="#code">Code</a></li>
+</ol>
+</div>
+</nav>
 
-<h2>Eligibility</h2>
+<h2 id="parties">1. The parties</h2>
+<p>Eight parties take part in a poll. Four of them are ours or chosen by us; four are outside anyone's control in Zcash. None of them, alone, can read a ballot before the close or tie a ballot to a person.</p>
+
+<h3 id="p-voter">1.1 The voter and their devices</h3>
+<p>A voter has a passport with a chip, a phone that can read it over NFC, and a browser. The phone runs the <a href="https://zkpassport.id">ZKPassport</a> app, which reads the chip and proves things about it without disclosing it. The browser runs <a href="https://github.com/nikkolasg/zcash-agora/tree/main/site/app">the voting page</a>, a static page that holds the voter's secret, builds ballots and verifies the log. The two talk through a QR code or a link. The voter is the only party that ever holds their own secret (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#2-parties">parties</a>).</p>
+
+<h3 id="p-state">1.2 The issuing state and ZKPassport</h3>
+<p>The state that issued the passport signed its chip: a certificate chain from the state's authority down to the document. It is the root of eligibility, and it is also the party with the most knowledge about the voter, since it keeps a record of every passport it signed. ZKPassport, the company, maintains the <a href="https://docs.zkpassport.id/intro">app and SDK</a> that verify that chain on the phone, a <a href="https://github.com/zkpassport/zkpassport-packages">public set of circuits and verifiers</a>, and a registry of the states' certificates whose root is read from Ethereum by any verifier. The proof is produced on the phone; the ZKPassport servers carry it to the browser through an encrypted bridge and never see its content. ZKPassport is a party we rely on for the correctness of its circuits, which are open, not for secrecy.</p>
+
+<h3 id="p-oprf">1.3 The OPRF network</h3>
+<p>A proof that says "this is a valid passport" is not enough to stop one passport from registering twice; the proof must also disclose a number unique to the document. ZKPassport offers two kinds. The <em>plain</em> identifier is a hash of the chip's data: anyone who holds that data, which includes the issuing state, can recompute it. The <a href="https://docs.zkpassport.id/examples/salted-identifiers"><em>salted</em></a> identifier mixes in a secret that nobody holds in full: an <a href="https://en.wikipedia.org/wiki/Oblivious_pseudorandom_function">oblivious pseudo-random function</a> evaluated by a small network of independent servers, each holding a share of the key, on a blinded input from the phone. The servers learn neither the input nor the output; the phone learns the output and nothing about the key. Fewer than a threshold of them know nothing; a threshold of them, together, can evaluate the function on any input. Zcash Agora uses the salted identifier under ZKPassport's published key 1, pinned in the registry, and ZKPassport requires a face match in the app for this mode (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#5-registries">registries</a>).</p>
+
+<h3 id="p-relays">1.4 The relays</h3>
+<p>Voters never send anything to a server of ours. Every message travels as a signed event on public <a href="https://github.com/nostr-protocol/nips/blob/master/01.md">Nostr</a> relays run by other people; this ledger names three. A relay is a dumb store-and-forward service: it sees the network address of whoever posts and the bytes they post, keeps a copy, and gives it to whoever asks. That copy is also what makes a dropped message provable (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#111-channels">channels</a>).</p>
+
+<h3 id="p-ledger">1.5 The ledger and its mirror</h3>
+<p>The ledger is our one server, the <em>ingest</em>. It reads the relays, checks every message, and appends what passes, and what fails with the reason, to one append-only log that it signs. It holds the log's signing key and nothing else of value: no decryption key, no voter secret. The log is published as plain files in <a href="https://github.com/nikkolasg/zcash-agora-mirror">a public git repository</a>, the <em>mirror</em>, that browsers read by commit hash. The ingest is the only writer; anyone is a reader (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#4-the-ledger-and-its-log">the log</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#15-the-mirror">the mirror</a>).</p>
+
+<h3 id="p-drand">1.6 drand, the clock</h3>
+<p><a href="https://drand.love">drand</a> is a public randomness beacon run by the <a href="https://drand.love/partners/">League of Entropy</a>: Cloudflare, EPFL, Kudelski Security, Protocol Labs, the Ethereum Foundation, UCL, the University of Chile and others. Every three seconds its nodes jointly produce a signature over the round number, using a threshold key that no single node holds. Two properties matter here. The signature of a future round does not exist until that round's time, and nobody can produce it alone. Once published, it is public for ever. drand's <a href="https://docs.drand.love/docs/timelock-encryption/">time-lock encryption</a> turns the first property into a lock: encrypt to a round, and the round's signature is the key (<a href="https://github.com/drand/tlock">tlock</a>, <a href="https://eprint.iacr.org/2023/189">paper</a>). Nobody in the League knows their beacon is used for this poll.</p>
+
+<h3 id="p-bitcoin">1.7 Bitcoin, the calendar</h3>
+<p>The ledger proves <em>when</em> each state of its log existed by stamping it with <a href="https://opentimestamps.org">OpenTimestamps</a>, which commits a hash into a Bitcoin block. Bitcoin is only read for its block headers and written to only through the public stamping calendars; no ZEC and no BTC move (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#4-the-ledger-and-its-log">the log</a>).</p>
+
+<h3 id="p-authority">1.8 The authority and the auditor</h3>
+<p>The <em>authority</em> is whoever opens the ballots after the close and posts the count. Under a time-lock it holds no key: it fetches the drand round, opens every ballot with it, and posts the result, which the ingest re-checks before logging. Ours runs once an hour; anyone else can run one, and two correct ones produce the same entry. The <em>auditor</em> is anyone who recomputes everything from the log, the relays and the mirror, including <a href="vote/#audit">your browser</a> (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#16-the-audit">the audit</a>).</p>
+
+<h2 id="vote">2. The vote, one step at a time</h2>
+
+<h3 id="v-setup">2.1 Setup: a ledger, a registry, a poll</h3>
+<p>Three small documents define a deployment, and all three are the first entries of the log, so a reader learns the rules from the same place as the results. The <em>ledger</em> entry names the log's origin, its signing key and the relays to use. A <em>registry</em> is an eligibility rule: here, any passport that ZKPassport can verify, unexpired, with no age or nationality condition, identified by the salted identifier under a pinned OPRF key. A <em>poll</em> names its registry, its question and options, its opening and closing times, the drand round that opens it, and the hash of the circuit that ballots must prove against. Once logged, a registry's identifier settings never change, since a different setting would give every passport a second identifier (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#41-the-ledger-entry">ledger entry</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#5-registries">registries</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#7-polls">polls</a>). The files of this deployment are in <a href="https://github.com/nikkolasg/zcash-agora/tree/main/ledger">ledger/</a>.</p>
+
+<h3 id="v-secret">2.2 The voter secret</h3>
+<p>Before anything is proven, the browser needs one secret that will stand for the voter in every poll of the registry. Where the platform offers it, the secret is derived from a passkey through the <a href="https://w3c.github.io/webauthn/#prf-extension">WebAuthn PRF extension</a>, so it lives in the device's secure hardware; otherwise it is twelve <a href="https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki">BIP39</a> words the voter writes down. The secret never leaves the device. Everything the voter later publishes is derived from it by one-way functions, so that nothing published can be traced back to it (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#14-the-voter-secret">voter secret</a>).</p>
+
+<h3 id="v-register">2.3 Registration: one passport, one leaf</h3>
+<p>Registration adds one <em>leaf</em>, a commitment to the voter's secret, to the registry's Merkle tree. The step has to achieve two things at once: prove that a valid passport stands behind the leaf, and make sure that passport adds no second leaf.</p>
+<ol>
+  <li>The browser draws a one-time key and shows a request to the phone that binds that key: the proof will be usable for this registration only, so a relay that sees it cannot reuse it for a leaf of its own.</li>
+  <li>The phone reads the chip, checks the state's signature chain, performs the face match, obtains the salt from the OPRF network on a blinded query, and produces a zero-knowledge proof that discloses only: the document is valid and unexpired on this day, the request's one-time key, and the salted identifier. Name, number, photo, birth date and nationality stay on the phone (<a href="https://docs.zkpassport.id/examples/personhood">ZKPassport, personhood</a>).</li>
+  <li>The browser derives the leaf from the voter secret, signs the registration with the one-time key, and posts it to a relay.</li>
+  <li>The ingest verifies the proof with ZKPassport's open verifier, checks that the proof's OPRF key is the registry's, refuses the identifier if the log already holds it, and otherwise appends the leaf at the next position of the tree. Every refusal is logged with its reason.</li>
+</ol>
+<p>The identifier is public in the log. That is deliberate: it is what lets anyone, not only us, check that no passport registered twice. What it reveals is the subject of <a href="#a-state">section 3.4</a> (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#6-registration">registration</a>).</p>
+
+<h3 id="v-ballot">2.4 The ballot and its proof</h3>
+<p>A ballot must show that it comes from a registered voter without saying which one, and that the same voter cannot cast a second one. Both come from one zero-knowledge proof, written in <a href="https://noir-lang.org">Noir</a> and proven with Aztec's <a href="https://github.com/AztecProtocol/aztec-packages/tree/master/barretenberg">UltraHonk</a> in the browser. The proof's public values are: a recent root of the registry tree; the poll; a <em>pseudonym</em>, derived one-way from the voter secret and the poll, so that it is the same for the voter's every attempt in this poll and unrelated to their pseudonym in any other poll; a commitment to the choice; and the hash of the sealed choice described next. The proof states that a leaf under that root was derived from the secret that also produced the pseudonym, and that the committed choice is exactly one of the poll's options or the blank. The ingest accepts one ballot per pseudonym per poll; a second one is refused and logged (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#91-the-statement">the statement</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#93-checks-the-ingest-in-order">the checks</a>).</p>
+<p>UltraHonk needs no ceremony of ours: it uses a universal reference string, and anyone can rebuild the circuit with <a href="https://github.com/lanterne-labs/isoloir/blob/main/circuits/gen.py">the generator</a> and compare the verification key hash the poll pins.</p>
+
+<h3 id="v-seal">2.5 Sealing the choice until the close</h3>
+<p>The choice itself is not in the proof. It is sealed under a fresh symmetric key, and that key is encrypted with <a href="https://github.com/drand/tlock">tlock</a> to the drand round of the close. Until that round exists, nobody can open any ballot, including us and including the voter's own browser. The proof binds the hash of the sealed blob, so nobody can swap a voter's sealed choice for another without invalidating the proof. One subtlety is worth a sentence: the circuit commits to the choice but does not verify the encryption, because the time-lock's arithmetic is far too costly inside a proof. The check is deferred to the opening: a blob that does not open to its commitment makes the ballot void, listed and not counted, and only the voter's own software could have produced such a blob (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#72-encryption">encryption</a>).</p>
+
+<h3 id="v-transport">2.6 Transport and receipts</h3>
+<p>Registrations and ballots are posted to the relays as signed events under one-time keys. The voter's software ranks the relays by a value derived from the secret and sends the registration to the first and the ballots to the second, so that one relay does not see both. The ingest answers each message with a signed acknowledgement naming the checkpoint that will hold it, posted back to the relay the message came from. The browser keeps that receipt and later checks that the checkpoint does contain the message; a missing one is a complaint that anyone can judge from the relay's copy and the ingest's signature (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#112-acknowledgements">acknowledgements</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#113-receipts-and-complaints">receipts</a>).</p>
+
+<h3 id="v-log">2.7 The log, the mirror, the stamps</h3>
+<p>The log is an <a href="https://datatracker.ietf.org/doc/html/rfc6962">RFC 6962</a> Merkle tree, the structure behind Certificate Transparency. Every minute in which it grew, the ingest signs a <em>checkpoint</em> in the <a href="https://c2sp.org/signed-note">C2SP signed-note</a> format: the log's size and root, the size and root of each registry tree, and the git commit of the mirror that holds the files. Entries inside a checkpoint are ordered by hash, not by arrival, so the public record dates nothing to the second. Each checkpoint is stamped with OpenTimestamps and the stamp is upgraded until it carries a Bitcoin attestation. The mirror is static files read by commit, so the vote page pins exactly what it read; the setups and the results carry inclusion proofs, so the mirror cannot serve a key or a result the log does not hold (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#4-the-ledger-and-its-log">the log</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#15-the-mirror">the mirror</a>).</p>
+
+<h3 id="v-open">2.8 The close and the opening</h3>
+<p>At the first checkpoint after the closing time the ingest logs a <em>close</em> entry; no ballot is accepted after it. When the drand round arrives, the authority fetches the beacon, verifies its signature under the chain's public key, opens every counted ballot, checks each against its commitment, and posts the tally: the totals, the number counted, the list of void ballots and the beacon itself. The ingest repeats every opening before logging the entry. Because the beacon is public, anyone can repeat the whole computation, and two correct tallies are byte for byte the same (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#104-the-tally-entry-tlock">tally</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#105-the-close-entry">close</a>).</p>
+
+<h3 id="v-audit">2.9 The audit</h3>
+<p>An audit replays the ledger's judgment from scratch: every checkpoint signature and the consistency between checkpoints, the stamps against Bitcoin headers, every registration proof and identifier, every ballot proof and pseudonym, every refusal's reason, the beacon and every opening, and that the mirror's files at each commit are the log's. With the relays, it also checks that every message they hold was judged, which is how withholding shows. A check that cannot run is a failure, not a pass. The same audit runs <a href="vote/#audit">in the browser</a> and from the command line with <a href="https://github.com/nikkolasg/zcash-agora/blob/main/scripts/audit.sh">one script</a> (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#16-the-audit">the audit</a>).</p>
+
+<h2 id="privacy">3. Privacy analysis</h2>
+
+<h3 id="a-links">3.1 The three links</h3>
+<p>Everything a poll could leak about a voter is one of three links, and the protocol places each behind a different mechanism.</p>
 <ul>
-  <li><strong>Provider:</strong> <a href="https://docs.zkpassport.id/intro">ZKPassport</a>. The app reads the passport chip over NFC, verifies the issuing state's signature chain against ZKPassport's certificate registry, and produces an UltraHonk proof on the phone. The rule here: <code>document_type: passport</code>, <code>require_expiry: true</code> (the document is unexpired on the day of the proof), no minimum age, no nationality constraint.</li>
-  <li><strong>Unique identifier:</strong> the <em>salted</em> identifier, derived (Poseidon2) from the document data, the registry's domain (<code>nikkolasg.github.io</code>) and scope (<code>agora/registry/1</code>), and the output of ZKPassport's threshold OPRF (2 of 3 nodes: TACEO, H2O Nodes, Aztec Labs) under mainnet key 1, on a blinded query. The same passport gives the same <code>uid</code> for this registry, so it registers once, ever; the issuing state cannot compute it from its records. The registry pins the OPRF public key (<code>eligibility.oprf_key</code>) and every verifier checks the proof's key against it, never against what the nodes serve. ZKPassport requires a face match for salted identifiers.</li>
-  <li><strong>Binding:</strong> the proof's <code>custom_data</code> is <code>H(T_reg, registry, R)</code> for a throwaway secp256k1 key <code>R</code> drawn before the scan; <code>R</code> signs the registration body (BIP340). A relay that saw the proof cannot replay it under a leaf of its own (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#6-registration">§6</a>).</li>
-  <li><strong>Leaf:</strong> <code>ID = H(T_id, registry, s)</code> for the voter secret <code>s</code> (from a passkey's PRF output or 12 BIP39 words), in a Poseidon2 Merkle tree of depth 20 (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#5-registries">§5</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#14-the-voter-secret">§14</a>).</li>
-  <li><strong>Verification:</strong> the ingest runs ZKPassport's verifier (a Node sidecar on the open SDK) on every registration; so does the authority before opening anything, and so does the audit.</li>
+  <li><strong>Passport to leaf.</strong> Does a given passport stand behind a given registration? The registration proof discloses only the salted identifier, so this link is as hidden as the identifier is unrecomputable.</li>
+  <li><strong>Leaf to ballot.</strong> Which registration cast a given ballot? Hidden by the ballot's zero-knowledge membership proof, under the assumptions of UltraHonk on BN254.</li>
+  <li><strong>Ballot to choice.</strong> What does a ballot say? Hidden until the drand round by the time-lock, and public afterwards, under the ballot's pseudonym.</li>
 </ul>
+<p>The last point is the honest statement of what this design is: at the close, every ballot opens, pseudonymously. The pseudonym links to no one, but a voter who gives up their secret can prove which ballot is theirs. The protocol reveals <em>choices without persons</em>, not nothing.</p>
 
-<h2>The ballot</h2>
-<p>The circuit for this poll is <code>choice4_tlock_linked_d20</code> (Noir, UltraHonk with the <code>noir-recursive</code> verifier target; nargo 1.0.0-beta.22, bb 5.0.0). Its public inputs are the registry root, the poll's identifier and mask, the pseudonym <code>nullifier = H(T_null, poll, s)</code>, the value commitment <code>vcmt = H(T_cmt, salt, H(v_0..v_3))</code>, and <code>bhash</code>, the SHA-256 of the time-locked blob reduced modulo the field. It proves that the leaf is in the tree at a root no older than <code>anchor_age</code> (24 h), that the pseudonym is derived from the same secret, and that the committed values encode exactly one valid choice (or the blank) for the poll's mask (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#91-the-statement">§9.1</a>).</p>
-<p>The blob is a 16-byte key encrypted with <a href="https://github.com/drand/tlock">tlock</a> (identity-based encryption on BLS12-381 to the poll's drand round) followed by <code>{"salt","values"}</code> sealed under that key with ChaCha20-Poly1305 (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#72-encryption">§7.2</a>). The proof binds the blob's hash: a relay cannot swap it, and only the voter can make their own ballot void. Doing the BLS12-381 arithmetic inside a BN254 circuit would cost millions of constraints, so the circuit commits to the values and the blob is checked at the opening instead: a ballot whose blob does not open to its commitment is listed as <code>void</code> and not counted (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#104-the-tally-entry-tlock">§10.4</a>).</p>
-<p>UltraHonk uses a universal structured reference string (Aztec's); there is no per-circuit ceremony and nothing of ours to trust. Anyone can rebuild the circuit from <code>circuits/gen.py</code> and compare the verification key hash the poll names.</p>
-
-<h2>Time-lock</h2>
-<dl class="kv">
-  <dt>Chain</dt><dd>drand <code>quicknet</code>, hash <code>52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971</code></dd>
-  <dt>Scheme</dt><dd><code>bls-unchained-g1-rfc9380</code>, period 3 s, genesis 1692803367</dd>
-  <dt>Round</dt><dd>34815412, the round at or after the close (2026-12-14 12:00:00 UTC)</dd>
-  <dt>Operators</dt><dd>the <a href="https://drand.love/partners/">League of Entropy</a>: Cloudflare, EPFL, Kudelski Security, Protocol Labs, the Ethereum Foundation, UCL, the University of Chile and others. No Zcash organization.</dd>
-</dl>
-<p>What the League could do: a threshold of its nodes could compute the round's signature early. What they would learn: exactly what everyone learns at the round, earlier. They cannot alter a ballot, forge one, or change the count. What they cannot do: anything with a key that does not exist yet, which is the normal case. drand has produced a round every three seconds since 2023 and the round, once published, is public for ever, so a tally can always be recomputed.</p>
-
-<h2>The log and the mirror</h2>
-<ul>
-  <li>Entries: <code>ledger</code>, <code>registry</code>, <code>register</code>, <code>poll</code>, <code>ballot</code>, <code>reject</code>, <code>tally</code>, <code>close</code>. Every refusal is logged with the refused body and the reason, so the auditor judges every message the ingest judged (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#114-every-refusal-is-logged">§11.4</a>).</li>
-  <li>Checkpoints at most every 60 s when the log grew, at least every 10 min regardless; entries within a checkpoint are ordered by body hash, so the log does not reveal arrival order (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#4-the-ledger-and-its-log">§4</a>).</li>
-  <li>The mirror is static files in a public git repository read through jsDelivr by commit; the checkpoint names the commit. Setups and tallies carry inclusion proofs: the mirror cannot serve a key, a channel or a result the log does not hold (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#15-the-mirror">§15</a>).</li>
-  <li>Every checkpoint note is stamped with OpenTimestamps and upgraded until it carries a Bitcoin attestation; the audit checks the stamps against block headers (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#4-the-ledger-and-its-log">§4</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#16-the-audit">§16</a>).</li>
-  <li>Receipts: a message is stored, then acknowledged with a signed ack naming its checkpoint, then logged in the same transaction as the checkpoint. A missing body is a complaint anyone can judge (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#112-acknowledgements">§11.2</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#113-receipts-and-complaints">§11.3</a>). The relays keep copies, so withholding is provable (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#16-the-audit">§16</a>).</li>
-</ul>
-
-<h2>Transport</h2>
-<p>Every message is a signed Nostr event (NIP-01, kinds 7100 to 7106) whatever carries it. This ledger lists three public relays and no direct endpoint: a voter's browser never contacts the operator, and the page itself makes no request to any server of ours. A voter ranks the relays by a hash of <code>s</code>; registrations go to the first, ballots to the next, so no single relay sees both (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#111-channels">§11.1</a>). With relays the browser never contacts the operator; with the direct endpoint the operator sees the voter's address and timing, and no third party keeps a copy.</p>
-
-<h2>Results</h2>
-<p>The poll is <code>closed</code>: no tally before the close. At the first checkpoint at or after <code>closes</code> the ingest logs a <code>close</code> entry. The authority (ours, or anyone's) fetches the beacon, verifies it under the chain's public key, opens every counted ballot, and posts <code>{values, counted, void, beacon}</code>; the ingest re-checks every opening before logging it. Two correct tallies are identical, and a browser checks the beacon itself while the openings are an auditor's job (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#104-the-tally-entry-tlock">§10.4</a>).</p>
-
-<h2>What each party learns</h2>
+<h3 id="a-honest">3.2 What each party sees when everyone is honest</h3>
 <table>
-  <tr><th></th><th>passport ↔ leaf</th><th>leaf ↔ ballot</th><th>ballot content</th></tr>
-  <tr><td>Public</td><td>yes (<code>uid</code> is public)</td><td>no</td><td>every ballot at the round, under its pseudonym</td></tr>
-  <tr><td>Ingest (us)</td><td>yes</td><td>no; it chooses what each checkpoint holds</td><td>as public</td></tr>
-  <tr><td>Relay</td><td>yes</td><td>the address and the time of a post</td><td>as public</td></tr>
-  <tr><td>Issuing state</td><td>no: the salted <code>uid</code> needs 2 of the 3 OPRF operators</td><td>no</td><td>no</td></tr>
-  <tr><td>drand</td><td>no</td><td>no</td><td>at the round, as public; a threshold could do so early</td></tr>
-  <tr><td>Network observer</td><td>no</td><td>address ↔ relay ↔ time; defeated by Tor or a VPN</td><td>as public</td></tr>
-  <tr><td>Holder of <code>s</code></td><td></td><td>every ballot of the voter</td><td>the ballot</td></tr>
+  <thead><tr><th>Party</th><th>Passport to leaf</th><th>Leaf to ballot</th><th>Ballot to choice</th><th>Network address</th></tr></thead>
+  <tbody>
+    <tr><td>Public, the log</td><td>the identifier only</td><td>no</td><td>at the round, every ballot</td><td>no</td></tr>
+    <tr><td>Ledger, us</td><td>as public</td><td>no</td><td>as public</td><td>no, it reads relays</td></tr>
+    <tr><td>A relay</td><td>as public</td><td>no</td><td>as public</td><td>of each post it carries, with the time</td></tr>
+    <tr><td>OPRF servers</td><td>a blinded value</td><td>no</td><td>no</td><td>of the phone, at registration</td></tr>
+    <tr><td>Issuing state</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+    <tr><td>ZKPassport</td><td>no, the proof is made on the phone</td><td>no</td><td>no</td><td>of the phone and browser, through its bridge</td></tr>
+    <tr><td>drand</td><td>no</td><td>no</td><td>as public, at the round</td><td>no</td></tr>
+    <tr><td>Mirror host</td><td>as public</td><td>no</td><td>as public</td><td>of readers</td></tr>
+  </tbody>
 </table>
-<p>From <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#17-what-each-party-learns">the specification's table</a>, for the tlock mode.</p>
+<p>Two addresses are exposed in the honest case: the phone's, to the OPRF servers and ZKPassport's bridge at registration, and the browser's, to the relay that carries each post. The relay also sees the time of the post, which the log then rounds to the minute. Tor or a VPN on either device removes the corresponding exposure (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#17-what-each-party-learns">what each party learns</a>).</p>
 
-<h2>Parameters of this ledger</h2>
+<h3 id="a-corrupt">3.3 What a corrupted party gains</h3>
+<p><strong>The ledger.</strong> It holds no key that opens anything, so a corrupt ledger reads no more than the public. It cannot forge a registration, since every one needs a passport proof; cannot forge or alter a ballot, since every one needs a proof under a secret it does not hold; cannot drop a message quietly, since the relay keeps a copy and the voter keeps a receipt. What it can do is refuse service, and keep two signed histories to show different readers. That fork is detectable, not prevented: any two conflicting checkpoint notes prove it, and the audit collects notes from the relays and the mirror (<a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md#2-limits-of-the-current-version">limits</a>, <a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md#31-next-fork-detection-without-third-parties">fork detection</a>).</p>
+<p><strong>A relay.</strong> It pairs a network address with what was posted from it. For a registration, that is address and identifier. For a ballot, address and pseudonym, and at the round, the choice. Since registrations and ballots go to different relays, pairing an identifier with a choice through an address needs two relays, or one relay and a network observer. None of this reaches the person, unless the address itself does.</p>
+<p><strong>The OPRF servers.</strong> Below the threshold they learn nothing beyond the phone's address and the moment of a registration. At the threshold they reconstruct the key and can evaluate the function on any input; by itself that still yields nothing, because they do not know any passport's data. The danger is in combination, in the next section.</p>
+<p><strong>drand.</strong> A threshold of the League could produce a round's signature early. It would then read every ballot before the close, exactly as everyone does at the close: choices under pseudonyms, no persons. It cannot alter, forge or discard a ballot, and it cannot change the count, which anyone recomputes from the same beacon.</p>
+<p><strong>ZKPassport.</strong> Its circuits and verifier are open and pinned by hash; a flaw in them would be a flaw in eligibility, not in secrecy, and it would be public. Its bridge sees addresses, not content.</p>
+<p><strong>The voter's own devices.</strong> A seized or compromised device gives up the secret, and with it every pseudonym and ballot of the voter. The twelve words recover the secret; they do not revoke it. This is also the vote-buying surface: a voter who hands over the words lets a buyer check the ballot after the close.</p>
+
+<h3 id="a-state">3.4 What the issuing state can learn</h3>
+<p>The state is the natural adversary of a passport-gated poll: it knows every passport it issued, chip data included, and it can read the public log like anyone else. What it can learn depends on the identifier.</p>
+<ul>
+  <li><strong>With a plain identifier</strong>, the state recomputes the identifier of each of its passports from its own records and the registry's labels, and reads off the list of its citizens who registered. It still cannot see how anyone voted. Zcash Agora does not use this mode.</li>
+  <li><strong>With the salted identifier and an honest OPRF network</strong>, the state cannot recompute anything: the salt it would need is held in shares by servers that only ever answer blinded queries. The log tells it that some passports registered, not whose.</li>
+  <li><strong>With the salted identifier and a corrupted OPRF threshold</strong>, state and servers together recompute every identifier: the servers supply the function, the state the inputs. The result is the same as the plain mode: the list of citizens who registered. Nothing more, because the OPRF touches registration only; the ballot's membership proof and the time-lock are unaffected, so the state still learns neither which ballot is a citizen's nor what it says.</li>
+</ul>
+<p>So the strongest realistic adversary, a state colluding with a threshold of the OPRF network, learns participation and not choices. A state that also controls a relay and observes its citizens' networks could go one step further and pair an address with a choice, which is why the exposure that defeats this chain is the network one, and Tor or a VPN closes it.</p>
+
+<h3 id="a-integrity">3.5 What nobody can do</h3>
+<ul>
+  <li>Register twice with one passport: the identifier is one per document for this registry, and the log refuses a second.</li>
+  <li>Vote twice in one poll: the pseudonym is one per secret and poll, and the log refuses a second.</li>
+  <li>Vote without registering: the ballot proof needs a leaf in the tree.</li>
+  <li>Alter a ballot in transit: the proof binds the sealed blob's hash.</li>
+  <li>Read a ballot before the round: the key does not exist.</li>
+  <li>Miscount: the tally is a deterministic function of the log and the beacon, and anyone recomputes it.</li>
+  <li>Drop a ballot unnoticed: the relay's copy and the voter's receipt prove the omission.</li>
+  <li>Rewrite history unnoticed: checkpoints are signed, consistent and timestamped in Bitcoin; a fork shows as two conflicting notes.</li>
+</ul>
+
+<h3 id="a-limits">3.6 Limits</h3>
+<ul>
+  <li><strong>Ballots open in clear at the round</strong>, under their pseudonyms. This is what lets anyone recount without a key holder, and it is also why the time-lock mode allows one ballot per voter and no correction: a correction would open in clear too (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#8-the-matrix">the matrix</a>).</li>
+  <li><strong>A fork of the log is detectable, not prevented.</strong> Pinning one history on a chain is designed, not deployed (<a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md#32-later-one-history-pinned-on-a-chain-catena">design</a>).</li>
+  <li><strong>Network metadata</strong> is the one exposure the protocol does not close by itself.</li>
+  <li><strong>Passports only</strong>, with a chip and an NFC phone, and a face match for the salted identifier.</li>
+  <li><strong>Not post-quantum.</strong> The time-lock is pairing-based and the proofs are on BN254. Since every ballot becomes public at the round anyway, a future quantum computer learns about choices nothing the public does not; it could, in principle, attack the proofs that hide the two other links.</li>
+  <li><strong>Scale.</strong> About a hundred thousand voters and ballots with the current software; the tree holds a million leaves.</li>
+</ul>
+
+<h2 id="params">4. This deployment</h2>
 <dl class="kv">
-  <dt>Origin</dt><dd><code>nikkolasg.github.io/zcash-agora</code></dd>
-  <dt>Log key</dt><dd>pinned in the voting app (<code>site/agora.config.json</code>, <code>verifierKey</code>), never read from the mirror</dd>
-  <dt>Channels</dt><dd><code>wss://relay.damus.io</code>, <code>wss://nos.lol</code>, <code>wss://relay.primal.net</code>; no direct endpoint</dd>
-  <dt>Registry 1</dt><dd>ZKPassport, passport, unexpired, no other rule; salted identifier under OPRF key 1 (pinned); depth 20</dd>
-  <dt>Poll 1</dt><dd>"Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol?" · options "I want ZSAs", "I do not want ZSAs", blank · tlock quicknet round 34815412 · closed · one ballot per voter · opens 2026-11-16 12:00 UTC · closes 2026-12-14 12:00 UTC</dd>
-  <dt>Circuit</dt><dd><code>choice4_tlock_linked_d20</code>, vk hash <code>0x33147e4950bdaa207d0123bef10466cb79c642cc78e70b4f51a6f251cc26c229</code></dd>
-  <dt>Setups</dt><dd><a href="https://github.com/nikkolasg/zcash-agora/tree/main/ledger">ledger/</a> in the repository, checked offline with <code>isoloir check</code></dd>
+  <dt>Origin</dt><dd><code>zcash-agora</code>, the name of the log and of its signing key, pinned in the voting page and never read from the mirror</dd>
+  <dt>Relays</dt><dd><code>wss://relay.damus.io</code>, <code>wss://nos.lol</code>, <code>wss://relay.primal.net</code>; no direct endpoint</dd>
+  <dt>Registry 1</dt><dd>ZKPassport, any passport, unexpired, no other rule; salted identifier under ZKPassport's OPRF key 1, pinned; label <code>zcash-agora</code>, scope <code>agora/registry/1</code>; tree depth 20</dd>
+  <dt>Poll 1</dt><dd>"Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol?", two options and a blank; opens 2026-11-16 12:00 UTC, closes 2026-12-14 12:00 UTC; one ballot per voter; no result before the close</dd>
+  <dt>Time-lock</dt><dd>drand <a href="https://api.drand.sh/v2/beacons/quicknet/info">quicknet</a>, round 34815412, the first round at or after the close</dd>
+  <dt>Circuit</dt><dd><code>choice4_tlock_linked_d20</code>, verification key hash <code>0x33147e49…c229</code>, rebuildable with nargo 1.0.0-beta.22 and bb 5.0.0</dd>
+  <dt>Checkpoints</dt><dd>at most one a minute, each stamped in Bitcoin</dd>
+  <dt>Setups</dt><dd><a href="https://github.com/nikkolasg/zcash-agora/tree/main/ledger">ledger/</a>, checked offline with <code>isoloir check</code></dd>
 </dl>
 
-<h2>Limits</h2>
+<h2 id="code">5. Code</h2>
 <ul>
-  <li><strong>The operator is one process.</strong> It can refuse service and it decides what each checkpoint holds. It cannot read, alter or forge a ballot, register anyone, or drop an acknowledged message quietly. It could fork the log for some readers; the audit collects notes from relays and mirror and fails on two notes of one index with different roots (<a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md#31-next-fork-detection-without-third-parties">DESIGN 3.1</a>). Anchoring the log in a chain (Catena) is designed, not deployed.</li>
-  <li><strong>Ballots are public at the close, pseudonymously.</strong> A voter who gives up <code>s</code> proves their ballot after the close; the same holds for a coinholder voter who gives up a hotkey. The time-lock delays such a proof; it does not prevent it.</li>
-  <li><strong>One ballot per voter, no corrections.</strong> Under time-lock a correction would open in clear and is a pattern of its own (<a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#8-the-matrix">§8</a>).</li>
-  <li><strong>Passports only.</strong> ZKPassport also verifies ID cards, but isoloir supports passports only for now (DESIGN <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md#2-parties">§2</a>).</li>
-  <li><strong>Scale.</strong> The ingest holds the log in memory (about 100k ballots); the browser rebuilds the registry tree (about 100k voters); a tree of depth 20 holds a million leaves.</li>
-  <li><strong>Not post-quantum.</strong> The time-lock is pairing-based. Since every ballot becomes public at the round anyway, a future quantum adversary learns nothing more than the public does; the registration proofs and the ballot proofs hide the passport ↔ leaf and leaf ↔ ballot links, and their security assumptions are those of UltraHonk on BN254.</li>
+  <li><a href="https://github.com/lanterne-labs/isoloir">isoloir</a>: the protocol. <a href="https://github.com/lanterne-labs/isoloir/blob/main/SPEC.md">SPEC.md</a> is normative, <a href="https://github.com/lanterne-labs/isoloir/blob/main/DESIGN.md">DESIGN.md</a> is the threat model, <a href="https://github.com/lanterne-labs/isoloir/tree/main/circuits">circuits/</a> the Noir circuits, <a href="https://github.com/lanterne-labs/isoloir/tree/main/crates/server">crates/server</a> the ingest and authority, <a href="https://github.com/lanterne-labs/isoloir/tree/main/js">js/</a> the browser library that registers, votes and audits.</li>
+  <li><a href="https://github.com/nikkolasg/zcash-agora">zcash-agora</a>: this deployment. <a href="https://github.com/nikkolasg/zcash-agora/tree/main/ledger">ledger/</a> holds the setups, <a href="https://github.com/nikkolasg/zcash-agora/tree/main/site">site/</a> this website and the voting page, <a href="https://github.com/nikkolasg/zcash-agora/blob/main/deploy/README.md">deploy/</a> how the ingest runs, <a href="https://github.com/nikkolasg/zcash-agora/blob/main/zip/draft-lanterne-labs-personhood-polling.md">zip/</a> a draft ZIP describing personhood polling for Zcash.</li>
+  <li><a href="https://github.com/nikkolasg/zcash-agora-mirror">zcash-agora-mirror</a>: the public log, as files.</li>
+  <li><a href="https://github.com/zkpassport/zkpassport-packages">ZKPassport</a>: SDK, circuits and verifier. <a href="https://github.com/drand/tlock">tlock</a> and <a href="https://github.com/drand/drand">drand</a>. <a href="https://github.com/opentimestamps">OpenTimestamps</a>.</li>
 </ul>
-<p><a href="vote/#audit">Audit the vote</a> · <a href="comparison/">Compared with the coinholder stack</a></p>
+<p><a href="vote/#audit">Audit the vote</a> · <a href="comparison/">Compared with the coinholder stack</a> · <a href="how-it-works/">The short version</a></p>
 </div></main>
 {{footer}}
 </body>

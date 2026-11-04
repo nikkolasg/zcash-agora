@@ -1,5 +1,5 @@
-{"v":1,"version":1,"origin":"nikkolasg.github.io/zcash-agora",
- "log_key":"nikkolasg.github.io/zcash-agora+09d174f1+ARIZWzyeGSiq/4xtPS/MBVLYB9C8FeFPJDXs6rePxTch",
+{"v":1,"version":1,"origin":"zcash-agora",
+ "log_key":"zcash-agora+3d05fc8b+AU7cgiEfcro1BF0KsZfuh1Immhyk2VkYEs5lyDxm/WxW",
  "ingest":"e3e147a28c42e3f1caa80e81ca05784cd25dcb52553c0e219aa29ed34fc566af",
  "channels":[{"type":"nostr","url":"wss://relay.damus.io","state":"active"},
              {"type":"nostr","url":"wss://nos.lol","state":"active"},
