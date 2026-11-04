@@ -35,7 +35,7 @@
   <!-- poll runner -->
   <rect x="130" y="8" width="100" height="30" rx="5" class="frame2"/>
   <text x="180" y="21" text-anchor="middle" class="label">The poll runner</text>
-  <text x="180" y="31" text-anchor="middle" class="tiny">one party: snapshot, genesis, round config</text>
+  <text x="180" y="31" text-anchor="middle" class="tiny">one party: snapshot roots, genesis, round config</text>
   <!-- wallet -->
   <rect x="34" y="78" width="40" height="66" rx="7" class="frame2"/><rect x="40" y="87" width="28" height="44" rx="3" class="frame"/>
   <text x="54" y="160" text-anchor="middle" class="label">Your wallet</text>
@@ -72,7 +72,7 @@
 </svg>
 <ul class="who">
   <li><strong>Your wallet</strong> proves it held Orchard ZEC at a snapshot block and votes with a fresh key.</li>
-  <li><strong>The poll runner</strong>, one party, picks the snapshot, writes the chain's genesis and signs the round configuration wallets trust.</li>
+  <li><strong>The poll runner</strong>, one party, picks the snapshot, supplies the two Zcash tree roots that nothing on the chain checks, writes the genesis and signs the round configuration wallets trust.</li>
   <li><strong>14 validators</strong> run the vote chain, hold the shares of the key that opens the amounts, and each runs a submission server that receives your shares.</li>
   <li><strong>3 PIR servers</strong> answer wallets that ask whether their notes are still unspent.</li>
   <li><strong>The vote chain</strong> is a public ledger of their own.</li>
@@ -244,8 +244,8 @@
 <h3>5. What stops someone from voting twice?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>Nullifiers on the vote chain: a note delegated twice, or a vote cast twice, is rejected by every node, and anyone replaying the chain can check that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">no nullifier appears twice</a>.</p>
-<p>What a note is worth, and whether it was already spent on Zcash, comes from the snapshot: two tree roots that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#snapshot-configuration">the poll runner computes</a> and puts in the genesis block, and a round configuration wallets accept on <a class="q" href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>. The roots are deterministic from Zcash mainnet; checking them is up to each validator.</p>
+<p>Voting twice with the same note on the vote chain: nullifiers. A note delegated twice, or a vote cast twice, is rejected by every node, and anyone replaying the chain can check that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">no nullifier appears twice</a>.</p>
+<p>Voting with a note already spent on Zcash: <strong>nothing in the protocol.</strong> Whether a note was still unspent at the snapshot is proven against a root of Zcash's spent-note tree, and that root is <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#poll-creation">supplied by the vote manager in the poll-creation transaction</a>; the chain rejects it only if the signer is not the vote manager. No validator, proof or wallet checks the root against Zcash mainnet: wallets accept the round on <a class="q" href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>. A poll runner who supplies a root of their own choosing, with a PIR database to match, lets spent notes vote, and every such vote verifies. The same holds for the note-tree root, which decides which notes exist at all. Whoever creates the poll decides the electorate, on trust.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
 <p>One passport, one registration: the proof discloses a number unique to the document, and the log refuses a second registration with the same number. One registration, one ballot: each ballot carries a per-poll pseudonym derived from the registered key, and the log refuses a second ballot under the same pseudonym.</p>
