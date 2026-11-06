@@ -1,0 +1,33 @@
+{
+  "v": 1,
+  "id": 2,
+  "version": 1,
+  "registry": 1,
+  "title": "Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol?",
+  "kind": {
+    "type": "choice",
+    "options": [
+      "I want ZSAs",
+      "I do not want ZSAs"
+    ],
+    "blank": true
+  },
+  "encryption": {
+    "mode": "tlock",
+    "chain": "52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971",
+    "public_key": "83cf0f2896adee7eb8b5f01fcad3912212c437e0073e911fb90022d3e760183c8c4b450b6a0a6c3ac6a5776a2d1064510d1fec758c921cc22b0e17e63aaf4bcb5ed66304de9cf809bd274ca73bab4af5a6e9c76a4bc09e76eae8991ef5ece45a",
+    "period": 3,
+    "genesis": 1692803367,
+    "round": 34124212
+  },
+  "publish": {
+    "mode": "closed"
+  },
+  "revote": "none",
+  "opens": 1793971800,
+  "closes": 1795176000,
+  "circuit": {
+    "name": "choice4_tlock_linked_d20",
+    "vk_hash": "0x33147e4950bdaa207d0123bef10466cb79c642cc78e70b4f51a6f251cc26c229"
+  }
+}

@@ -7,7 +7,7 @@
     "branch": "main"
   },
   "registry": 1,
-  "poll": 1,
+  "poll": 2,
   "zkpassport": {
     "name": "Zcash Agora",
     "purpose": "Prove once that you hold a valid passport, to vote anonymously in Zcash Agora polls"
