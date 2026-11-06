@@ -25,7 +25,7 @@
 
 <main><div class="wrap wide cmp">
 <h1>Compared with the coinholder stack</h1>
-<p class="lede">The two systems answer different questions: what the coins want, and what the people want. Both are voting systems for the same ecosystem, so the same questions can be put to each. Every claim about the coinholder stack links to the sentence it rests on in the <a href="https://github.com/valargroup/zips">draft ZIPs</a> and the <a href="https://github.com/valargroup/token-holder-voting-config">published configuration</a>; where we derive something from several sentences, we say so.</p>
+<p class="lede">The two systems answer different questions: what the coins want, and what the people want. The same questions can be put to both. Each claim about the coinholder stack links to the sentence it rests on in the <a href="https://github.com/valargroup/zips">draft ZIPs</a> or the <a href="https://github.com/valargroup/token-holder-voting-config">published configuration</a>.</p>
 
 <h2>Who is involved</h2>
 <div class="two single">
@@ -73,10 +73,10 @@
   <text x="195" y="232" text-anchor="middle" class="warnt">8 of the 14 colluding wear all three hats at once</text>
 </svg>
 <ul class="who">
-  <li><strong>Your wallet</strong> proves it held Orchard ZEC at a snapshot block and votes with a fresh key.</li>
-  <li><strong>One committee</strong> of 14 Zcash organizations holds three roles: it receives your shares and sees your IP and your choice; it holds the key that opens the amounts, any 8 of 14; and it runs the vote chain and the tally. One collusion of 8 breaks all three.</li>
-  <li><strong>The poll runner</strong> is one of them: it picks the snapshot, supplies the tree roots (untrusted) and signs the round configuration wallets accept.</li>
-  <li><strong>3 PIR servers</strong>, run by the same organizations, tell wallets whether their notes are still unspent, and see who asks.</li>
+  <li><strong>Your wallet</strong> proves it held Orchard ZEC at a snapshot block and votes with that weight.</li>
+  <li><strong>One committee</strong> of 14 Zcash organizations does three jobs at once. It receives your shares and sees your IP and your choice. It holds the key that opens the amounts, any 8 of 14. It runs the vote chain and the tally.</li>
+  <li><strong>The poll runner</strong> is one of them. It picks the snapshot and signs the round that wallets accept.</li>
+  <li><strong>3 PIR servers</strong>, run by the same organizations, see who takes part.</li>
   <li><strong>The vote chain</strong> is the committee's public record.</li>
 </ul></div>
 </div>
@@ -125,11 +125,11 @@
   <text x="195" y="212" text-anchor="middle" class="good">nobody of ours holds a key or sees an address</text>
 </svg>
 <ul class="who">
-  <li><strong>Your phone</strong> runs the ZKPassport app: the passport is read and proven there, with a face match. Your browser proves you are on the list and seals your ballot to the closing time.</li>
+  <li><strong>Your phone</strong> runs the ZKPassport app. Your browser proves you are on the list and seals your ballot to the closing time.</li>
   <li><strong>3 public Nostr relays</strong>, run by others, carry your messages. They see your IP, as any relay does.</li>
-  <li><strong>The ledger</strong>, one server of ours, reads the relays, checks every proof, signs a receipt and appends to the log. It never talks to a voter.</li>
+  <li><strong>The ledger</strong>, our one server, reads the relays, checks every proof and appends to the log. It never talks to a voter.</li>
   <li><strong>The public log</strong>, a git repository, holds every registration, ballot, refusal and tally.</li>
-  <li><strong>drand</strong> and <strong>Bitcoin</strong> are read, never written to: one is the clock that opens the ballots, the other timestamps the log.</li>
+  <li><strong>drand</strong> and <strong>Bitcoin</strong> are only read. One opens the ballots, the other dates the log.</li>
 </ul></div>
 </div>
 </div>
@@ -140,12 +140,10 @@
 <h3>1. Who can read my ballot before the close?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>Your <em>choice</em> is never sealed: <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">"vote decisions are public inputs … and appear in every share reveal transaction on-chain"</a>. Every submission server that handles a share of yours sees the decision.</p>
-<p>Your <em>amount</em> is encrypted to a key shared among the validators, <a class="q" href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">any ⌈n/2⌉+1 of whom can reconstruct it</a>. With <a class="q" href="https://github.com/valargroup/token-holder-voting-config/blob/main/prod/dynamic-voting-config.json">14 in production</a>, that is 8 Zcash organizations.</p>
+<p>Your choice is never sealed. It is <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#privacy-implications">a public input, visible on chain</a> and to every server that handles your shares. Your amount is encrypted to a key that <a class="q" href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">any 8 of the 14</a> organizations can rebuild.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<p>Nobody, including us. The ballot is encrypted to a future round of the <a href="https://docs.drand.love/docs/timelock-encryption/">drand</a> beacon; the key is the round's signature, which does not exist before the closing time. It is produced by the <a href="https://drand.love/partners/">League of Entropy</a> (Cloudflare, EPFL, Kudelski, Protocol Labs and others), none of them a Zcash party, none aware of this poll.</p>
-<p>At the close the round is public for everyone at once, and every ballot opens under its pseudonym.</p>
+<p>Nobody, including us. The ballot is encrypted to a future round of the <a href="https://docs.drand.love/docs/timelock-encryption/">drand</a> clock. The key is that round's signature, and it does not exist before the close. The round is made by Cloudflare, EPFL, Kudelski and others who have nothing to do with Zcash.</p>
 </div>
 </div>
 <svg viewBox="0 0 360 120" class="anim fig" role="img" aria-label="Left: fourteen boxes, eight filled, labeled Zcash organizations. Right: a ring of drand nodes around a clock, labeled not Zcash parties, round public at the close">
@@ -169,10 +167,10 @@
 <h3>2. If that threshold is broken, what do they learn about my choice?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>Nothing new: the choice was public from the start, on the chain and at the servers. No threshold protects it; the ZIP weighs encrypting it and <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-not-encrypt-decisions">declines on circuit cost</a>.</p>
+<p>Nothing new. The choice was public from the start. The ZIP considered encrypting it and <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-not-encrypt-decisions">declined, for circuit cost</a>.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<p>They could open the ballots <em>early</em>, and learn what everyone learns at the close: a choice under a pseudonym that links to no passport and no address. Nothing they can alter, nothing to sell. The worst case of the threshold is a question of timing.</p>
+<p>They could open the ballots early. They would learn what everyone learns at the close: a choice under a pseudonym that links to no passport and no address.</p>
 </div>
 </div>
 </section>
@@ -181,11 +179,10 @@
 <h3>3. If that threshold is broken, what do they learn about my coin holdings?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>Your exact balance. Your weight is split into 16 encrypted shares; each share is sent to <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#server-selection">7 of the 14 servers</a>, and the servers are <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-servers-are-co-located-with-validators">the validators themselves</a>. Any 8 of them therefore hold every share of every voter, see <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#per-server-share-isolation">the same list of 16 commitments</a> on each, group them, and decrypt. (Our derivation from these three rules; the ZIP's own answer is that <a class="q" href="https://github.com/valargroup/zips/blob/roman/voting-protocol/zips/draft-valargroup-shielded-voting.md#privacy-implications">splitting keeps the EA from linking shares</a>, which holds for the EA alone, not for the EA that also runs the servers.)</p>
-<p>The balance of a shielded user is the one number the Zcash protocol exists to hide.</p>
+<p>Your exact balance. It is cut into 16 encrypted shares. Each share goes to <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#server-selection">7 of the 14 servers</a>, and the servers are <a class="q" href="https://github.com/valargroup/zips/blob/roman/submission-server/zips/draft-valargroup-submission-server.md#why-servers-are-co-located-with-validators">the key holders themselves</a>. So any 8 of them hold every share of every voter and the key that opens them. The balance of a shielded user is the one number Zcash exists to hide.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<p>Nothing. There is no amount anywhere in the system: your holdings are never asked, proven or encrypted. A ballot is a choice and nothing else.</p>
+<p>Nothing. Your holdings are never asked, proven or encrypted. A ballot is a choice and nothing else.</p>
 </div>
 </div>
 <svg viewBox="0 0 360 150" class="anim fig" role="img" aria-label="Three steps: your balance is cut into 16 shares; each share is sent to 7 of the 14 servers; 8 colluding servers therefore hold all 16 shares, and the same 8 hold the key, so they read your balance">
@@ -212,18 +209,10 @@
 <h3>4. What do they know about my IP address?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<ul>
-<li><strong>Normal operation:</strong> <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">"a vote chain validator sees the source IP, submission timestamp, connection correlation, and P2P propagation pattern of every transaction it receives"</a>; the PIR operator sees <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">your IP and that you take part</a>.</li>
-<li><strong>One corrupted node:</strong> it is also a submission server, so it pairs your IP with your choice and one encrypted share.</li>
-<li><strong>Threshold broken:</strong> IP, choice and exact balance, together, in the hands of the organizations that hold the key.</li>
-</ul>
+<p>A validator <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#privacy-implications">sees your IP and the timing of every transaction it receives</a>. It is also a submission server, so one bad node pairs your IP with your choice. If 8 collude, they hold your IP, your choice and your balance together.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<ul>
-<li><strong>Normal operation:</strong> the relay you post to sees your IP and a sealed envelope, like any relay. Our ledger reads the relays and never sees a voter's address; the page calls no server of ours.</li>
-<li><strong>One corrupted relay:</strong> it keeps your IP next to the envelope it carried; at the close that envelope opens, so it can pair your IP with your choice. It still learns no passport: registration went to a different relay, and nothing links the two. Tor or a VPN removes even that.</li>
-<li><strong>Threshold broken:</strong> drand never sees you. Same as above, a few days earlier.</li>
-</ul>
+<p>The relay you post to sees your IP and a sealed envelope. Our ledger reads the relays and never sees your address. One bad relay can pair your IP with your choice at the close, but not with your passport, which went to a different relay. Tor or a VPN removes even that.</p>
 </div>
 </div>
 <svg viewBox="0 0 360 130" class="anim fig" role="img" aria-label="Left: your wallet sends to a validator that sees IP, choice and a key share. Right: your browser posts to a relay that sees IP and a sealed envelope; the ledger reads the relay and sees no IP">
@@ -252,13 +241,10 @@
 <h3>5. What stops someone from voting twice?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>Voting twice with the same note on the vote chain: nullifiers. A note delegated twice, or a vote cast twice, is rejected by every node, and anyone replaying the chain can check that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">no nullifier appears twice</a>.</p>
-<p>Voting with a note already spent on Zcash: <strong>nothing in the protocol.</strong> Whether a note was still unspent at the snapshot is proven against a root of Zcash's spent-note tree, and that root is <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#poll-creation">supplied by the vote manager in the poll-creation transaction</a>; the chain rejects it only if the signer is not the vote manager. No validator, proof or wallet checks the root against Zcash mainnet: wallets accept the round on <a class="q" href="https://github.com/valargroup/zips/blob/roman/wallet-api-config-trust-model/zips/draft-valargroup-shielded-voting-wallet-api.md#signature-verification">a single valid signature</a>. A poll runner who supplies a root of their own choosing, with a PIR database to match, lets spent notes vote, and every such vote verifies. The same holds for the note-tree root, which decides which notes exist at all.</p>
-<p>What exists outside the protocol: a <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/docs/imt-verification.md">script</a> that rebuilds the spent-note tree from a Zcash node and compares its root with the chain's, and an admin dashboard that asks the vote manager to tick a box saying they ran it before signing the round. The tick is a statement, not a proof; the chain accepts the round either way. Anyone can run the script; nobody has to. Whoever creates the poll decides the electorate, on trust.</p>
+<p>On the vote chain, nullifiers stop <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">the same note voting twice</a>. Whether a note was still unspent at the snapshot is another matter. That is proven against a root that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#poll-creation">the poll runner supplies</a>, and nothing in the protocol checks it against Zcash. A <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/docs/imt-verification.md">script</a> exists to check it. Anyone can run it, and nobody has to.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<p>One passport, one registration: the proof discloses a number unique to the document, and the log refuses a second registration with the same number. One registration, one ballot: each ballot carries a per-poll pseudonym derived from the registered key, and the log refuses a second ballot under the same pseudonym.</p>
-<p>Both rules are checked by the ledger when it appends, and again by <a href="vote/#audit">anyone who recounts</a>: every registration and every refusal is in the public log.</p>
+<p>One passport, one registration: the log refuses a second registration with the same passport number. One registration, one ballot: the log refuses a second ballot under the same pseudonym. Both rules are checked again by <a href="vote/#audit">anyone who recounts</a>.</p>
 </div>
 </div>
 </section>
@@ -267,21 +253,19 @@
 <h3>6. Can I recount the result myself?</h3>
 <div class="two">
 <div class="side coins"><h4>Coinholder voting</h4>
-<p>You can <em>check</em> it, not <em>produce</em> it. Each validator posts its partial decryption on the chain with a proof, and <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/x/vote/client/cli/query.go"><code>svoted query vote verify-tally</code></a> checks the proofs and recomputes the totals. It needs a node of your own: the production nodes do not expose the RPC it uses.</p>
-<p>Without 8 validators' partial decryptions there is no tally; the round <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">"verifies as having no tally"</a>. And the check says nothing about whether the snapshot roots were the real ones (question 5).</p>
+<p>You can check it, not produce it. A <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/x/vote/client/cli/query.go">command</a> verifies the validators' partial decryptions, if you run a node of your own. Without 8 validators there is <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">no tally at all</a>.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<p>Yes, with no key and no permission: the public log, the drand round of the close, and the audit <a href="vote/#audit">in your browser</a>. It re-verifies every passport proof and every membership proof, opens every ballot with the public round, counts, and compares with the posted tally. If we vanished, the count would still come out.</p>
+<p>Yes, with no key and no permission. <a href="vote/#audit">Your browser</a> re-checks every proof, opens every ballot with the public drand round, and counts. If we vanished, the count would still come out.</p>
 </div>
 </div>
 </section>
 
 <h2>Scope</h2>
 <ul>
-  <li>This compares the two designs as published. It says nothing about any operator's conduct; a threshold assumption leaves no trace either way.</li>
-  <li>Agora's own exposures are on every page: a relay sees an address, registering takes a face match, and every ballot is readable at the close under its pseudonym.</li>
-  <li>Passports are one measure of personhood, coins are another. The two counts are meant to be read together.</li>
-  <li>Corrections with a citation are welcome in the <a href="https://github.com/nikkolasg/zcash-agora/issues">repository</a> and will be applied.</li>
+  <li>This compares the two designs as published. It says nothing about what any operator has done.</li>
+  <li>Agora's own leaks are on every page: a relay sees your address, registering takes a face match, and every ballot is readable at the close under its pseudonym.</li>
+  <li>Corrections with a citation are welcome in <a href="https://github.com/nikkolasg/zcash-agora/issues">the repository</a>.</li>
 </ul>
 </div></main>
 <footer class="bottom"><div class="wrap wide">

@@ -21,42 +21,42 @@
     <h2>Your passport stays on your phone.</h2>
     <p class="sub">The ledger receives only <span class="tag">valid passport</span> and <span class="tag">a unique number</span></p>
     {{anim:passport}}
-    <p class="ex">The ZKPassport app reads the chip and proves, on the phone, that the passport is real and unexpired. Your name, photo, birth date and nationality never leave it. The number lets the same passport register once, and says nothing else. One person, one vote.</p>
+    <p class="ex">The ZKPassport app reads the chip and proves, on your phone, that the passport is real. Your name, photo and nationality never leave it. The number only stops the same passport from registering twice.</p>
   </div>
   <div class="idea">
     <h2>Your ballot travels incognito.</h2>
     {{anim:ballot-path}}
-    <p class="ex">Your browser proves you are on the list without saying who, signs the ballot with a pseudonym derived from a secret only your device holds, and posts it to public Nostr relays run by others. Your address stays there: the ledger reads the sealed ballot among the rest.</p>
+    <p class="ex">Your browser proves you are on the list without saying who you are. It signs the ballot with a pseudonym and posts it to public relays run by others. Our server reads the relays and never sees your address.</p>
   </div>
   <div class="idea">
     <h2>Sealed until the close, by an independent clock.</h2>
     {{anim:count}}
-    <p class="ex">Each ballot is locked to a future round of the drand randomness beacon, run by a committee that has nothing to do with Zcash (Cloudflare, EPFL, Kudelski, Protocol Labs and others) and does not know its beacon serves this poll. The key does not exist before the closing time, so nobody can read a ballot early, including us. At the close anyone opens the ballots, each under its pseudonym, and counts.</p>
+    <p class="ex">Each ballot is locked to a future round of the drand clock, run by Cloudflare, EPFL, Kudelski and others who have nothing to do with Zcash. The key does not exist before the close, so nobody can read a ballot early, us included.</p>
   </div>
   <div class="idea">
     <h2>Anyone can recount everything.</h2>
     {{anim:pipe}}
-    <p class="ex">Every registration, every ballot, every refusal and the result go into a public log, signed and dated in Bitcoin. Your browser can redo every check, from the first registration to the result.</p>
+    <p class="ex">Every registration, ballot and result goes into a public log, signed and dated in Bitcoin. Your browser can redo every check.</p>
     <p><a class="btn" href="vote/#audit">Audit the vote</a></p>
   </div>
 </div>
 
 <h2 style="text-align:center">What this means for you</h2>
 <div class="boxes">
-  <div class="box2"><span class="big">Nothing about your passport is learned.</span>A proof that it is valid, and a number unique to it, salted so that even the state that issued it cannot recognize it. Not your name, not your nationality, not your face.</div>
-  <div class="box2"><span class="big">Nobody in Zcash can open your vote.</span>Not us, not any Zcash organization: the ballots open at the closing time, when the independent drand network publishes its round, and not before.</div>
-  <div class="box2"><span class="big">Your vote carries a pseudonym, not you.</span>The pseudonym comes from a secret on your device. Nothing links it to your passport, or to your pseudonym in another poll.</div>
-  <div class="box2"><span class="big">The server does not even see your address.</span>Ballots go through public relays. The ledger reads them there, without knowing where they came from.</div>
+  <div class="box2"><span class="big">Nothing about your passport is learned.</span>Only that it is valid, and a number that even the state that issued it cannot recognize.</div>
+  <div class="box2"><span class="big">Nobody in Zcash can open your vote.</span>The ballots open at the closing time, when drand publishes its round, and not before.</div>
+  <div class="box2"><span class="big">Your vote carries a pseudonym, not you.</span>Nothing links it to your passport, or to your pseudonym in another poll.</div>
+  <div class="box2"><span class="big">Our server never sees your address.</span>Ballots go through public relays. We read them there.</div>
 </div>
 
 <h2 style="text-align:center">What it does not do</h2>
 <div class="boxes">
-  <div class="box2 coins"><span class="big">Ballots are readable at the close.</span>Each one opens under its pseudonym, which is what lets anyone recount without a key holder. It reveals a choice, never a person.</div>
-  <div class="box2 coins"><span class="big">Your 12 words can prove your vote.</span>After the close, whoever holds them can show how that pseudonym voted. A vote buyer could demand them. Keep them to yourself.</div>
-  <div class="box2 coins"><span class="big">It takes a chip passport and an NFC phone.</span>Passports are the first proof of personhood we accept; the registry format takes others as they come.</div>
-  <div class="box2 coins"><span class="big">Registering takes a face match.</span>The salted number that keeps your registration unknown even to the state that issued your passport requires it.</div>
+  <div class="box2 coins"><span class="big">Ballots are readable at the close.</span>Each one opens under its pseudonym. That is what lets anyone recount. It shows a choice, never a person.</div>
+  <div class="box2 coins"><span class="big">Your 12 words can prove your vote.</span>Whoever holds them can show how you voted. Keep them to yourself.</div>
+  <div class="box2 coins"><span class="big">It takes a chip passport and an NFC phone.</span>Passports are the first proof of personhood we accept. Others can follow.</div>
+  <div class="box2 coins"><span class="big">Registering takes a face match.</span>The app checks a selfie against the passport photo, on your phone.</div>
 </div>
-<p class="muted" style="text-align:center">And it binds no one: a poll here is a measurement offered to the people who decide.</p>
+<p class="muted" style="text-align:center">And it binds no one. A poll here is a measurement, offered to the people who decide.</p>
 <p style="text-align:center"><a class="btn" href="vote/">Go vote</a> &nbsp; <a href="technical/">The technical version</a></p>
 </div></main>
 {{footer}}

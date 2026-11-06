@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <base href="/zcash-agora/">
 <title>Who can vote, and why</title>
-<meta name="description" content="Eligibility in Zcash Agora: one valid passport, one voice. Why passports, who is excluded, what the issuing state learns, and the door left open to other proofs of personhood.">
+<meta name="description" content="Who can vote in Zcash Agora: one valid passport, one voice. Why passports, who is left out, and the door open to other proofs of personhood.">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -24,43 +24,41 @@
 
 <main><div class="wrap">
 <h1>Who can vote</h1>
-<p class="lede">Anyone with a valid biometric passport, of any country, of any age. One person, one vote, in every poll on this ledger.</p>
+<p class="lede">Anyone with a valid passport that has a chip, from any country, of any age. One person, one vote, in every poll on this ledger.</p>
 
 <h2>The rule</h2>
 <ul>
-  <li>A passport (not an identity card, not a residence permit, for now) with a chip, unexpired on the day you register.</li>
-  <li>No minimum age, no nationality rule. The poll asks what people think; it does not ask which people.</li>
-  <li>The registry remembers a number unique to your passport, so the same passport cannot register twice. It does not remember your name, your nationality, your birth date or your photo, because it never receives them. The number is salted with a secret held by independent servers, so not even the state that issued the passport can tell whether it registered.</li>
+  <li>A passport with a chip, not expired on the day you register. Identity cards and residence permits do not work yet.</li>
+  <li>No minimum age and no nationality rule. The poll asks what people think, not which people.</li>
+  <li>The ledger keeps a number unique to your passport, so it cannot register twice. It never receives your name, nationality, birth date or photo.</li>
 </ul>
 
-<h2>Why a passport at all</h2>
-<p>A count of people needs a way to tell one person from two accounts. Without it, the count is of accounts, and accounts are free. Forum handles, GitHub accounts, e-mails, phone numbers, wallet addresses: all of them can be made by the dozen, and a poll that counts them measures who had the most afternoons to spare.</p>
-<p>A passport is the one credential most adults on earth hold that a state issued once per person, that carries a cryptographic signature of that state, and that a phone can verify offline. With <a href="https://docs.zkpassport.id/intro">ZKPassport</a>, the verification and the proof happen on your phone; what leaves it is a proof that the rule holds and a number derived from the document. Nothing else.</p>
+<h2>Why a passport</h2>
+<p>A count of people needs a way to tell one person from two accounts. Forum handles, e-mails and wallet addresses can be made by the dozen. A passport is issued once per person by a state, carries that state's signature, and a phone can check it. With <a href="https://docs.zkpassport.id/intro">ZKPassport</a> the check and the proof happen on your phone. What leaves it is a proof that the rule holds and a number derived from the document. Nothing else.</p>
 
 <h2>What it costs</h2>
 <ul>
-  <li><strong>Some people cannot take part.</strong> No biometric passport, no NFC phone, a passport whose issuing country does not publish its signing certificates: no vote. We know that is a real exclusion, and that it falls unevenly on the world.</li>
-  <li><strong>A face match at registration.</strong> The unique number is <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted</a>: it mixes in the output of a secret split over three independent servers (TACEO, H2O Nodes, Aztec Labs), so the state that issued your passport cannot recompute it from its records and learn that you registered. ZKPassport requires a face match in the app for that mode, so registering takes a selfie, checked on the phone against the passport's photo.</li>
-  <li><strong>You trust the OPRF servers for liveness.</strong> Two of the three must answer for a registration to be made; the ledger pins their public key, so verification needs nothing from them later.</li>
-  <li><strong>You trust ZKPassport's app and certificate registry.</strong> The SDK and the verifier are open source and the ledger re-verifies every proof; the registry of state certificates is public and checkable. We still name it as a dependency.</li>
+  <li><strong>Some people cannot take part.</strong> No chip passport, no NFC phone, or a country that does not publish its signing certificates means no vote. That exclusion is real, and it falls unevenly on the world.</li>
+  <li><strong>Registering takes a face match.</strong> The unique number is <a href="https://docs.zkpassport.id/examples/salted-identifiers">salted</a> by independent servers, so the state that issued your passport cannot recompute it and learn that you registered. ZKPassport asks for a selfie in that mode, checked on your phone against the passport photo.</li>
+  <li><strong>You trust ZKPassport's app.</strong> Its code and verifier are open source, and the ledger re-checks every proof. It is still a dependency, and we name it.</li>
 </ul>
 
 <h2>Why we accept those costs</h2>
-<p>Humans matter more than coins. A poll that weighs a voice by a balance lets the coin speak; this one lets the human speak, whatever they hold and even if they hold nothing. A count of passport holders, with its exclusions stated, is a count of people. That is what we are after, and passports are the first way we found to get it.</p>
+<p>A poll that weighs a voice by a balance lets the coins speak. This one lets the person speak, whatever they hold, even if they hold nothing. A count of passport holders, with its gaps stated, is a count of people. Passports are the first way we found to get one.</p>
 
 <div class="card warn">
-<strong>Passports are one proof of personhood, not the proof.</strong> The registry is a provider and a rule; a new provider is a new verifier, not a new protocol. If a proof of personhood exists that is more inclusive and as hard to forge (another document type, a web-of-trust with real guarantees, a proof-of-humanity you would stake your reputation on), we want to hear about it, and the ledger can host a second registry next to this one. What every registry here has in common: it counts people.
+<strong>Passports are one proof of personhood, not the only one.</strong> If a proof exists that is more inclusive and as hard to forge, we want to hear about it. The ledger can host a second registry next to this one.
 </div>
 
 <h2>What you are not asked</h2>
 <ul>
   <li>Whether you hold ZEC, or how much.</li>
-  <li>Your name, nationality, age, or address.</li>
+  <li>Your name, nationality, age or address.</li>
   <li>An account anywhere.</li>
 </ul>
 
 <h2>One registration, every poll</h2>
-<p>You register once per ledger. Every poll on it uses the same registry, and your pseudonym in each poll is derived separately, so nothing links your ballot in one poll to your ballot in another. Keep the key your browser made (passkey or 12 words): it is what lets you vote in the next poll from another device.</p>
+<p>You register once. Every poll on this ledger uses the same registration, with a different pseudonym each time, so nothing links your ballots across polls. Keep the key your browser made, as a passkey or 12 words. It lets you vote in the next poll from another device.</p>
 <p><a class="btn" href="vote/">Register and vote</a></p>
 </div></main>
 <footer class="bottom"><div class="wrap wide">

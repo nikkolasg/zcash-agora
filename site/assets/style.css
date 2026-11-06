@@ -159,3 +159,11 @@ footer.bottom a { color: inherit; }
 .anim.fig.wide { max-width: 40rem; margin: .8rem auto 1.2rem; }
 .anim .arr { stroke: var(--ink-2); stroke-width: 1.2; fill: none; }
 .anim .ahd { fill: var(--ink-2); }
+
+/* the poll, on the home page */
+.poll { border: 2px solid var(--people); border-radius: 14px; padding: 1.3rem 1.5rem 1rem; margin: 1.6rem 0 .5rem; background: var(--bg-2); }
+.poll .when { color: var(--people); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .8rem; margin: 0 0 .5rem; }
+.poll h2 { margin: 0 0 .7rem; font-size: 1.8rem; line-height: 1.2; }
+.poll .actions { margin: .2rem 0 .8rem; }
+.poll .actions .btn { margin: 0 .4rem .5rem 0; }
+.poll .muted { margin: 0; font-size: .95rem; }
