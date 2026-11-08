@@ -11,6 +11,8 @@
 #
 #   scripts/try.sh                 # then open http://localhost:5173/
 #   CLOSE_IN=300 scripts/try.sh    # a five-minute poll
+#   PASSPORT=1 CLOSE_IN=600 scripts/try.sh   # with a real passport: the production registry (ZKPassport, domain
+#                                            # zcash-agora) on a local ledger; the ingest runs the real verifier
 #
 # Needs: Rust, Postgres on localhost, node 22, nargo 1.0.0-beta.22
 # (~/.nargo/bin), and bb 5.0.0 (installed with isoloir/js's dependencies).
@@ -18,6 +20,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 export PATH="$HOME/.nargo/bin:$PATH"
 export CLOSE_IN=${CLOSE_IN:-1200}
+export PASSPORT=${PASSPORT:-}
 arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/'); os=$(uname | tr A-Z a-z | sed 's/darwin/macos/')
 export ISOLOIR_BB=${ISOLOIR_BB:-$ROOT/isoloir/js/node_modules/@aztec/bb.js/build/$arch-$os/bb}
 
@@ -42,7 +45,8 @@ until [ -f "$ROOT/site/app/.env.trial" ]; do sleep 2; done
 until curl -s -o /dev/null http://localhost:5173/vote/; do sleep 1; done
 echo
 echo "==> Zcash Agora, test mode: http://localhost:5173/  (vote: http://localhost:5173/vote/)"
-echo "    Register with any identifier (no passport), vote; the poll closes in $CLOSE_IN s and the result appears."
+if [ -n "$PASSPORT" ]; then echo "    Scan the QR code with the ZKPassport app, register, vote; the poll closes in $CLOSE_IN s and the result appears."
+else echo "    Register with any identifier (no passport), vote; the poll closes in $CLOSE_IN s and the result appears."; fi
 echo "    Ctrl-C stops everything."
 [ -z "${NO_OPEN:-}" ] && command -v open >/dev/null && open http://localhost:5173/ || true
 wait

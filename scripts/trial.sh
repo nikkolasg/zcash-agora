@@ -7,12 +7,23 @@
 # 5.0.0 (ISOLOIR_BB), node. Run from the repository root:
 #   scripts/trial.sh            # ~3 minutes; the poll closes 90 s after it opens
 #   SERVE=1 scripts/trial.sh    # also serves the mirror on :8787 for site/app (npm run dev -- --mode trial)
+#   PASSPORT=1 SERVE=1 scripts/trial.sh   # the production registry (ZKPassport, a real passport), no scripted voters:
+#                                         # register and vote from the site; the ingest verifies the proofs itself
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 ISOLOIR=${ISOLOIR:-$ROOT/isoloir/target/release/isoloir}
 TRIAL=${TRIAL:-$ROOT/trial}
 DB=${DATABASE_URL:-postgresql://localhost/agora_trial}
 CLOSE_IN=${CLOSE_IN:-90}
+PASSPORT=${PASSPORT:-}
+ZKV="$ROOT/isoloir/zkverifier/verify.mjs"
+RPC=${ISOLOIR_ETH_RPC:-https://ethereum-rpc.publicnode.com}
+if [ -n "$PASSPORT" ]; then
+  [ -d "$ROOT/isoloir/zkverifier/node_modules" ] || (cd "$ROOT/isoloir/zkverifier" && npm ci --no-audit --no-fund)
+  PROVIDER_ARGS=(--zkverifier "$ZKV" --rpc-url "$RPC")   # the real verifier, no --dev
+else
+  PROVIDER_ARGS=(--dev)
+fi
 : "${ISOLOIR_BB:?path to bb 5.0.0}"
 command -v nargo >/dev/null || { echo "nargo not on PATH (~/.nargo/bin)"; exit 1; }
 
@@ -40,10 +51,14 @@ cat >"$TRIAL/ledger.json" <<J
  "channels":[{"type":"nostr","url":"ws://127.0.0.1:7777","state":"active"},{"type":"direct","url":"http://127.0.0.1:8080","state":"active"}],
  "checkpoint_period":5,"anchor_age":86400}
 J
+if [ -n "$PASSPORT" ]; then
+  cp "$ROOT/ledger/registries/1.json" "$TRIAL/registry.json"   # the production registry, as is: ZKPassport, domain zcash-agora
+else
 cat >"$TRIAL/registry.json" <<J
 {"v":1,"id":1,"version":1,"name":"Zcash Agora trial (dev provider)",
  "eligibility":{"provider":"dev","domain":"trial.local","scope":"agora/registry/1"},"validity":3600,"depth":20}
 J
+fi
 # The real poll's shape (ledger/polls/1.json) with trial dates and the real quicknet chain.
 python3 - "$ROOT/ledger/polls/1.json" "$TRIAL/poll.json" "$OPENS" "$CLOSES" "$ROUND" "$VK" <<'PY'
 import json, sys
@@ -56,11 +71,12 @@ PY
 "$ISOLOIR" check registry "$TRIAL/registry.json" >/dev/null
 "$ISOLOIR" check poll "$TRIAL/poll.json" --registry "$TRIAL/registry.json" >/dev/null
 "$ISOLOIR" genesis "$TRIAL/ledger.json"
-PORT=8080 "$ISOLOIR" ingest --mirror-dir "$TRIAL/mirror" --dev --no-stamps --listen 127.0.0.1:8080 >"$TRIAL/ingest.log" 2>&1 &
+PORT=8080 "$ISOLOIR" ingest --mirror-dir "$TRIAL/mirror" "${PROVIDER_ARGS[@]}" --no-stamps --listen 127.0.0.1:8080 >"$TRIAL/ingest.log" 2>&1 &
 sleep 2
 "$ISOLOIR" submit registry "$TRIAL/registry.json"
 "$ISOLOIR" submit poll "$TRIAL/poll.json"
 
+if [ -z "$PASSPORT" ]; then
 for i in 0 1 2; do
   S=$("$ISOLOIR" voter secret); echo "$S" >"$TRIAL/voter$i.secret"
   "$ISOLOIR" voter register --mirror "$TRIAL/mirror" --registry 1 --secret "$S" --uid "trial-voter-$i"
@@ -69,6 +85,7 @@ sleep 8   # a checkpoint with the registrations, so ballots can prove against th
 "$ISOLOIR" voter vote --mirror "$TRIAL/mirror" --poll 1 --secret "$(cat "$TRIAL/voter0.secret")" --choice 0
 "$ISOLOIR" voter vote --mirror "$TRIAL/mirror" --poll 1 --secret "$(cat "$TRIAL/voter1.secret")" --choice 1
 "$ISOLOIR" voter vote --mirror "$TRIAL/mirror" --poll 1 --secret "$(cat "$TRIAL/voter2.secret")" --choice 0
+fi
 
 if [ -n "${SERVE:-}" ]; then
   echo "mirror on http://127.0.0.1:8787 ; relay ws://127.0.0.1:7777 ; direct http://127.0.0.1:8080"
@@ -78,18 +95,23 @@ if [ -n "${SERVE:-}" ]; then
 VITE_AGORA_ORIGIN=trial.local/agora
 VITE_AGORA_VERIFIER_KEY=$LOG_KEY
 VITE_AGORA_MIRROR=http://127.0.0.1:8787
-VITE_AGORA_DEV=1
+VITE_AGORA_POLL=1
+$([ -z "$PASSPORT" ] && echo VITE_AGORA_DEV=1)
 E
   echo "waiting for the close ($CLOSE_IN s) ... vote from the site meanwhile"
 fi
 
 WAIT=$((CLOSES - $(date +%s) + 12)); [ "$WAIT" -gt 0 ] && sleep "$WAIT"
 echo "--- the poll closed; opening the ballots with the drand beacon"
-"$ISOLOIR" authority --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --drand https://api.drand.sh --db "$DB" --nostr-key "$ISOLOIR_NOSTR_KEY" --dev --once
+"$ISOLOIR" authority --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --drand https://api.drand.sh --db "$DB" --nostr-key "$ISOLOIR_NOSTR_KEY" "${PROVIDER_ARGS[@]}" --once
 sleep 8
 echo "--- tally"; cat "$TRIAL/mirror/polls/1/tallies/latest.json"; echo
 echo "--- audit"
-"$ISOLOIR" audit --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --relays --skip-passports --dev
+if [ -n "$PASSPORT" ]; then
+"$ISOLOIR" audit --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --zkverifier "$ZKV" --rpc-url "$RPC"
+else
+"$ISOLOIR" audit --mirror "$TRIAL/mirror" --circuits "$TRIAL/mirror/circuits" --log-key "$LOG_KEY" --skip-passports --dev
+fi
 if [ -n "${SERVE:-}" ]; then
   echo "--- the result is on the vote page; the servers stay up until Ctrl-C"
   wait

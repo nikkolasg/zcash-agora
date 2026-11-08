@@ -2,10 +2,12 @@
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
 export const aggregate: (a: number, b: number) => [number, number, number, number];
+export const audit_answer: (a: number, b: number, c: number) => [number, number];
 export const audit_checkpoint: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const audit_drop: (a: number) => void;
 export const audit_finish: (a: number) => [number, number, number, number];
-export const audit_relays: (a: number, b: number, c: number) => [number, number, number, number];
+export const audit_quiet: (a: number, b: number) => [number, number];
+export const audit_rejudge: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const audit_start: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
 export const body_hash: (a: number, b: number) => [number, number];
 export const canonical: (a: number, b: number) => [number, number, number, number];
@@ -30,9 +32,12 @@ export const new_reg_secret: () => [number, number];
 export const new_words: (a: number, b: number) => [number, number, number, number];
 export const normalize_words: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const nullifier: (a: number, b: number, c: number) => [number, number, number, number];
+export const pow_check: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
+export const pow_mine: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
 export const protocol: () => [number, number];
 export const public_inputs: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const read_ack: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+export const read_complaint: (a: number, b: number, c: number, d: number) => [number, number, number, number];
 export const reg_pubkey: (a: number, b: number) => [number, number, number, number];
 export const register_body: (a: number, b: number) => [number, number, number, number];
 export const registration_binding: (a: number, b: number, c: number) => [number, number, number, number];

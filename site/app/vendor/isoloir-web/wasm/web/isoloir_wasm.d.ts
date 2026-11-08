@@ -4,6 +4,11 @@
 export function aggregate(cts_json: string): string;
 
 /**
+ * More verdicts for a pass (the answers to a rejudge's requests).
+ */
+export function audit_answer(id: number, verdicts_json: string): void;
+
+/**
  * Feeds one checkpoint (its signed note, its entries file).
  */
 export function audit_checkpoint(id: number, note: string, entries_json: string): string;
@@ -19,9 +24,14 @@ export function audit_drop(id: number): void;
 export function audit_finish(id: number): string;
 
 /**
- * The relays' events against the finished pass: the problems.
+ * A pass that only builds the state (no request for the logged proofs).
  */
-export function audit_relays(id: number, events_json: string): string;
+export function audit_quiet(id: number, on: boolean): void;
+
+/**
+ * Judges a message again against the state fed so far (a complaint of a refusal).
+ */
+export function audit_rejudge(id: number, kind: string, body: string, times_json: string, pending_json: string): string;
 
 /**
  * Starts an audit pass; `log_key` "" for the key the log names;
@@ -61,7 +71,8 @@ export function ident(poll: number, s: string, i: number): string;
 export function kind_info(poll_json: string): string;
 
 /**
- * The Nostr kinds: `{register, ballot, ack, checkpoint, link, tally, complaint}`.
+ * The Nostr kinds: `{register, ballot, ack, checkpoint, link, tally,
+ * complaint}` (ephemeral) and `legacy`, the same names in 7100–7106.
  */
 export function kinds(): string;
 
@@ -81,11 +92,27 @@ export function normalize_words(words: string, lang: string): string;
 
 export function nullifier(poll: number, s: string): string;
 
+/**
+ * Whether a nonce does the work of `bits` bits for a key and a time.
+ */
+export function pow_check(origin: string, pubkey: string, t: number, nonce: string, bits: number): boolean;
+
+/**
+ * The first nonce in `start … start + count − 1` whose work has `bits`
+ * leading zero bits (SPEC §11.1), or "" when none does.
+ */
+export function pow_mine(origin: string, pubkey: string, t: number, bits: number, start: number, count: number): string;
+
 export function protocol(): string;
 
 export function public_inputs(body: string, poll_json: string): string;
 
 export function read_ack(event_json: string, ingest_pubkey: string): string;
+
+/**
+ * Reads a complaint, its event or its body (SPEC §11.3).
+ */
+export function read_complaint(text: string, ingest_keys_json: string): string;
 
 export function reg_pubkey(sk_hex: string): string;
 
@@ -124,10 +151,12 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly aggregate: (a: number, b: number) => [number, number, number, number];
+    readonly audit_answer: (a: number, b: number, c: number) => [number, number];
     readonly audit_checkpoint: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly audit_drop: (a: number) => void;
     readonly audit_finish: (a: number) => [number, number, number, number];
-    readonly audit_relays: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly audit_quiet: (a: number, b: number) => [number, number];
+    readonly audit_rejudge: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly audit_start: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
     readonly body_hash: (a: number, b: number) => [number, number];
     readonly canonical: (a: number, b: number) => [number, number, number, number];
@@ -152,9 +181,12 @@ export interface InitOutput {
     readonly new_words: (a: number, b: number) => [number, number, number, number];
     readonly normalize_words: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly nullifier: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly pow_check: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
+    readonly pow_mine: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly protocol: () => [number, number];
     readonly public_inputs: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly read_ack: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly read_complaint: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly reg_pubkey: (a: number, b: number) => [number, number, number, number];
     readonly register_body: (a: number, b: number) => [number, number, number, number];
     readonly registration_binding: (a: number, b: number, c: number) => [number, number, number, number];

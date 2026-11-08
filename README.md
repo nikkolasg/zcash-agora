@@ -91,7 +91,7 @@ type any identifier instead of scanning).
   adapter follows the SDK's documented flow and must be exercised with a
   real passport before the poll opens.
 - Hosting: the site on GitHub Pages, the log on the mirror repository, the
-  ingest and the authority on a small Railway project with its own Postgres.
+  ingest and the authority on a small hosted server with its own Postgres.
   The authority is not privileged: anyone can run one from the public log.
 
 ## Licence

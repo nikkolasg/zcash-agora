@@ -3,17 +3,28 @@
 // audit.rs). The log is read twice: the first pass collects the proofs
 // the judge asks for, the page verifies them (ballots with bb.js against
 // the mirror's verification keys, passports with the ZKPassport SDK), and
-// the second pass replays the log with the verdicts. Then the relays'
-// copies are compared with the log (withholding). A check that could not
-// run is a problem, never a pass.
+// the second pass replays the log with the verdicts. A check that could
+// not run is a problem, never a pass.
+//
+// Mirrors of every version read alike: the entries of earlier logs hold
+// `reject` and `rejects` entries (counted, not judged, by the judge), and
+// an entry's body may be a string or its JSON. Channels keep no copies
+// (SPEC §11.1): there is no comparison with the relays. The newest note
+// may be ahead of the files the mirror holds (SPEC §15): the checkpoints
+// after the last one whose files are there are reported as not read yet,
+// never as missing.
 /** Audits the ledger a mirror serves. */
 export async function audit(wasm, opts) {
     const latest = await opts.text('checkpoint.txt');
     if (latest === null)
         throw new Error('the mirror has no checkpoint');
-    const last = Number(/^index (\d+)$/m.exec(latest)?.[1] ?? NaN);
-    if (!Number.isFinite(last))
+    const newest = Number(/^index (\d+)$/m.exec(latest)?.[1] ?? NaN);
+    if (!Number.isFinite(newest))
         throw new Error('checkpoint.txt: no index');
+    // `mirror <commit>:<index>`: the files of the checkpoints after <index> may not be there yet.
+    const mi = /^mirror [^\s:]+[: ](\d+)$/m.exec(latest);
+    const coveredTo = mi ? Math.min(Number(mi[1]), newest) : newest;
+    let last = newest;
     const verdicts = {};
     const progress = { phase: 'download', checkpoint: 0, checkpoints: last, verified: 0, asked: 0, report: null };
     const tell = () => opts.onProgress?.({ ...progress });
@@ -65,11 +76,16 @@ export async function audit(wasm, opts) {
             for (let i = 1; i <= last; i++) {
                 opts.signal?.throwIfAborted();
                 const [note, entries] = await Promise.all([opts.text(`checkpoints/${i}.txt`), opts.text(`entries/${i}.json`)]);
-                if (note === null)
-                    throw new Error(`checkpoint ${i} is missing on the mirror`);
-                if (entries === null)
-                    throw new Error(`the entries of checkpoint ${i} are missing on the mirror`);
-                const out = JSON.parse(wasm.audit_checkpoint(id, note, entries));
+                if (note === null || entries === null) {
+                    // Past the checkpoint the note's commit covers, the files may not be pushed yet.
+                    if (i > coveredTo) {
+                        last = i - 1;
+                        progress.checkpoints = last;
+                        break;
+                    }
+                    throw new Error(note === null ? `checkpoint ${i} is missing on the mirror` : `the entries of checkpoint ${i} are missing on the mirror`);
+                }
+                const out = JSON.parse(wasm.audit_checkpoint(id, note, normalizeEntries(entries)));
                 progress.checkpoint = i;
                 progress.report = out.report;
                 onCheckpoint(out);
@@ -100,56 +116,34 @@ export async function audit(wasm, opts) {
     });
     try {
         const fin = JSON.parse(wasm.audit_finish(second));
-        // 3. The relays' copies (withholding).
-        let relays = null;
-        if (opts.relays && fin.ledger && fin.ledger.relays.length) {
-            progress.phase = 'relays';
-            tell();
-            const events = [];
-            const read = [];
-            const failed = [];
-            await Promise.all(fin.ledger.relays.map((url) => readRelay(opts.relays, url, { kinds: [7100, 7101, 7102, 7105], '#t': [fin.ledger.tag] }).then((es) => {
-                events.push(...es);
-                read.push(url);
-            }, () => failed.push(url))));
-            const found = JSON.parse(wasm.audit_relays(second, JSON.stringify(events)));
-            fin.problems.push(...found);
-            for (const u of failed)
-                fin.warnings.push(`relay ${u}: not read`);
-            relays = { events: events.length, read, failed };
-        }
+        if (last < newest)
+            fin.warnings.push(`checkpoints ${last + 1} to ${newest}: their files are not on the mirror yet`);
         progress.phase = 'done';
         progress.report = fin;
         tell();
-        const { ledger: _ledger, ...report } = fin;
-        return { ...report, proofs, passports, relays, ok: fin.problems.length === 0 };
+        return { ...fin, proofs, passports, upto: last, latest: newest, ok: fin.problems.length === 0 };
     }
     finally {
         wasm.audit_drop(second);
     }
 }
-/** A relay's stored events for a filter, up to its end-of-stored-events. */
-function readRelay(t, url, filter, timeoutMs = 30_000) {
-    return new Promise((resolve, reject) => {
-        const events = [];
-        let stop = () => { };
-        const timer = setTimeout(() => {
-            stop();
-            reject(new Error('timeout'));
-        }, timeoutMs);
-        stop = t.subscribe(url, filter, (e) => events.push(e), {
-            onEose: () => {
-                clearTimeout(timer);
-                stop();
-                resolve(events);
-            },
-            onDown: () => {
-                clearTimeout(timer);
-                stop();
-                reject(new Error('down'));
-            }
-        });
-    });
+/** An entries file with every body as its text (a mirror may write a body as JSON). */
+export function normalizeEntries(text) {
+    const list = JSON.parse(text);
+    if (!Array.isArray(list))
+        throw new Error('entries: not an array');
+    if (list.every((e) => typeof e.body === 'string'))
+        return text;
+    return JSON.stringify(list.map((e) => ({ ...e, body: typeof e.body === 'string' ? e.body : canonicalJson(e.body) })));
+}
+/** Canonical JSON (SPEC §3): sorted keys, no whitespace, integers only. */
+function canonicalJson(v) {
+    if (v === null || typeof v !== 'object')
+        return JSON.stringify(v);
+    if (Array.isArray(v))
+        return '[' + v.map(canonicalJson).join(',') + ']';
+    const o = v;
+    return '{' + Object.keys(o).sort().map((k) => JSON.stringify(k) + ':' + canonicalJson(o[k])).join(',') + '}';
 }
 /**
  * Verifies ballot proofs with bb.js against the mirror's verification

@@ -1,6 +1,5 @@
 import type { IsoloirWasm } from './wasm.js';
 import type { Eligibility } from './types.js';
-import type { RelayTransport } from './relay.js';
 /** A proof the judge asked for. */
 export type AuditRequest = {
     key: string;
@@ -41,12 +40,9 @@ export interface AuditResult extends AuditReport {
         checked: number;
         failed: number;
     };
-    /** Events read from the relays, and the relays read (null: not checked). */
-    relays: {
-        events: number;
-        read: string[];
-        failed: string[];
-    } | null;
+    /** The checkpoints read (1 … `upto`) and the newest note's index: above `upto` the mirror's files had not come yet. */
+    upto: number;
+    latest: number;
     polls: {
         id: number;
         title: string;
@@ -54,7 +50,7 @@ export interface AuditResult extends AuditReport {
     }[];
     ok: boolean;
 }
-export type AuditPhase = 'download' | 'proofs' | 'replay' | 'relays' | 'done';
+export type AuditPhase = 'download' | 'proofs' | 'replay' | 'done';
 export interface AuditProgress {
     phase: AuditPhase;
     /** Checkpoints read in this pass, and how many there are. */
@@ -78,8 +74,6 @@ export interface AuditOptions {
     verifyPassport(req: Extract<AuditRequest, {
         type: 'passport';
     }>): Promise<string | null>;
-    /** Reads the relays' copies (withholding); absent, not checked. */
-    relays?: RelayTransport;
     onProgress?(p: AuditProgress): void;
     /** Stops the audit (it then throws). */
     signal?: AbortSignal;
@@ -97,9 +91,10 @@ export interface AuditWasm {
     audit_start(log_key: string, verdicts_json: string, allow_dev: boolean): number;
     audit_checkpoint(id: number, note: string, entries_json: string): string;
     audit_finish(id: number): string;
-    audit_relays(id: number, events_json: string): string;
     audit_drop(id: number): void;
 }
+/** An entries file with every body as its text (a mirror may write a body as JSON). */
+export declare function normalizeEntries(text: string): string;
 /**
  * Verifies ballot proofs with bb.js against the mirror's verification
  * keys (circuits/<name>/vk), each checked against the hash the poll names

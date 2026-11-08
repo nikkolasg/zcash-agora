@@ -1,4 +1,4 @@
-import type { Ack, Checkpoint, Choice, Draft, KindInfo, NostrEvent, PollSetup, TallyVerdict, Results } from './types.js';
+import type { Ack, Checkpoint, ComplaintClaim, Choice, Draft, KindInfo, NostrEvent, PollSetup, TallyVerdict, Results } from './types.js';
 export interface IsoloirWasm {
     protocol(): string;
     kinds(): string;
@@ -46,11 +46,16 @@ export interface IsoloirWasm {
     audit_start(log_key: string, verdicts_json: string, allow_dev: boolean): number;
     audit_checkpoint(id: number, note: string, entries_json: string): string;
     audit_finish(id: number): string;
-    audit_relays(id: number, events_json: string): string;
     audit_drop(id: number): void;
+    audit_quiet(id: number, on: boolean): void;
+    audit_answer(id: number, verdicts_json: string): void;
+    audit_rejudge(id: number, kind: string, body: string, times_json: string, pending_json: string): string;
+    read_complaint(text: string, ingest_keys_json: string): string;
+    pow_mine(origin: string, pubkey: string, t: number, bits: number, start: number, count: number): string;
+    pow_check(origin: string, pubkey: string, t: number, nonce: string, bits: number): boolean;
 }
-/** The Nostr kinds of SPEC §11.1. */
-export interface Kinds {
+/** One set of the Nostr kinds of SPEC §11.1. */
+export interface KindSet {
     register: number;
     ballot: number;
     ack: number;
@@ -58,6 +63,10 @@ export interface Kinds {
     link: number;
     tally: number;
     complaint: number;
+}
+/** The Nostr kinds: ephemeral (27100–27106), and `legacy` (7100–7106, what clients posted before). */
+export interface Kinds extends KindSet {
+    legacy: KindSet;
 }
 export interface TreePath {
     root: string;
@@ -152,5 +161,10 @@ export declare class Core {
         payload: string;
         code: string;
     };
+    /** Reads a complaint, its signed event or its body (SPEC §11.3); throws when its form does not hold. */
+    readComplaint(text: string, ingestKeys?: string[]): ComplaintClaim;
+    /** The first nonce in start … start + count − 1 that does the work, or null (SPEC §11.1). */
+    powMine(origin: string, pubkey: string, t: number, bits: number, start: number, count: number): string | null;
+    powCheck(origin: string, pubkey: string, t: number, nonce: string, bits: number): boolean;
 }
 export declare function toHex(b: Uint8Array): string;

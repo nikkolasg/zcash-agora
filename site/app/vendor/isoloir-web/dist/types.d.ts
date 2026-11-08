@@ -1,12 +1,15 @@
 export type Hex = string;
 /**
- * A way to the ingest (SPEC §11.1): a Nostr relay (ws:// or wss://) or the
- * ingest's own HTTP endpoint ("direct"). Retired channels are read, not
- * written.
+ * A way to the ingest (SPEC §11.1): a Nostr relay (ws:// or wss://), the
+ * ingest's iroh node reached through its relay (iroh://<node id>, with
+ * `relay`), or the ingest's own HTTP endpoint ("direct"). Retired
+ * channels are read, not written.
  */
 export interface Channel {
-    type: 'nostr' | 'direct';
+    type: 'nostr' | 'iroh' | 'direct';
     url: string;
+    /** iroh: the iroh relay (https://) the node is reached through, never directly. */
+    relay?: string;
     state: 'active' | 'retired';
 }
 /** The `ledger` entry (SPEC §4.1). */
@@ -19,6 +22,10 @@ export interface LedgerSetup {
     channels: Channel[];
     checkpoint_period: number;
     anchor_age: number;
+    /** The least time between two counted ballots of a pseudonym, seconds (absent: 0, SPEC §7.4). */
+    revote_gap?: number;
+    /** The proof of work every envelope carries, bits (absent: 0, SPEC §11.1). */
+    pow?: number;
 }
 export interface Eligibility {
     provider: string;
@@ -170,7 +177,14 @@ export interface Checkpoint {
         size: number;
         root: Hex;
     }[];
+    /** The mirror's commit the note names (SPEC §4, §15), null when it names none. */
     mirror: string | null;
+    /**
+     * The newest checkpoint whose files that commit holds (`mirror
+     * <commit>:<index>`); null in notes of earlier versions, whose commit
+     * holds the note's own files.
+     */
+    mirror_index: number | null;
 }
 /** A Nostr event (NIP-01). */
 export interface NostrEvent {
@@ -190,6 +204,31 @@ export interface Ack {
     outcome: 'accepted' | 'rejected';
     reason?: string;
     checkpoint?: number;
+}
+/**
+ * A complaint as read (SPEC §11.3): the ingest's signed ack and the body
+ * it answered. `dropped`: the ack accepted the body, which must then be
+ * in the checkpoint it names; `wrong_refusal`: the ack refused it, and the
+ * body judged again against the log must be refused too.
+ */
+export interface ComplaintClaim {
+    claim: 'dropped' | 'wrong_refusal';
+    /** The kind of message the body is. */
+    kind: 'register' | 'ballot' | 'tally' | 'unknown';
+    /** The body's hash, as the ack names it. */
+    hash: Hex;
+    /** The body, canonical: what the ingest was sent. */
+    body: string;
+    ack: Ack;
+    ack_event: NostrEvent;
+    /** The key that signed the ack. */
+    ingest: string;
+    /** The ack's time (rounded down to the minute): when the ingest judged. */
+    time: number;
+    checkpoint: number | null;
+    reason: string | null;
+    /** The signed complaint event, when one was read (null for a bare complaint body). */
+    event: NostrEvent | null;
 }
 /** One entry of a checkpoint on the mirror (SPEC §15). */
 export interface Entry {

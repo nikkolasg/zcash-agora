@@ -26,6 +26,21 @@ export function aggregate(cts_json) {
 }
 
 /**
+ * More verdicts for a pass (the answers to a rejudge's requests).
+ * @param {number} id
+ * @param {string} verdicts_json
+ */
+export function audit_answer(id, verdicts_json) {
+    const val2 = +id;
+    const ptr0 = passStringToWasm0(verdicts_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.audit_answer(val2, ptr0, len0);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
+}
+
+/**
  * Feeds one checkpoint (its signed note, its entries file).
  * @param {number} id
  * @param {string} note
@@ -96,30 +111,60 @@ export function audit_finish(id) {
 }
 
 /**
- * The relays' events against the finished pass: the problems.
+ * A pass that only builds the state (no request for the logged proofs).
  * @param {number} id
- * @param {string} events_json
+ * @param {boolean} on
+ */
+export function audit_quiet(id, on) {
+    const ret = wasm.audit_quiet(id, on);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
+}
+
+/**
+ * Judges a message again against the state fed so far (a complaint of a refusal).
+ * @param {number} id
+ * @param {string} kind
+ * @param {string} body
+ * @param {string} times_json
+ * @param {string} pending_json
  * @returns {string}
  */
-export function audit_relays(id, events_json) {
-    let deferred4_0;
-    let deferred4_1;
+export function audit_rejudge(id, kind, body, times_json, pending_json) {
+    let deferred7_0;
+    let deferred7_1;
     try {
-        const val2 = +id;
-        const ptr0 = passStringToWasm0(events_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.audit_relays(val2, ptr0, len0);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
+        const val5 = +id;
+        let ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3;
+        try {
+            ptr0 = passStringToWasm0(kind, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len0 = WASM_VECTOR_LEN;
+            ptr1 = passStringToWasm0(body, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len1 = WASM_VECTOR_LEN;
+            ptr2 = passStringToWasm0(times_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len2 = WASM_VECTOR_LEN;
+            ptr3 = passStringToWasm0(pending_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len3 = WASM_VECTOR_LEN;
+        } catch (e) {
+            if (ptr3) { wasm.__wbindgen_free(ptr3, len3 * 1, 1); }
+            if (ptr2) { wasm.__wbindgen_free(ptr2, len2 * 1, 1); }
+            if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+            if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+            throw e;
+        }
+        const ret = wasm.audit_rejudge(val5, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+        var ptr6 = ret[0];
+        var len6 = ret[1];
         if (ret[3]) {
-            ptr3 = 0; len3 = 0;
+            ptr6 = 0; len6 = 0;
             throw takeFromExternrefTable0(ret[2]);
         }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
+        deferred7_0 = ptr6;
+        deferred7_1 = len6;
+        return getStringFromWasm0(ptr6, len6);
     } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        wasm.__wbindgen_free(deferred7_0, deferred7_1, 1);
     }
 }
 
@@ -585,7 +630,8 @@ export function kind_info(poll_json) {
 }
 
 /**
- * The Nostr kinds: `{register, ballot, ack, checkpoint, link, tally, complaint}`.
+ * The Nostr kinds: `{register, ballot, ack, checkpoint, link, tally,
+ * complaint}` (ephemeral) and `legacy`, the same names in 7100–7106.
  * @returns {string}
  */
 export function kinds() {
@@ -818,6 +864,84 @@ export function nullifier(poll, s) {
 }
 
 /**
+ * Whether a nonce does the work of `bits` bits for a key and a time.
+ * @param {string} origin
+ * @param {string} pubkey
+ * @param {number} t
+ * @param {string} nonce
+ * @param {number} bits
+ * @returns {boolean}
+ */
+export function pow_check(origin, pubkey, t, nonce, bits) {
+    const val4 = +t;
+    const val5 = +bits;
+    let ptr0, len0, ptr1, len1, ptr2, len2;
+    try {
+        ptr0 = passStringToWasm0(origin, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        len1 = WASM_VECTOR_LEN;
+        ptr2 = passStringToWasm0(nonce, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        len2 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr2) { wasm.__wbindgen_free(ptr2, len2 * 1, 1); }
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.pow_check(ptr0, len0, ptr1, len1, val4, ptr2, len2, val5);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] !== 0;
+}
+
+/**
+ * The first nonce in `start … start + count − 1` whose work has `bits`
+ * leading zero bits (SPEC §11.1), or "" when none does.
+ * @param {string} origin
+ * @param {string} pubkey
+ * @param {number} t
+ * @param {number} bits
+ * @param {number} start
+ * @param {number} count
+ * @returns {string}
+ */
+export function pow_mine(origin, pubkey, t, bits, start, count) {
+    let deferred8_0;
+    let deferred8_1;
+    try {
+        const val3 = +t;
+        const val4 = +bits;
+        const val5 = +start;
+        const val6 = +count;
+        let ptr0, len0, ptr1, len1;
+        try {
+            ptr0 = passStringToWasm0(origin, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len0 = WASM_VECTOR_LEN;
+            ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len1 = WASM_VECTOR_LEN;
+        } catch (e) {
+            if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+            if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+            throw e;
+        }
+        const ret = wasm.pow_mine(ptr0, len0, ptr1, len1, val3, val4, val5, val6);
+        var ptr7 = ret[0];
+        var len7 = ret[1];
+        if (ret[3]) {
+            ptr7 = 0; len7 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred8_0 = ptr7;
+        deferred8_1 = len7;
+        return getStringFromWasm0(ptr7, len7);
+    } finally {
+        wasm.__wbindgen_free(deferred8_0, deferred8_1, 1);
+    }
+}
+
+/**
  * @returns {string}
  */
 export function protocol() {
@@ -889,6 +1013,42 @@ export function read_ack(event_json, ingest_pubkey) {
             throw e;
         }
         const ret = wasm.read_ack(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Reads a complaint, its event or its body (SPEC §11.3).
+ * @param {string} text
+ * @param {string} ingest_keys_json
+ * @returns {string}
+ */
+export function read_complaint(text, ingest_keys_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        let ptr0, len0, ptr1, len1;
+        try {
+            ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len0 = WASM_VECTOR_LEN;
+            ptr1 = passStringToWasm0(ingest_keys_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            len1 = WASM_VECTOR_LEN;
+        } catch (e) {
+            if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 1, 1); }
+            if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+            throw e;
+        }
+        const ret = wasm.read_complaint(ptr0, len0, ptr1, len1);
         var ptr3 = ret[0];
         var len3 = ret[1];
         if (ret[3]) {

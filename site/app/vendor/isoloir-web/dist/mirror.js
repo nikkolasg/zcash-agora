@@ -1,8 +1,12 @@
 // The mirror (SPEC §15): the static files the browser reads instead of
 // asking the operator anything. Every checkpoint note is verified under
 // the pinned verifier key before anything it names is trusted; files are
-// read at the checkpoint's commit (its `mirror` token) where a source
-// serves by commit, so a reader can prove which files it was served.
+// read at the commit the newest note names (its `mirror` line) where a
+// source serves by commit, so a reader can prove which files it was
+// served. A note of this version names the newest pushed commit and the
+// newest checkpoint it covers (`mirror <commit>:<index>`): the files of a
+// later checkpoint wait for a later note (covered()). A note of an earlier
+// version names the commit of its own files (`mirror <commit>`).
 //
 // A setup or a tally is used only once proven in the log: its file names
 // the checkpoint c whose log holds it and the RFC 6962 inclusion proof of
@@ -17,13 +21,20 @@
 //                                          {setups: [{seq, body, checkpoint, size, path}, …]}: every
 //                                          version in order, the last in force
 //   registries/<id>/leaves/<k>.json        ["0x…", …] leaves 1024·k … 1024·k+1023
-//   registries/<id>/positions/<pp>.json    {"0x<leaf>": position}, pp the leaf's first two hex digits
-//   polls/<id>/pseudonyms/<pp>.json        {"0x<nullifier>": last seq}
 //   polls/<id>/ballots/<k>.json            ["0x…", …] ballot tree leaves, 1024 per file
 //   polls/<id>/tallies/latest.json         {seq, body, checkpoint, size, path}
 //   circuits/<name>/artifact.json          the compiled Noir circuit
 import { IsoloirError } from './errors.js';
 export const SHARD = 1024;
+/**
+ * The newest checkpoint whose files a note's commit holds (SPEC §15): the
+ * index its `mirror` line names, the note's own index for a note of an
+ * earlier version or one without a commit (a directory of the latest
+ * files).
+ */
+export function covered(cp) {
+    return cp.mirror && cp.mirror_index != null ? Math.min(cp.mirror_index, cp.index) : cp.index;
+}
 /** A fetch that gives up after `ms`: a hung request never freezes the session. */
 export async function withTimeout(ms, run) {
     const ctl = new AbortController();
@@ -40,6 +51,10 @@ export async function withTimeout(ms, run) {
     finally {
         clearTimeout(timer);
     }
+}
+/** A URL with a query no cache has seen, for a file that changes. */
+export function fresh(url) {
+    return `${url}${url.includes('?') ? '&' : '?'}r=${Date.now().toString(36)}`;
 }
 /** A directory of the latest files (a static host). */
 export function dirSource(base) {
@@ -83,7 +98,13 @@ export class Mirror {
         for (const a of this.attempts(token)) {
             try {
                 const got = await withTimeout(this.timeoutMs, async (signal) => {
-                    const res = await this.fetcher(a.source.url(path, a.token), { credentials: 'omit', cache: a.token ? 'force-cache' : 'no-cache', signal });
+                    // A file read at a commit never changes: the browser may keep it. The
+                    // head files change at every checkpoint and a CDN in front of the
+                    // mirror keeps them for minutes (GitHub Pages: 10 min), which is what
+                    // a voter waits for after an ack. A query no cache has seen reaches the
+                    // origin, with the browser's own cache bypassed too.
+                    const url = a.token ? a.source.url(path, a.token) : fresh(a.source.url(path, a.token));
+                    const res = await this.fetcher(url, { credentials: 'omit', cache: a.token ? 'force-cache' : 'no-store', signal });
                     if (res.status === 404)
                         return null;
                     if (!res.ok)
@@ -195,6 +216,25 @@ export class Mirror {
         }
         return { seq: last.seq, body, text: last.body, checkpoint: last.checkpoint };
     }
+    /** Every version of a setup file, each proven in the log, in order (a ledger's ingest keys over time). */
+    async setupHistory(path, kind, token = '') {
+        const raw = await this.json(path, token);
+        if (raw === null || !Array.isArray(raw.setups) || raw.setups.length === 0)
+            throw new IsoloirError('no_setup', `${path}: no setup`);
+        const out = [];
+        for (const s of raw.setups) {
+            await this.prove(s, kind, path);
+            let body;
+            try {
+                body = this.core.decodeBody(kind, s.body);
+            }
+            catch (e) {
+                throw new IsoloirError('no_setup', `${path}: ${e instanceof Error ? e.message : String(e)}`);
+            }
+            out.push({ seq: s.seq, body, text: s.body, checkpoint: s.checkpoint });
+        }
+        return out;
+    }
     /** The first `size` leaves of a sharded tree file set. */
     async leaves(dir, size, token = '') {
         const out = [];
@@ -207,16 +247,6 @@ export class Mirror {
         if (out.length < size)
             throw new IsoloirError('no_path', `${dir}: ${out.length} leaves, the checkpoint names ${size}`);
         return out.slice(0, size);
-    }
-    /** A leaf's position in a registry, from its shard. */
-    async position(registry, leaf, token = '') {
-        const shard = await this.json(`registries/${registry}/positions/${leaf.slice(2, 4)}.json`, token);
-        return shard?.[leaf] ?? null;
-    }
-    /** The last seq a pseudonym cast in a linked poll. */
-    async pseudonymSeq(poll, nullifier, token = '') {
-        const shard = await this.json(`polls/${poll}/pseudonyms/${nullifier.slice(2, 4)}.json`, token);
-        return shard?.[nullifier] ?? null;
     }
     /** The latest tally: its body text and seq, proven in the log. */
     async latestTally(poll, token = '') {

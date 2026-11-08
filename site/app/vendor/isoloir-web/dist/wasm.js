@@ -141,6 +141,17 @@ export class Core {
     linkOpen(receiverSecret, sealed) {
         return JSON.parse(this.w.link_open(receiverSecret, sealed));
     }
+    /** Reads a complaint, its signed event or its body (SPEC §11.3); throws when its form does not hold. */
+    readComplaint(text, ingestKeys = []) {
+        return JSON.parse(this.w.read_complaint(text, json(ingestKeys)));
+    }
+    /** The first nonce in start … start + count − 1 that does the work, or null (SPEC §11.1). */
+    powMine(origin, pubkey, t, bits, start, count) {
+        return this.w.pow_mine(origin, pubkey, t, bits, start, count) || null;
+    }
+    powCheck(origin, pubkey, t, nonce, bits) {
+        return this.w.pow_check(origin, pubkey, t, nonce, bits);
+    }
 }
 export function toHex(b) {
     let s = '';

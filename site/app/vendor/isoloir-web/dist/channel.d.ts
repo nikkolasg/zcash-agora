@@ -3,8 +3,8 @@ import type { Ack, Channel, NostrEvent } from './types.js';
 import type { Core } from './wasm.js';
 /** What an ack must be to count: signed by the ingest, naming the envelope and its body hash. */
 export interface AckMatch {
-    /** The ack kind (7102). */
-    kind: number;
+    /** The ack kinds: 27102, and 7102 (the answer to a legacy envelope). */
+    kinds: number[];
     /** The ingest's key. */
     ingest: string;
     /** Whether an event is this envelope's ack (the signature checked). */
@@ -27,18 +27,26 @@ export interface IngestChannel {
      * channel did not take it.
      */
     send(event: NostrEvent, opts: SendOptions): Promise<NostrEvent | null>;
-    /** The ack of an envelope posted before (a missed ack, a reload), or null. */
-    ackOf(eventId: string, opts: {
+    /**
+     * The ack of an envelope posted before (a missed ack, a reload), or
+     * null: only a channel whose endpoint keeps acks (direct). Relays keep
+     * nothing (ephemeral kinds), so a relay channel has none.
+     */
+    ackOf?(eventId: string, opts: {
         waitMs: number;
         match: AckMatch;
     }): Promise<NostrEvent | null>;
     /** Posts without waiting for an ack (complaints, device links). */
     publish(event: NostrEvent): Promise<void>;
-    /** Reads events, stored then live (relays only). */
+    /** Reads live events (relays only). */
     subscribe?(filter: Filter, onEvent: (e: NostrEvent) => void, opts?: SubscribeOptions): () => void;
 }
-/** Builds the channel of a ledger entry (the default: WebSockets and fetch). */
-export type ChannelFactory = (c: Channel) => IngestChannel;
+/**
+ * Builds the channel of a ledger entry (the default: WebSockets and
+ * fetch), or null for a type it cannot reach (iroh, until built): the
+ * session then leaves that channel out.
+ */
+export type ChannelFactory = (c: Channel) => IngestChannel | null;
 export declare class NostrChannel implements IngestChannel {
     readonly url: string;
     private readonly transport;
@@ -47,10 +55,6 @@ export declare class NostrChannel implements IngestChannel {
     constructor(url: string, transport?: RelayTransport, publishTimeoutMs?: number);
     private waitAck;
     send(event: NostrEvent, opts: SendOptions): Promise<NostrEvent | null>;
-    ackOf(eventId: string, opts: {
-        waitMs: number;
-        match: AckMatch;
-    }): Promise<NostrEvent | null>;
     publish(event: NostrEvent): Promise<void>;
     subscribe(filter: Filter, onEvent: (e: NostrEvent) => void, opts?: SubscribeOptions): () => void;
 }
@@ -96,13 +100,19 @@ export declare class DirectChannel implements IngestChannel {
     }): Promise<NostrEvent | null>;
     publish(event: NostrEvent): Promise<void>;
 }
-/** The default channels: WebSockets for relays, fetch for the direct endpoint. */
+/**
+ * The default channels: WebSockets for relays, fetch for the direct
+ * endpoint; none for iroh (not built: an app that has an iroh transport
+ * gives its own factory, the rest is unchanged).
+ */
 export declare function defaultChannelFactory(opts?: {
     transport?: RelayTransport;
     http?: HttpFetch;
     publishTimeoutMs?: number;
     directPollMs?: number;
 }): ChannelFactory;
+/** The order of the channel types (SPEC §11.1): relays first, the direct endpoint (the voter's address shown to the operator) last. */
+export declare const CHANNEL_ORDER: readonly Channel['type'][];
 /** Where a post stands, for the page. */
 export interface PostProgress {
     channel: string;
@@ -124,20 +134,19 @@ export interface Acked {
     /** The envelope the ack names. */
     envelope: NostrEvent;
 }
-/** Makes an envelope of a body: a fresh throwaway key and the current time. */
-export type Envelope = () => NostrEvent;
+/** Makes an envelope of a body for an attempt: the body's throwaway key (and its work), the time of the attempt. */
+export type Envelope = () => NostrEvent | Promise<NostrEvent>;
 /** The match of an envelope's ack: the ingest's signature, the envelope id, the body's hash. */
 export declare function ackMatch(core: Core, event: NostrEvent, ingest: string): AckMatch;
 /**
  * Posts a body to the channels in turn and waits for the ingest's ack on
  * each (SPEC §11.1, §11.2): `ackTimeoutMs` (60 s) on one, then the next.
- * Every attempt wraps the body in a fresh envelope (a new key, the time
- * of the attempt): relays and the ingest read by `since`, so an envelope
- * dated minutes ago would never be seen; the ingest answers the same body
- * under any envelope with the same outcome. Acks are matched by the
- * envelope's id and the body's hash. Throws no_relay when no channel took
- * it, no_ack when some did and none answered.
+ * Every attempt wraps the body in a fresh envelope (the time of the
+ * attempt, so a new id); the ingest answers the same body under any
+ * envelope with the same outcome. Acks are matched by the envelope's id
+ * and the body's hash. Throws no_relay when no channel took it, no_ack
+ * when some did and none answered.
  */
 export declare function postWithAck(core: Core, channels: IngestChannel[], envelope: Envelope, ingest: string, opts: PostOptions): Promise<Acked>;
-/** The ack of an envelope posted before, asked of the channel that took it. */
+/** The ack of an envelope posted before, asked of the channel that took it (when it keeps acks: direct). */
 export declare function findAck(core: Core, channel: IngestChannel, events: NostrEvent[], ingest: string, waitMs: number): Promise<Acked | null>;

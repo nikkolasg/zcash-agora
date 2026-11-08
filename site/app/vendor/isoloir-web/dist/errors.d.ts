@@ -1,5 +1,7 @@
 /** The ingest's reasons (SPEC §12), in acks. */
-export type IngestReason = 'malformed' | 'version' | 'unknown' | 'not_open' | 'closed' | 'bad_sig' | 'stale_date' | 'uid_used' | 'id_used' | 'full' | 'bad_proof' | 'old_root' | 'revote_off' | 'stale_seq' | 'seq_gap' | 'duplicate' | 'not_due' | 'bad_tally' | 'bad_setup' | 'rejected';
+export type IngestReason = 'malformed' | 'version' | 'unknown' | 'not_open' | 'closed' | 'bad_sig' | 'stale_date' | 'uid_used' | 'id_used' | 'full' | 'bad_proof' | 'old_root' | 'revote_off' | 'stale_seq' | 'seq_gap'
+/** A re-vote within the ledger's revote_gap of the pseudonym's newest ballot (SPEC §7.4): data.retryAt, data.waitSeconds. */
+ | 'too_soon' | 'duplicate' | 'not_due' | 'bad_tally' | 'bad_setup' | 'rejected';
 /** The session's own codes. */
 export type SessionErrorCode = 
 /** Called before init(), or without what the call needs. */
@@ -18,6 +20,8 @@ export type SessionErrorCode =
  | 'no_relay'
 /** Channels took it, none acknowledged it. */
  | 'no_ack'
+/** The proof of work of an envelope could not be made (SPEC §11.1). */
+ | 'pow'
 /** The scanned proof is too old: scan again (the same registration key). */
  | 'stale_proof' | 'not_registered'
 /** The mirror and the checkpoint disagree on a tree. */
@@ -26,6 +30,8 @@ export type SessionErrorCode =
  | 'previous_pending'
 /** No registration and no ballot before a backup is confirmed. */
  | 'backup_required' | 'bad_choice' | 'prover' | 'prover_mismatch'
+/** A file the prover pins (the SRS, bb.js's wasm) is not the one pinned: its SHA-256 differs (data: url, expected, actual). */
+ | 'pin_mismatch'
 /** A ballot waits for its ack: resend or discard it first. */
  | 'pending' | 'cast_retries' | 'key_exists' | 'passkey_cancelled' | 'passkey_unsupported' | 'passkey_noprf'
 /** The passkey is not synced (backup state 0): it is no backup, use the words. */
@@ -35,7 +41,9 @@ export type SessionErrorCode =
 /** The ledger has no Nostr relay: no device link. */
  | 'link_unavailable'
 /** A device link code that is not a public key. */
- | 'bad_link_key' | 'link_expired' | 'stopped';
+ | 'bad_link_key' | 'link_expired'
+/** Not a complaint: its form, the event's or the ack's signature, or an ack of another body (SPEC §11.3). */
+ | 'bad_complaint' | 'stopped';
 export type IsoloirErrorCode = SessionErrorCode | IngestReason | `reg:${IngestReason}`;
 export declare class IsoloirError extends Error {
     readonly code: IsoloirErrorCode;

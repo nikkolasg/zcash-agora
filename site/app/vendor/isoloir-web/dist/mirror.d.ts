@@ -1,6 +1,13 @@
 import type { Checkpoint, Entry, Logged, Setup } from './types.js';
 import type { Core } from './wasm.js';
 export declare const SHARD = 1024;
+/**
+ * The newest checkpoint whose files a note's commit holds (SPEC §15): the
+ * index its `mirror` line names, the note's own index for a note of an
+ * earlier version or one without a commit (a directory of the latest
+ * files).
+ */
+export declare function covered(cp: Checkpoint): number;
 export interface FetchResponse {
     status: number;
     ok: boolean;
@@ -19,6 +26,8 @@ export interface MirrorSource {
     /** Whether the source honours tokens (a git repository read by commit). */
     byCommit: boolean;
 }
+/** A URL with a query no cache has seen, for a file that changes. */
+export declare function fresh(url: string): string;
 /** A directory of the latest files (a static host). */
 export declare function dirSource(base: string): MirrorSource;
 /** A GitHub repository read through jsDelivr by commit. */
@@ -51,12 +60,10 @@ export declare class Mirror {
     prove(rec: Logged, kind: string, what: string): Promise<Checkpoint>;
     /** A setup file (SPEC §15): its last version, proven in the log, decoded by the wasm core. */
     setup<T>(path: string, kind: string, token?: string): Promise<Setup<T> | null>;
+    /** Every version of a setup file, each proven in the log, in order (a ledger's ingest keys over time). */
+    setupHistory<T>(path: string, kind: string, token?: string): Promise<Setup<T>[]>;
     /** The first `size` leaves of a sharded tree file set. */
     leaves(dir: string, size: number, token?: string): Promise<string[]>;
-    /** A leaf's position in a registry, from its shard. */
-    position(registry: number, leaf: string, token?: string): Promise<number | null>;
-    /** The last seq a pseudonym cast in a linked poll. */
-    pseudonymSeq(poll: number, nullifier: string, token?: string): Promise<number | null>;
     /** The latest tally: its body text and seq, proven in the log. */
     latestTally(poll: number, token?: string): Promise<{
         seq: number;

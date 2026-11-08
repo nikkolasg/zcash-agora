@@ -1,5 +1,20 @@
 /* The voting page's own bits, on top of /assets/style.css. */
-.phase { margin: 1.2rem 0; }
+.booth { margin: 1.4rem 0; padding: 1rem 1.2rem 1.2rem; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-2); }
+.booth-head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.booth-title { font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: .8rem; color: var(--ink-2); }
+.booth-head .btn { margin-left: auto; }
+.btn.small { padding: .35rem .8rem; font-size: .85rem; }
+.bsteps { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.2rem; list-style: none; padding: 0; margin: .9rem 0 0; font-size: .9rem; color: var(--muted); }
+.bsteps li { display: flex; align-items: center; gap: .45rem; }
+.bsteps li span { display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; border: 1px solid var(--line); font-size: .78rem; }
+.bsteps li.now { color: var(--ink); font-weight: 600; }
+.bsteps li.now span { border-color: var(--accent); background: var(--accent); color: #1c1a16; }
+.bsteps li.done { color: var(--ink-2); }
+.bsteps li.done span { border-color: var(--people); color: var(--people); }
+.wordsbox { margin: 1rem 0 0; padding: .8rem 1rem; border: 1px dashed var(--accent); border-radius: 10px; background: var(--bg); }
+.wordsbox p { margin: 0 0 .5rem; }
+.phase { margin: 1.2rem 0 0; }
+.phase h2 { margin-top: .4rem; }
 .options { display: grid; gap: .6rem; margin: 1rem 0; }
 .options label { display: flex; align-items: center; gap: .8rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); cursor: pointer; font-size: 1.05rem; }
 .options label:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
@@ -16,5 +31,25 @@ input[type=text] { font: inherit; padding: .5rem .7rem; border: 1px solid var(--
 .progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin: .6rem 0; }
 .progress > span { display: block; height: 100%; background: var(--accent); transition: width .3s; }
 .err { color: #b3261e; }
-.result .bar { height: 14px; }
 details { margin: .8rem 0; } summary { cursor: pointer; color: var(--ink-2); }
+.center { text-align: center; }
+.verdict.receipt { text-align: left; margin-top: 1.2rem; }
+.verdict.receipt .seal { display: block; margin: 0 auto .4rem; }
+.verdict.receipt h2 { text-align: center; }
+.verdict.receipt .kv { margin: .8rem 0; font-size: .92rem; }
+.verdict.receipt .kv dt { color: var(--ink-2); }
+@media (max-width: 480px) { .verdict.receipt .kv { grid-template-columns: 1fr; gap: .1rem 0; } .verdict.receipt .kv dd { margin-bottom: .5rem; } }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.result-hero { margin: 1.4rem 0; padding: 1.4rem 1.4rem 1.2rem; border: 2px solid var(--people); border-radius: 14px; background: color-mix(in srgb, var(--people) 10%, var(--bg-2)); }
+.result-hero.wait { border-color: var(--line); background: var(--bg-2); }
+.result-hero .rtag { margin: 0 0 .3rem; color: var(--people); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: .8rem; }
+.result-hero.wait .rtag { color: var(--ink-2); }
+.result-hero .headline { margin: .2rem 0 1rem; font-size: 1.25rem; display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.result-hero .headline .big { font-size: 3rem; font-weight: 700; line-height: 1; color: var(--people); }
+.result-hero .slots { display: grid; gap: .7rem; margin: .6rem 0 1rem; }
+.result-hero .line { display: flex; justify-content: space-between; gap: 1rem; font-size: 1.05rem; }
+.result-hero .line .n { color: var(--ink-2); white-space: nowrap; }
+.result-hero .bar { height: 14px; margin: .3rem 0 0; }
+.result-hero .bar > span { background: var(--people); }
+.result-hero .slot.blank .bar > span { background: var(--muted); }
+.result-hero .slot.blank { color: var(--ink-2); }

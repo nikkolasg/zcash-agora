@@ -2,9 +2,17 @@ import { Mirror, type Fetcher, type MirrorSource } from './mirror.js';
 import { type PasskeyOptions } from './passkey.js';
 import type { Prover } from './prover.js';
 import { type ChannelFactory, type PostProgress } from './channel.js';
+import { type MineOptions } from './pow.js';
 import { type KeyValueStore, type StorageMode } from './storage.js';
 import type { Channel, Checkpoint, Choice, KindInfo, LedgerSetup, NostrEvent, PassportProof, PollSetup, RegistrationRequest, RegistrySetup, TallyVerdict } from './types.js';
 import { Core, type IsoloirWasm } from './wasm.js';
+/**
+ * Which Nostr kinds the envelopes take (SPEC §11.1): 'ephemeral'
+ * (27100–27106, relays keep none), 'legacy' (7100–7106, what an ingest of
+ * an earlier version reads), or 'auto': legacy until the ledger shows an
+ * ingest that reads the ephemeral kinds, ephemeral from then on.
+ */
+export type KindsMode = 'auto' | 'ephemeral' | 'legacy';
 export interface SessionConfig {
     /** The wasm core: the module (loadWasm()) or a Core. */
     core: Core | IsoloirWasm;
@@ -43,6 +51,16 @@ export interface SessionConfig {
     refreshMs?: number;
     /** Follow the ingest's checkpoint events on a relay, when the ledger has one (default true). */
     watchRelays?: boolean;
+    /**
+     * The envelopes' kinds (default 'auto'). Auto takes the ephemeral
+     * kinds once the ledger shows an ingest of this version: a `pow` or a
+     * `revote_gap` in the ledger setup, a note whose mirror line names the
+     * checkpoint it covers, or a checkpoint event of kind 27103 from the
+     * ingest; until then the legacy kinds, which every ingest reads.
+     */
+    kinds?: KindsMode;
+    /** How the proof of work is mined: slice size and yield (the defaults suit a page). */
+    pow?: MineOptions;
     /** The local clock, ms (tests). */
     now?: () => number;
     /** Diagnostics: never given a secret. */
@@ -73,7 +91,30 @@ export interface PostRecord {
     foundIn?: number;
     /** Found under a later checkpoint than the ack named. */
     late?: boolean;
+    /** The ids of the complaints made of this message. */
     complaints?: string[];
+    /** The complaints' signed events, whole (channels keep no copy: the device does). */
+    complaintEvents?: NostrEvent[];
+}
+/**
+ * A complaint the device made (SPEC §11.3), kept with the key across
+ * re-votes: the whole signed event, which proves the claim to anyone with
+ * the mirror (judgeComplaint), and its base64url for a link fragment
+ * (`#c=<link>`) or a file.
+ */
+export interface SavedComplaint {
+    what: 'registration' | 'ballot';
+    /** The poll of a ballot's complaint. */
+    poll?: number;
+    /** dropped: an accepted body missing from its checkpoint; wrong_refusal: a refused body the voter holds valid. */
+    claim: 'dropped' | 'wrong_refusal';
+    /** The checkpoint the ack named (dropped). */
+    checkpoint: number | null;
+    /** When it was made, ms (local clock). */
+    at: number;
+    event: NostrEvent;
+    /** encodeComplaint(event). */
+    link: string;
 }
 export interface RegistrationRecord extends PostRecord {
     proofDate: number;
@@ -98,8 +139,10 @@ export interface DeltaRecord {
     };
 }
 export interface PollRecord {
-    /** Linked: the last seq acked. */
+    /** Linked: the last seq acked (the device keeps it: the mirror no longer says it, SPEC §7.4). */
     seq?: number;
+    /** Linked: the time of the checkpoint that logged the newest ballot (the ledger's revote_gap counts from it). */
+    loggedAt?: number;
     /** Delta: the chain, with the previous ballot's choice (needed to correct it). */
     delta?: DeltaRecord;
     ballot?: BallotRecord;
@@ -128,6 +171,8 @@ export interface StoredKey {
     regSecret?: string;
     registration?: RegistrationRecord;
     polls: Record<string, PollRecord>;
+    /** Every complaint this device made, oldest first (at most 32 kept). */
+    complaints?: Omit<SavedComplaint, 'link'>[];
 }
 export type Phase = 'loading' | 'no-key' | 'unregistered' | 'registering' | 'joining' | 'ready' | 'error';
 export interface RegistrationView {
@@ -138,6 +183,9 @@ export interface RegistrationView {
     detail?: string;
     /** The proof is too old to post: scan again (the same registration key). */
     stale?: boolean;
+    /** The ids of the complaints made of the registration, and their signed events. */
+    complaints?: string[];
+    complaintEvents?: NostrEvent[];
 }
 export interface BallotView {
     state: 'idle' | 'drafting' | 'proving' | 'posting' | 'sent' | 'acked' | 'verified' | 'missing' | 'rejected' | 'failed';
@@ -148,7 +196,9 @@ export interface BallotView {
     reason?: string;
     detail?: string;
     late?: boolean;
+    /** The ids of the complaints made of this ballot, and their signed events (SessionState.complaints keeps every one). */
     complaints?: string[];
+    complaintEvents?: NostrEvent[];
     /** A proven ballot waits for an ack: resendBallot() posts it again. */
     kept?: boolean;
 }
@@ -196,10 +246,21 @@ export interface SessionState {
     prover: 'idle' | 'loading' | 'ready' | 'failed';
     /** The ledger's active channels. */
     channels: Channel[];
+    /** The kinds the envelopes take now (SessionConfig.kinds). */
+    kinds: 'ephemeral' | 'legacy';
+    /** The ledger's proof of work, bits (0: none), and whether a key's work is mined ahead. */
+    pow: {
+        bits: number;
+        state: 'none' | 'mining' | 'ready';
+    };
+    /** The ledger's re-vote rate, seconds (0: none, SPEC §7.4). */
+    revoteGap: number;
     /** Whether a device link can be made (it needs a Nostr relay among the channels). */
     linkAvailable: boolean;
     /** How the key is kept by the browser. */
     storage: StorageMode;
+    /** Every complaint this device made, oldest first, with its event and link. */
+    complaints: SavedComplaint[];
 }
 export interface SessionEvents {
     state: SessionState;
@@ -214,6 +275,7 @@ export interface SessionEvents {
         what: 'registration' | 'ballot';
         checkpoint: number | null;
         events: string[];
+        complaint: SavedComplaint;
     };
     'link-offer': {
         code: string;
@@ -264,10 +326,17 @@ export declare class Session {
     private proverState;
     private storageMode;
     private member;
+    private readonly work;
+    private workState;
+    /** Seen a sign of an ingest that reads the ephemeral kinds (a checkpoint event of 27103). */
+    private ephemeralSeen;
     private seqFloor;
+    private seqStep;
     private dupRetried;
     private timer;
     private stopWatch;
+    private hurryTimer;
+    private hurryUntil;
     private refreshing;
     private queued;
     constructor(config: SessionConfig);
@@ -277,6 +346,17 @@ export declare class Session {
     state(): SessionState;
     /** The server's time, ms (from the checkpoints): the proof date of a scan is this. */
     serverNow(): number;
+    /**
+     * Starts the proof of work of the next envelope in the background
+     * (SPEC §11.1): a throwaway key is drawn and its work mined in slices
+     * that leave the page responsive. Call it as early as possible (when
+     * the passport step begins, when the ballot screen opens): the
+     * registration or the ballot then goes without waiting. Registration
+     * and casting start it themselves when it was not. Resolves once the
+     * work is ready; at once on a ledger without proof of work. Needs
+     * init() (the difficulty is the ledger's).
+     */
+    startWork(): Promise<void>;
     /** Reads the setups (each proven in the log) and the latest checkpoint, then resumes whatever this device left pending. */
     init(): Promise<void>;
     /** Stops the timers and subscriptions. */
@@ -415,22 +495,50 @@ export declare class Session {
     private newKey;
     /** The active Nostr relays (live reads, device links). */
     private relays;
+    /** The key's order of the channels of one type: relay_ranking over their URLs (SPEC §11.1). */
+    private rankType;
     /**
-     * The key's order of the channels it posts to (SPEC §11.1):
-     * relay_ranking over their URLs. The relays when the ledger has some
-     * (the direct endpoint shows the operator the voter's address), the
-     * direct endpoints when it has none.
+     * The key's order of the channels it posts a registration to (SPEC
+     * §11.1): the relays, then iroh, then the direct endpoint last (it
+     * shows the operator the voter's address); within a type by
+     * relay_ranking.
      */
     private ranking;
-    /** Ballots go to the key's channels after the first, never to the registration's, unless there is only one. */
+    /**
+     * A ballot's channels: within each type from the second on, so that no
+     * channel sees the registration and the ballots together; a relay that
+     * took the registration is never used for a ballot when there is
+     * another relay; in the other types the first comes last.
+     */
     private ballotChannels;
     /** The relay that serves live checkpoints: neither the registration's nor the ballots' when there are three or more. */
     private watchRelays;
     private ingest;
-    /** An envelope of a fresh throwaway key, dated to the minute on the server's clock. */
+    /** Whether the envelopes take the ephemeral kinds (SessionConfig.kinds). */
+    private ephemeral;
+    /** The kinds the envelopes take now. */
+    private kindSet;
+    /** Both kinds of a message (what a subscription reads). */
+    private bothKinds;
+    private powBits;
+    /** An event of a fresh throwaway key, dated to the minute (rounded up) on the server's clock (device links: relays only, no work). */
     private signEvent;
+    /**
+     * An envelope to the ingest (SPEC §11.1): the body under a throwaway
+     * key of its own with the ledger's proof of work (mined ahead: the
+     * next key is mined as soon as one is taken), dated to the minute.
+     * Every attempt is a fresh envelope under a fresh key.
+     */
+    private envelope;
     private proofFresh;
     private takeCheckpoint;
+    /**
+     * An ack says the log is about to show the message. Rather than wait for
+     * the regular refresh (30 s) and for the mirror's caches, the mirror is
+     * read every few seconds, past every cache (Mirror reads the head files
+     * fresh), until the message is found or HURRY_MS passed.
+     */
+    private hurry;
     private refreshCheckpoint;
     /** Sets the views from the records a previous visit left. */
     private resume;
@@ -446,14 +554,34 @@ export declare class Session {
     private applyRegistrationAck;
     /**
      * Messages a previous visit posted and never saw acked: their acks are
-     * asked of the channel that took them only (a relay's stored events,
-     * the direct endpoint's GET), so a closed tab does not leave them
-     * waiting and no other channel learns of them.
+     * asked of the channel that took them, when it keeps acks (the direct
+     * endpoint's GET; relays keep nothing), so no other channel learns of
+     * them. Otherwise the log shows them (readReceipts looks for sent
+     * bodies too), or the app resends them.
      */
     private recoverAcks;
     private submitBallot;
+    /**
+     * When the ledger's re-vote rate lets the pseudonym's next ballot count
+     * (SPEC §7.4): `revote_gap` after the checkpoint that logged its newest
+     * ballot, exact when the device found that ballot in the log; while it
+     * is not logged yet, estimated from its ack (logged within a checkpoint
+     * period). Null when there is no rate, no earlier ballot, or a delta
+     * poll (no pseudonym).
+     */
+    private nextRevote;
+    /** The too_soon error: when the next ballot counts, and how long until then. */
+    private tooSoon;
+    /** Refuses, before any proof, a re-vote the ledger's rate would refuse. */
+    private checkRevoteGap;
     /** Keeps an accepted ballot's ack and moves the key's chain on. */
     private applyBallotAck;
+    /**
+     * The checkpoint whose files the mirror's commit holds (SPEC §15): the
+     * newest note itself, or the earlier one its mirror line names when the
+     * push lags; a ballot is drafted against its roots.
+     */
+    private anchor;
     /** The key's place in the registry tree at a checkpoint, rebuilt from the mirror's leaves. */
     private memberPath;
     /** Where the ballot stands in the key's chain (SPEC §7.4). */
@@ -467,7 +595,9 @@ export declare class Session {
      * same files whatever the ack said, so what is fetched reveals nothing
      * about which checkpoint holds the voter's message. A registration's
      * position comes from the entries too (the registry's size at its
-     * checkpoint, its rank among the registrations there).
+     * checkpoint, its rank among the registrations there). Only the
+     * checkpoints whose files the mirror's commit holds are read (SPEC
+     * §15); a later one waits for a later note.
      */
     private readReceipts;
     private registrationFound;
@@ -480,7 +610,25 @@ export declare class Session {
      * stays with the device too (the record's complaints and ack).
      */
     private complain;
+    /**
+     * Makes, keeps and posts a complaint of a message: the signed ack and
+     * the body. It goes to every active relay (and, for a dropped body,
+     * the message itself again), or to the direct endpoints on a ledger
+     * without relays; channels keep no copy, so the device keeps the whole
+     * event with the record and in the key's list of complaints.
+     */
+    private postComplaint;
+    /**
+     * A complaint of a refusal the voter holds wrong (SPEC §11.3): the
+     * signed rejected ack of the registration or of the poll's last ballot,
+     * with its body, kept on the device and posted. Anyone judges it again
+     * against the log (judgeComplaint). Throws not_ready when that message
+     * was not refused.
+     */
+    complainOfRefusal(what: 'registration' | 'ballot'): Promise<SavedComplaint>;
     private adopt;
+    /** A leaf's position in the registry tree of the mirror's newest covered checkpoint, or null. */
+    private findLeaf;
     private adoptLinked;
     /** Tells the sender the key was adopted (sealed for its reply key). */
     private confirmLink;

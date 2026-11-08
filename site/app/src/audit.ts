@@ -1,8 +1,8 @@
 // The audit of the vote in the visitor's browser (@isoloir/web audit): the
 // whole log read from the mirror, every ballot proof checked with bb.js,
-// every passport proof with the ZKPassport SDK, every tally recomputed, and
-// the relays' copies compared with the log.
-import { audit, bbVerifier, zkPassportVerifier, WebSocketTransport, type AuditProgress, type AuditResult, type AuditWasm, type ZkPassportSdk, type IsoloirWasm } from '@isoloir/web';
+// every passport proof with the ZKPassport SDK, every tally recomputed.
+// Channels keep no copies (isoloir SPEC §11.1): there is no relay check.
+import { audit, bbVerifier, zkPassportVerifier, type AuditProgress, type AuditResult, type AuditWasm, type ZkPassportSdk, type IsoloirWasm } from '@isoloir/web';
 import { config } from './config.js';
 
 // Public Ethereum endpoints, tried in order: the passport check only reads the certificate registry's roots.
@@ -38,7 +38,6 @@ export async function runAudit(wasm: IsoloirWasm, onProgress: (p: AuditProgress)
       }
       throw last;
     },
-    relays: new WebSocketTransport(),
     // A local trial's dev registry is accepted (a warning); in production it is a problem.
     allowDev: config.dev,
     onProgress,
@@ -48,14 +47,13 @@ export async function runAudit(wasm: IsoloirWasm, onProgress: (p: AuditProgress)
 
 // ---------------------------------------------------------------- the view
 
-type StepKey = 'log' | 'registrations' | 'ballots' | 'tallies' | 'relays';
-const STEPS: StepKey[] = ['log', 'registrations', 'ballots', 'tallies', 'relays'];
+type StepKey = 'log' | 'registrations' | 'ballots' | 'tallies';
+const STEPS: StepKey[] = ['log', 'registrations', 'ballots', 'tallies'];
 const STEP_TEXT: Record<StepKey, string> = {
   log: 'Log signed and intact',
   registrations: 'One passport, one registration',
   ballots: 'Valid ballots, proofs re-verified',
-  tallies: 'Result recounted from the opened ballots',
-  relays: 'Every ballot sent is in the log'
+  tallies: 'Result recounted from the opened ballots'
 };
 const NODES = ['Voters', 'Relays', 'Ledger', 'Log', 'Results'];
 const NODE_ICONS = [
@@ -65,20 +63,20 @@ const NODE_ICONS = [
   'M6 4h10a3 3 0 0 1 3 3v13H9a3 3 0 0 1-3-3zM6 17a3 3 0 0 1 3-3h10M10 8h5',
   'M6 20v-7M12 20V5M18 20v-10'
 ];
-// Which node each phase lights: download reads voters+relays+ledger, proofs = ledger, replay = log, relays = relays, done = results.
-const PHASE_NODE: Record<string, number> = { download: 2, proofs: 2, replay: 3, relays: 1, done: 4 };
+// Which node each phase lights: download reads the ledger's log, proofs = ledger, replay = log, done = results.
+const PHASE_NODE: Record<string, number> = { download: 2, proofs: 2, replay: 3, done: 4 };
 
 function stepOf(p: string): StepKey {
   if (/\(register\)|registr/i.test(p)) return 'registrations';
   if (/\(ballot\)/.test(p)) return 'ballots';
   if (/tally|close/.test(p)) return 'tallies';
-  if (/relay|event |acknowledged/.test(p)) return 'relays';
   return 'log';
 }
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
-export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: boolean): void {
+/** Mounts the audit section; `closed` says whether the poll is over (the audit waits for it). Returns a re-render. */
+export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: boolean, closed: () => boolean = () => true): () => void {
   let progress: AuditProgress | null = null;
   let result: AuditResult | null = null;
   let failure: string | null = null;
@@ -94,7 +92,6 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
       case 'registrations': return `${plural(r.registrations, 'registration')}, ${plural(r.passports.checked, 'passport proof')} checked`;
       case 'ballots': return `${plural(r.ballots, 'ballot')}, ${plural(r.proofs.checked, 'proof')} verified`;
       case 'tallies': return plural(r.tallies, 'result');
-      case 'relays': return r.relays ? `${plural(r.relays.events, 'message')} compared` : 'no relay read';
     }
   };
   const live = (): string => {
@@ -102,15 +99,13 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
     if (p.phase === 'download') return `Reading the log · ${p.checkpoint}/${p.checkpoints}`;
     if (p.phase === 'proofs') return `Checking the proofs · ${p.verified}/${p.asked}`;
     if (p.phase === 'replay') return `Recounting · ${p.checkpoint}/${p.checkpoints}`;
-    if (p.phase === 'relays') return 'Reading the relays';
     return 'Done';
   };
   const pct = (): number => {
     const p = progress; if (!p) return 0;
     if (p.phase === 'download') return (p.checkpoint / Math.max(1, p.checkpoints)) * 45;
     if (p.phase === 'proofs') return 45 + (p.verified / Math.max(1, p.asked)) * 15;
-    if (p.phase === 'replay') return 60 + (p.checkpoint / Math.max(1, p.checkpoints)) * 30;
-    if (p.phase === 'relays') return 92;
+    if (p.phase === 'replay') return 60 + (p.checkpoint / Math.max(1, p.checkpoints)) * 40;
     return 100;
   };
 
@@ -121,13 +116,14 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
     const cur = running && progress ? PHASE_NODE[progress.phase] ?? 0 : -1;
     const nodeClass = (i: number) => {
       if (running) return i < cur ? '' : i === cur ? 'run' : 'wait';
-      if (done || (result && !running)) return failed.size && (i === 0 && failed.has('registrations') || i === 1 && failed.has('relays') || i === 3 && failed.has('log') || i === 4 && failed.has('tallies') || i === 2 && failed.has('ballots')) ? 'ko' : '';
+      if (done || (result && !running)) return failed.size && (i === 0 && failed.has('registrations') || i === 3 && failed.has('log') || i === 4 && failed.has('tallies') || i === 2 && failed.has('ballots')) ? 'ko' : '';
       return 'wait';
     };
     container.innerHTML = `
       <h2 id="audit">Audit the vote</h2>
-      <p class="muted">Your browser redoes every check, from the public log: the signatures, every passport proof, every ballot proof, the opened ballots, the relays. The same checks the command-line auditor runs.</p>
+      <p class="muted">Your browser redoes every check, from the public log: the signatures, every passport proof, every ballot proof, the opened ballots. The same checks the command-line auditor runs.</p>
       ${enabled ? '' : '<div class="card warn">The audit opens with the ledger.</div>'}
+      ${enabled && !closed() && !running && !result ? '<p class="muted center">The audit opens when the poll closes: it then checks the opened ballots and the result too.</p>' : ''}
       <div class="pipe" aria-hidden="true">
         ${NODES.map((n, i) => `${i ? `<span class="link ${running && i > cur ? 'wait' : ''}"></span>` : ''}<span class="node ${nodeClass(i)}"><span class="disc"><svg viewBox="0 0 24 24"><path d="${NODE_ICONS[i]}"/></svg>${!running && result && nodeClass(i) === '' ? '<span class="tick">✓</span>' : ''}</span><span class="name">${n}</span></span>`).join('')}
       </div>
@@ -137,7 +133,7 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
         ? `<div class="verdict ok" role="status"><svg viewBox="0 0 52 52" class="seal" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg><h2>Everything checks out</h2><p class="muted">${result.polls.map((p) => `${esc(p.title)}: ${plural(p.ballots, 'ballot')}`).join(' · ')}${result.warnings.length ? `<br>${result.warnings.map(esc).join('<br>')}` : ''}</p></div>`
         : `<div class="verdict ko" role="alert"><h2>${plural(result.problems.length, 'problem')}</h2><ul>${result.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul><a class="btn secondary" href="https://github.com/nikkolasg/zcash-agora/issues/new">Report it</a></div>`) : ''}
       ${!running && failure ? `<div class="verdict ko" role="alert"><h2>The check stopped</h2><p>${esc(failure)}</p></div>` : ''}
-      ${!running && (!result || done) && enabled ? `<p><button class="btn" id="audit-start">${result || failure ? 'Audit again' : 'Audit the vote'}</button></p>` : ''}
+      ${!running && (!result || done) && enabled ? `<p class="center"><button class="btn" id="audit-start" ${closed() ? '' : 'disabled'}>${result || failure ? 'Audit again' : 'Audit the vote'}</button></p>` : ''}
       <p class="cite">The code of the check: <a href="https://github.com/lanterne-labs/isoloir/blob/main/js/src/audit.ts">@isoloir/web audit</a>, the same judge as <code>isoloir audit</code>. To run it outside a browser, with circuits you built yourself: <a href="https://github.com/nikkolasg/zcash-agora/blob/main/scripts/audit.sh">scripts/audit.sh</a>.</p>`;
     container.querySelector('#audit-start')?.addEventListener('click', start);
     container.querySelector('#audit-stop')?.addEventListener('click', () => ctl?.abort());
@@ -161,4 +157,5 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
   }
   render();
   if (location.hash === '#audit') container.scrollIntoView();
+  return render;
 }
