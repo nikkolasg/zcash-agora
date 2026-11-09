@@ -6,8 +6,8 @@
     "repo": "nikkolasg/zcash-agora-mirror",
     "branch": "main"
   },
-  "registry": 1,
-  "poll": 2,
+  "registry": 2,
+  "poll": 3,
   "zkpassport": {
     "name": "Zcash Agora",
     "purpose": "Prove once that you hold a valid passport, to vote anonymously in Zcash Agora polls"

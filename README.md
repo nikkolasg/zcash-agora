@@ -13,7 +13,7 @@ both counts are shown side by side, and neither binds anyone.
 
 - **Vote and read the results:** <https://nikkolasg.github.io/zcash-agora/>
 - **The public log:** [nikkolasg/zcash-agora-mirror](https://github.com/nikkolasg/zcash-agora-mirror), every registration, ballot, checkpoint and tally, readable and recountable by anyone
-- **First poll (a test):** Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol? Opens 6 November 2026 13:30 UTC, closes 20 November 2026 12:00 UTC (poll 2; poll 1, same question, runs 16 November to 14 December). A trial of the technology on a sample question, to learn whether people in the Zcash ecosystem want to be counted this way; its result decides nothing.
+- **First poll (a test):** Zcash Shielded Assets (ZSAs): do you want them in the Zcash protocol? Opens 10 November 2026 00:00 UTC, closes 20 November 2026 12:00 UTC (poll 3 on registry 2; polls 1 and 2, same question, sit on registry 1, which no one can join). A trial of the technology on a sample question, to learn whether people in the Zcash ecosystem want to be counted this way; its result decides nothing.
 
 The protocol is [isoloir](https://github.com/lanterne-labs/isoloir)
 (pinned as a submodule). This repository holds what Zcash Agora adds:

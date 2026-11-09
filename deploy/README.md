@@ -26,13 +26,17 @@ The site is static (GitHub Pages, `../site`, at the base path
 only, no direct endpoint: voters never reach the operator's server, so
 the ingest needs no public hostname (Caddy serves `/v1/health` only).
 
-Two labels are fixed for ever and neither has to be a hostname. The
-**origin** (`zcash-agora`) names the log and its key. The ZKPassport
-**domain** in `../ledger/registries/1.json` (`zcash-agora`) is hashed,
-with the scope, into every passport identifier: the SDK carries it to the
-phone in the request link, the app shows it to the holder, and the
-verifier recomputes it from the registry file. Nothing compares it with
-the site's hostname, so the site can move without touching the registry.
+Two labels are fixed for ever. The **origin** (`zcash-agora`) names the
+log and its key and need not be a hostname. The ZKPassport **domain** in
+`../ledger/registries/2.json` (`nikkolasg.github.io`) is hashed, with the
+scope, into every passport identifier, and it **must be the hostname of
+the page that shows the request**: the bridge tells the app the page's
+real origin, and the app accepts the request only if that origin is the
+domain, or an origin the domain's owner allowed on ZKPassport's dashboard
+(which takes real domains only). Registry 1 used the label `zcash-agora`
+and no phone ever accepted its requests; it stays on the log, empty. If
+the site moves, a new registry is needed (its identifiers change), or the
+old domain's dashboard project must allow the new origin.
 
 ## 1. Keys
 
@@ -77,12 +81,12 @@ them with the clone). Anyone can rebuild them and compare the hash.
 ```sh
 export DATABASE_URL=postgresql://agora:…@localhost/agora
 isoloir check ledger ../ledger/ledger.json
-isoloir check registry ../ledger/registries/1.json
-isoloir check poll ../ledger/polls/1.json --registry ../ledger/registries/1.json
+isoloir check registry ../ledger/registries/2.json
+isoloir check poll ../ledger/polls/3.json --registry ../ledger/registries/2.json
 isoloir genesis ../ledger/ledger.json                 # once per database
 docker compose up -d db ingest caddy
-isoloir submit registry ../ledger/registries/1.json  # waits until logged
-isoloir submit poll ../ledger/polls/1.json
+isoloir submit registry ../ledger/registries/2.json  # waits until logged
+isoloir submit poll ../ledger/polls/3.json
 ```
 
 The poll's `round` is the drand quicknet round at or after `closes`

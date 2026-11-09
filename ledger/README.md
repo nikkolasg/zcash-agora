@@ -8,8 +8,8 @@ inclusion proofs and the browser verifies them before it uses them.
 | File | What | Fixed for ever |
 |---|---|---|
 | `ledger.json` | origin, log key, ingest key, channels (three public Nostr relays, no direct endpoint: the operator never sees a voter's address), checkpoint period | origin, log key |
-| `registries/1.json` | who may vote: any passport that ZKPassport can verify, not expired. No minimum age, no nationality rule. The identifier is salted by ZKPassport's threshold OPRF under mainnet key 1 (`oprf_key`, pinned), so the issuing state cannot recompute it. | domain, scope, identifier type (the passport identifier derives from them) |
-| `polls/1.json`, `polls/2.json` | the ZSA question: single choice, two options and a blank, time-locked to drand quicknet, one result at the close, one ballot per voter | everything but `title` and `closes` (which may only move later, SPEC §13) |
+| `registries/2.json` | who may vote: any passport that ZKPassport can verify, not expired. No minimum age, no nationality rule. The identifier is salted by ZKPassport's threshold OPRF under mainnet key 1 (`oprf_key`, pinned), so the issuing state cannot recompute it. The `domain` is the site's hostname, `nikkolasg.github.io`: the ZKPassport app trusts a request only when the page's origin is the domain (or an origin the domain's owner allowed on ZKPassport's dashboard, which takes a real domain). `registries/1.json` (domain `zcash-agora`) is on the log and empty for that reason. | domain, scope, identifier type (the passport identifier derives from them) |
+| `polls/1.json`, `polls/2.json`, `polls/3.json` | the ZSA question: single choice, two options and a blank, time-locked to drand quicknet, one result at the close, one ballot per voter. Polls 1 and 2 are on registry 1, poll 3 on registry 2 | everything but `title` and `closes` (which may only move later, SPEC §13) |
 
 `FILLED-AT-GENESIS` fields are the keys made in `../deploy/README.md` §1.
 
@@ -17,9 +17,12 @@ inclusion proofs and the browser verifies them before it uses them.
 
 - Poll 1 opens 2026-11-16 12:00 UTC and closes 2026-12-14 12:00 UTC (four
   weeks). Poll 2 asks the same question, opens 2026-11-06 13:30 UTC and
-  closes 2026-11-20 12:00 UTC (two weeks); it is the one the site shows.
+  closes 2026-11-20 12:00 UTC (two weeks). Both are on registry 1, which
+  nobody can join (see above). Poll 3 asks it again on registry 2, opens
+  2026-11-10 00:00 UTC and closes 2026-11-20 12:00 UTC; it is the one the
+  site shows.
 - `round` is the quicknet round at or after the close (`./round.sh
-  <closes>`): 34815412 for poll 1, 34124212 for poll 2. The beacon of that
+  <closes>`): 34815412 for poll 1, 34124212 for polls 2 and 3. The beacon of that
   round is the key that opens every ballot, and it does not exist before
   the close.
 - `circuit.vk_hash` is the hash of the verification key of

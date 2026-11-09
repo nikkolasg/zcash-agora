@@ -68,7 +68,7 @@
   try {
     const r = await fetch('https://cdn.jsdelivr.net/gh/nikkolasg/zcash-agora-mirror@main/checkpoint.txt', { cache: 'no-store' });
     if (!r.ok) return;
-    const m = (await r.text()).match(/^registry 1 (\d+) /m);
+    const m = (await r.text()).match(/^registry 2 (\d+) /m);
     if (!m) return;
     const n = Number(m[1]);
     document.getElementById('registered').textContent = n === 0 ? ' Nobody has registered yet: be the first.' : ` ${n} ${n === 1 ? 'person has' : 'people have'} registered so far.`;
