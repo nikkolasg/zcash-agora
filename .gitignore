@@ -11,3 +11,4 @@ trial/
 *.log
 deploy/.mirror_deploy_key
 *.key
+.claude/settings.local.json
