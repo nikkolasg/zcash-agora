@@ -92,6 +92,30 @@ async function main() {
       return r.text();
     }
   );
+  // A proof that does not come back is reported, not waited for: the worker's
+  // setup caches a pending promise (an SRS download that stalls, a worker that
+  // died without an error event), so a cast could sit on "Proving…" with
+  // nothing to see. Past the limit the worker is dropped; the next cast starts
+  // a fresh one. Each step is logged for the browser console.
+  const PROVE_LIMIT_MS = 3 * 60_000;
+  const guarded: import('@isoloir/web').Prover = {
+    warm: (circuit) => prover.warm(circuit),
+    prove: (circuit, inputs) => {
+      const t0 = performance.now();
+      console.info(`isoloir: proving ${circuit}…`);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const limit = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          prover.terminate();
+          reject(new Error(`the proof did not finish in ${PROVE_LIMIT_MS / 60_000} minutes (the prover's files may not have downloaded). Reload the page and cast again.`));
+        }, PROVE_LIMIT_MS);
+      });
+      return Promise.race([prover.prove(circuit, inputs), limit]).then(
+        (r) => { clearTimeout(timer); console.info(`isoloir: proof done in ${Math.round(performance.now() - t0)} ms`); return r; },
+        (e) => { clearTimeout(timer); console.warn('isoloir: proof failed', e); throw e; }
+      );
+    }
+  };
   const session = new Session({
     core: wasm,
     origin: config.origin,
@@ -99,7 +123,7 @@ async function main() {
     registry: config.registry,
     poll: config.poll,
     mirror: mirrorSources(),
-    prover,
+    prover: guarded,
     wordsLang: 'en',
     passkey: { rpName: config.name } as never
   });
@@ -382,10 +406,16 @@ async function main() {
     document.getElementById('resend')?.addEventListener('click', () => run(() => session.resendBallot()));
   };
 
-  session.subscribe(() => render());
+  let lastSig = '';
+  session.subscribe(() => {
+    const s = session.state();
+    const sig = `phase ${s.phase} · ballot ${s.ballot?.state ?? '-'} · prover ${s.prover}`;
+    if (sig !== lastSig) { lastSig = sig; console.info(`isoloir: ${sig}`); }
+    render();
+  });
   await session.init();
   render();
-  if (session.state().poll) prover.warm(session.state().poll!.circuit.name).catch(() => {});
+  if (session.state().poll) prover.warm(session.state().poll!.circuit.name).then(() => console.info('isoloir: prover warm'), (e) => console.warn('isoloir: prover warm failed', e));
 }
 
 main().catch((e) => { h(`<h1>Vote</h1>${errorBox(e)}<p class="muted">Reload the page; if it persists, the mirror or the relays may be unreachable from your network.</p>`); console.error(e); });
