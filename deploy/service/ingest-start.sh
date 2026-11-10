@@ -9,8 +9,10 @@ if [ -f /app/agora/ledger/ledger.json ]; then
 fi
 (
   sleep 40
-  if [ ! -f /app/mirror/registries/1.json ]; then echo "submit registry 1:"; isoloir submit registry /app/agora/ledger/registries/1.json; fi
-  for n in 1 2; do
+  for r in 1 2; do
+    if [ ! -f /app/mirror/registries/$r.json ]; then echo "submit registry $r:"; isoloir submit registry /app/agora/ledger/registries/$r.json; fi
+  done
+  for n in 1 2 3; do
     if [ ! -f /app/mirror/polls/$n.json ]; then echo "submit poll $n:"; isoloir submit poll /app/agora/ledger/polls/$n.json; fi
   done
 ) &
