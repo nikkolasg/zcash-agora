@@ -30,6 +30,9 @@ jobs:
       - run: npm ci && npm run build
         working-directory: site/app
       - run: python3 site/build-pages.py
+      # The artifact is the pages, not the app's build tree: with node_modules
+      # in it (175 MB compressed) the Pages deploy took ten minutes and timed out.
+      - run: rm -rf site/app/node_modules site/app/dist
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
