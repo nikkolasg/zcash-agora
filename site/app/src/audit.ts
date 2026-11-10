@@ -13,8 +13,14 @@ export function mirrorBase(): string {
   return 'url' in m ? m.url : `https://cdn.jsdelivr.net/gh/${m.repo}@${m.branch}`;
 }
 
-async function fromMirror<T>(path: string, read: (r: Response) => Promise<T>): Promise<T | null> {
-  const r = await fetch(`${mirrorBase()}/${path}`, { credentials: 'omit', cache: 'no-cache' });
+/** The mirror for files that change (the head, the windows, the entries): GitHub raw keeps a branch's files 5 minutes, jsDelivr 12 hours. */
+function mirrorHead(): string {
+  const m = config.mirror;
+  return 'url' in m ? m.url : `https://raw.githubusercontent.com/${m.repo}/${m.branch}`;
+}
+
+async function fromMirror<T>(path: string, read: (r: Response) => Promise<T>, immutable = false): Promise<T | null> {
+  const r = await fetch(`${immutable ? mirrorBase() : mirrorHead()}/${path}`, { credentials: 'omit', cache: 'no-cache' });
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
   return read(r);
@@ -28,7 +34,7 @@ export async function runAudit(wasm: IsoloirWasm, onProgress: (p: AuditProgress)
   return audit(wasm as IsoloirWasm & AuditWasm, {
     text: (p) => fromMirror(p, (r) => r.text()),
     logKey: config.verifierKey,
-    verifyProof: bbVerifier((p) => fromMirror(p, async (r) => new Uint8Array(await r.arrayBuffer()))),
+    verifyProof: bbVerifier((p) => fromMirror(p, async (r) => new Uint8Array(await r.arrayBuffer()), true)),
     verifyPassport: async (req) => {
       // A local trial: the dev provider's bundle names the identifier and proves nothing (the ingest ran with --dev).
       if (config.dev && req.eligibility.provider === 'dev') return typeof req.proof.uid === 'string' ? req.proof.uid : null;

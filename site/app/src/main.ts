@@ -13,10 +13,20 @@ const h = (html: string) => { app.innerHTML = html; };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const when = (t: number) => new Date(t * 1000).toUTCString().replace(/ GMT$/, ' UTC');
 
-/** The mirror's base URL, for links and raw files. */
+/** The mirror's base URL for files that never change once written (a circuit's artifact): a CDN may keep them. */
 function mirrorBase(): string {
   const m = config.mirror;
   return 'url' in m ? m.url : `https://cdn.jsdelivr.net/gh/${m.repo}@${m.branch}`;
+}
+/**
+ * The mirror's base URL for the files that change (the head, the entries of a
+ * recent checkpoint). jsDelivr keeps a branch's files for 12 hours and ignores
+ * query strings, so a head read through it is hours old; GitHub's raw host
+ * keeps them 5 minutes and answers with CORS.
+ */
+function mirrorHead(): string {
+  const m = config.mirror;
+  return 'url' in m ? m.url : `https://raw.githubusercontent.com/${m.repo}/${m.branch}`;
 }
 /** A mirror file as a page a person can open (GitHub for the repository mirror). */
 function mirrorPage(path: string): string {
@@ -26,7 +36,8 @@ function mirrorPage(path: string): string {
 
 function mirrorSources(): MirrorSource[] | string {
   const m = config.mirror;
-  return 'url' in m ? m.url : [jsDelivrSource(m.repo, m.branch)];
+  // The head files from GitHub raw (minutes old at worst), a file at a commit from jsDelivr (immutable, cached for good).
+  return 'url' in m ? m.url : [dirSource(`https://raw.githubusercontent.com/${m.repo}/${m.branch}`), jsDelivrSource(m.repo, m.branch)];
 }
 
 function header(s: SessionState): string {
@@ -104,7 +115,7 @@ async function main() {
     placeNext = Date.now() + 10_000;
     for (let i = from; i < from + 4; i++) {
       try {
-        const r = await fetch(`${mirrorBase()}/entries/${i}.json`, { cache: 'no-store' });
+        const r = await fetch(`${mirrorHead()}/entries/${i}.json`, { cache: 'no-store' });
         if (!r.ok) break;
         const entries = (await r.json()) as { kind: string; seq: number; body: string }[];
         const mine = entries.find((e) => e.kind === 'ballot' && wasm.body_hash(e.body) === hash);
