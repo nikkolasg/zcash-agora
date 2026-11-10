@@ -70,7 +70,9 @@ function errorBox(e: unknown): string {
     too_soon: 'The ledger takes one ballot per voter in this poll; a ballot of yours is already on its way.',
     pow: 'The proof of work for the envelope could not be made. Reload the page and try again.',
     pin_mismatch: 'A proving file from the network did not match its pinned hash. Reload and try again; if it persists, tell us.',
-    stale_mirror: 'The log mirror is more than 30 minutes old; the ledger may be paused. Try again in a few minutes.'
+    stale_mirror: 'The log mirror is more than 30 minutes old; the ledger may be paused. Try again in a few minutes.',
+    no_path: 'Your registration is in the log but not yet in a published snapshot of it. Wait a minute and cast again.',
+    cast_retries: 'The ballot could not be sealed against the current snapshot after several tries. Reload the page and cast again.'
   };
   return `<p class="err"><strong>${esc(code)}</strong>: ${esc(hints[code] ?? detail)}</p>`;
 }

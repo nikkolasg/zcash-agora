@@ -34,8 +34,9 @@ input[type=text] { font: inherit; padding: .5rem .7rem; border: 1px solid var(--
 details { margin: .8rem 0; } summary { cursor: pointer; color: var(--ink-2); }
 .center { text-align: center; }
 .verdict.receipt { text-align: left; margin-top: 1.2rem; }
-.verdict.receipt .seal { display: block; margin: 0 auto .4rem; }
-.verdict.receipt h2 { text-align: center; }
+.verdict.receipt .seal { display: block; margin: 0 0 .4rem; }
+.verdict.receipt h2 { text-align: left; margin: 0 0 .4rem; }
+.verdict.receipt p { margin: 0 0 .8rem; }
 .verdict.receipt .kv { margin: .8rem 0; font-size: .92rem; }
 .verdict.receipt .kv dt { color: var(--ink-2); }
 @media (max-width: 480px) { .verdict.receipt .kv { grid-template-columns: 1fr; gap: .1rem 0; } .verdict.receipt .kv dd { margin-bottom: .5rem; } }
