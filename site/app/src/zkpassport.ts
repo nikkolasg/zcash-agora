@@ -6,13 +6,14 @@
 //
 // The SDK's own result callback runs its verifier first (bb.js in the page,
 // then ZKPassport's API) and says nothing meanwhile: a scan looked stuck on
-// the code for minutes. This adapter takes the proofs as they come, says so,
-// reads the identifier itself with a bounded wait, and gives up with a
-// message instead of leaving the code on screen. The ingest verifies the
-// proofs again; the browser's verdict is only how the identifier is read.
+// the code for minutes, and on Firefox the local verifier froze the page.
+// This adapter takes the proofs as they come, says so, reads the identifier
+// through ZKPassport's verifier API (seconds, off the page's thread), and
+// gives up with a message instead of leaving the code on screen. The ingest
+// verifies the proofs itself; the API's verdict is only how the identifier
+// is read.
 import { ZKPassport, NullifierType } from '@zkpassport/sdk';
 import type { PassportProof, RegistrationRequest, Session } from '@isoloir/web';
-import { ETH_RPCS } from './audit.js';
 
 export interface ScanUi {
   /** Show the request's URL as a QR code (and as a link on phones). */
@@ -30,17 +31,8 @@ export interface ZkpBranding {
 
 /** How long the phone may stay silent at each step before the page gives up. */
 const APP_SILENCE_MS = 4 * 60_000;
-/** The local check of the proofs (the SDK's verifier in the page) gets this long before the API is asked. */
-const LOCAL_CHECK_MS = 40_000;
 
 const log = (m: string, ...a: unknown[]) => console.info(`zkpassport: ${m}`, ...a);
-
-function withTimeout<T>(ms: number, p: Promise<T>): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error(`timed out after ${ms} ms`)), ms);
-    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
-  });
-}
 
 export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
   return async (req: RegistrationRequest, session: Session): Promise<PassportProof> => {
@@ -75,8 +67,8 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
     ui.status('Scan the code with the ZKPassport app, then scan your passport.');
     const proofs: unknown[] = [];
 
-    // Reads the identifier from the proofs: the SDK's verifier, locally with the audit's RPC, or ZKPassport's API.
-    const read = (result: unknown, mode: 'local' | 'api') =>
+    // Reads the identifier from the proofs through ZKPassport's verifier API (the SDK's call, 60 s timeout).
+    const read = (result: unknown) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (zk as any).verify({
         proofs,
@@ -87,8 +79,7 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
         uniqueIdentifierType: want,
         oprfKeyId: e.oprf_key?.id,
         validity: req.validity,
-        verifierMode: mode,
-        ...(mode === 'local' ? { config: { rpcUrl: ETH_RPCS[0] } } : {})
+        verifierMode: 'api'
       }) as Promise<{ uniqueIdentifier?: string; uniqueIdentifierType?: NullifierType; verified: boolean }>;
 
     return new Promise<PassportProof>((resolve, reject) => {
@@ -122,19 +113,10 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
       });
       r.onSuccess(async ({ result }: { result: unknown }) => {
         log('all proofs received; reading the identifier');
-        ui.status('All proofs received. Reading the document identifier…');
-        arm('Reading the identifier took too long', LOCAL_CHECK_MS + 70_000);
+        ui.status('All proofs received. Reading the document identifier (a few seconds)…');
+        arm('Reading the identifier took too long', 90_000);
         let v: Awaited<ReturnType<typeof read>> | null = null;
-        try {
-          v = await withTimeout(LOCAL_CHECK_MS, read(result, 'local'));
-          log('local check', v);
-        } catch (err) {
-          log('local check failed, asking the verifier API', err);
-        }
-        if (!v?.uniqueIdentifier) {
-          ui.status('Checking the proofs with ZKPassport’s verifier…');
-          try { v = await read(result, 'api'); log('api check', v); } catch (err) { log('api check failed', err); }
-        }
+        try { v = await read(result); log('verifier API', v); } catch (err) { log('verifier API failed', err); }
         settle(() => {
           if (!v?.uniqueIdentifier) return reject(new Error('the document identifier could not be read from the proofs (details in the browser console). Scan again.'));
           if (v.uniqueIdentifierType !== want) return reject(new Error(`the identifier is not of the registry's type (${salted ? 'salted' : 'non-salted'})`));
