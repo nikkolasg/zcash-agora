@@ -140,8 +140,8 @@ async function main() {
     if (s.phase === 'no-key' || s.phase === 'unregistered' || s.phase === 'registering') {
       if (pending?.kind === 'scan') {
         booth += `<div class="phase"><h2>Prove you are one person</h2><p>${esc(pending.text)}</p>
-          <div class="qr"><canvas id="qr"></canvas></div>
-          ${pending.url ? `<p class="muted"><a href="${esc(pending.url)}">On this phone? Open the request in the ZKPassport app.</a></p>` : ''}</div>`;
+          ${pending.url ? `<div class="qr"><canvas id="qr"></canvas></div>
+          <p class="muted"><a href="${esc(pending.url)}">On this phone? Open the request in the ZKPassport app.</a></p>` : '<div class="progress"><span style="width:50%"></span></div>'}</div>`;
       } else if (pending?.kind === 'words') {
         booth += `<div class="phase"><h2>Your recovery code: write these 12 words down</h2>
           <p>They are the only way to vote from another device in a later poll, and the only thing that could ever link you to your ballot. Keep them private.</p>
@@ -288,7 +288,9 @@ async function main() {
 
   const scanUi = {
     showRequest: (url: string) => { pending = { kind: 'scan', url, text: 'Scan the code with the ZKPassport app.' }; render(); },
-    status: (text: string) => { if (pending?.kind === 'scan') { pending.text = text; render(); } }
+    status: (text: string) => { if (pending?.kind === 'scan') { pending.text = text; render(); } },
+    // The phone has the request: the code goes, the step's text stays.
+    codeTaken: () => { if (pending?.kind === 'scan') { pending.url = undefined; render(); } }
   };
   const obtainProof = config.dev
     ? devScan(async () => window.prompt('Trial registry (dev provider): type any identifier, e.g. alice') ?? '')

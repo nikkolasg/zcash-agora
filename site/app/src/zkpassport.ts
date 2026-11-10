@@ -3,13 +3,23 @@
 // the registry's eligibility and the registration binding, or the proof
 // fails on the server. Nothing about the passport reaches this page but the
 // proofs, the query result and the document's unique identifier.
+//
+// The SDK's own result callback runs its verifier first (bb.js in the page,
+// then ZKPassport's API) and says nothing meanwhile: a scan looked stuck on
+// the code for minutes. This adapter takes the proofs as they come, says so,
+// reads the identifier itself with a bounded wait, and gives up with a
+// message instead of leaving the code on screen. The ingest verifies the
+// proofs again; the browser's verdict is only how the identifier is read.
 import { ZKPassport, NullifierType } from '@zkpassport/sdk';
 import type { PassportProof, RegistrationRequest, Session } from '@isoloir/web';
+import { ETH_RPCS } from './audit.js';
 
 export interface ScanUi {
   /** Show the request's URL as a QR code (and as a link on phones). */
   showRequest(url: string): void;
   status(text: string): void;
+  /** The phone has the request: the code is no longer needed on screen. */
+  codeTaken?(): void;
 }
 
 export interface ZkpBranding {
@@ -18,15 +28,30 @@ export interface ZkpBranding {
   logo?: string;
 }
 
+/** How long the phone may stay silent at each step before the page gives up. */
+const APP_SILENCE_MS = 4 * 60_000;
+/** The local check of the proofs (the SDK's verifier in the page) gets this long before the API is asked. */
+const LOCAL_CHECK_MS = 40_000;
+
+const log = (m: string, ...a: unknown[]) => console.info(`zkpassport: ${m}`, ...a);
+
+function withTimeout<T>(ms: number, p: Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`timed out after ${ms} ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
   return async (req: RegistrationRequest, session: Session): Promise<PassportProof> => {
     const e = req.eligibility;
     // The expiry check is against the proof's day on the server's clock (±1 day on the verifier).
     const day = new Date(session.serverNow());
     const zk = new ZKPassport(e.domain);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // The registry's identifier type: salted under its pinned OPRF key (the app then requires a face match), or the document's own.
     const salted = !!e.oprf_key;
+    const want = salted ? NullifierType.SALTED : NullifierType.NON_SALTED;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = await zk.request({
       name: brand.name,
       logo: brand.logo,
@@ -34,7 +59,7 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
       scope: e.scope,
       mode: 'compressed',
       validity: req.validity,
-      uniqueIdentifierType: salted ? NullifierType.SALTED : NullifierType.NON_SALTED,
+      uniqueIdentifierType: want,
       ...(salted ? { oprfKeyId: e.oprf_key!.id } : {})
     });
     // The SDK gives no salted identifier without the strict face match: the app matches the holder's face to the chip's photo, on the phone.
@@ -45,22 +70,80 @@ export function zkpassportScan(brand: ZkpBranding, ui: ScanUi) {
     if (e.require_expiry) q = q.gte('expiry_date', day);
     q = q.bind('custom_data', req.customData);
     const r = q.done();
+    log('request made', { domain: e.domain, scope: e.scope, url: r.url });
     ui.showRequest(r.url);
     ui.status('Scan the code with the ZKPassport app, then scan your passport.');
     const proofs: unknown[] = [];
+
+    // Reads the identifier from the proofs: the SDK's verifier, locally with the audit's RPC, or ZKPassport's API.
+    const read = (result: unknown, mode: 'local' | 'api') =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (zk as any).verify({
+        proofs,
+        originalQuery: r.query,
+        queryResult: result,
+        scope: e.scope,
+        devMode: false,
+        uniqueIdentifierType: want,
+        oprfKeyId: e.oprf_key?.id,
+        validity: req.validity,
+        verifierMode: mode,
+        ...(mode === 'local' ? { config: { rpcUrl: ETH_RPCS[0] } } : {})
+      }) as Promise<{ uniqueIdentifier?: string; uniqueIdentifierType?: NullifierType; verified: boolean }>;
+
     return new Promise<PassportProof>((resolve, reject) => {
-      r.onRequestReceived(() => ui.status('Request received on the phone. Accept it, then hold the passport to the phone.'));
-      r.onGeneratingProof(() => ui.status('The phone is generating the proof (10 to 60 seconds)…'));
-      r.onProofGenerated((p: unknown) => proofs.push(p));
-      r.onResult(({ uniqueIdentifier, uniqueIdentifierType, result }: { uniqueIdentifier?: string; uniqueIdentifierType?: NullifierType; result: unknown }) => {
-        if (!uniqueIdentifier) return reject(new Error('the app sent no unique identifier'));
-        const want = salted ? NullifierType.SALTED : NullifierType.NON_SALTED;
-        if (uniqueIdentifierType !== want) return reject(new Error(`the identifier is not of the registry's type (${salted ? 'salted' : 'non-salted'})`));
-        // The ingest verifies the proofs itself (zkverifier/verify.mjs); the "verified" flag of the app is not used.
-        resolve({ uid: uniqueIdentifier, proof: { proofs, result }, proofDate: Math.floor(session.serverNow() / 1000) });
+      let settled = false;
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      const settle = (f: () => void) => { if (settled) return; settled = true; if (timer) clearTimeout(timer); f(); };
+      const arm = (what: string, ms = APP_SILENCE_MS) => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => settle(() => reject(new Error(`${what} for ${Math.round(ms / 60_000)} minutes. Scan again; your key stays the same.`))), ms);
+      };
+      arm('No phone took the request', 10 * 60_000);
+      r.onBridgeConnect(() => log('bridge connected'));
+      r.onBridgeConnectionLost(() => { log('bridge connection lost'); ui.status('The link to the phone dropped; it reconnects by itself. If nothing happens, scan again.'); });
+      r.onRequestReceived(() => {
+        log('request received on the phone');
+        ui.codeTaken?.();
+        ui.status('Request received on the phone. Accept it, then hold the passport to the phone.');
+        arm('The app has not answered');
       });
-      r.onReject(() => reject(new Error('rejected on the phone')));
-      r.onError((err: string) => reject(new Error(err)));
+      r.onGeneratingProof(() => {
+        log('the phone is proving');
+        ui.status('The phone is generating the proofs (10 to 60 seconds)…');
+        arm('The app has been proving');
+      });
+      r.onProofGenerated((p: unknown) => {
+        proofs.push(p);
+        const n = (p as { total?: number })?.total;
+        log(`proof ${proofs.length}${n ? ` of ${n}` : ''} received`);
+        ui.status(`Proof ${proofs.length}${n ? ` of ${n}` : ''} received from the phone…`);
+        arm('The app has not sent the rest of the proofs');
+      });
+      r.onSuccess(async ({ result }: { result: unknown }) => {
+        log('all proofs received; reading the identifier');
+        ui.status('All proofs received. Reading the document identifier…');
+        arm('Reading the identifier took too long', LOCAL_CHECK_MS + 70_000);
+        let v: Awaited<ReturnType<typeof read>> | null = null;
+        try {
+          v = await withTimeout(LOCAL_CHECK_MS, read(result, 'local'));
+          log('local check', v);
+        } catch (err) {
+          log('local check failed, asking the verifier API', err);
+        }
+        if (!v?.uniqueIdentifier) {
+          ui.status('Checking the proofs with ZKPassport’s verifier…');
+          try { v = await read(result, 'api'); log('api check', v); } catch (err) { log('api check failed', err); }
+        }
+        settle(() => {
+          if (!v?.uniqueIdentifier) return reject(new Error('the document identifier could not be read from the proofs (details in the browser console). Scan again.'));
+          if (v.uniqueIdentifierType !== want) return reject(new Error(`the identifier is not of the registry's type (${salted ? 'salted' : 'non-salted'})`));
+          // The ingest verifies the proofs itself (zkverifier/verify.mjs); the "verified" flag of the browser is not used.
+          resolve({ uid: v.uniqueIdentifier, proof: { proofs, result }, proofDate: Math.floor(session.serverNow() / 1000) });
+        });
+      });
+      r.onReject(() => { log('rejected on the phone'); settle(() => reject(new Error('rejected on the phone'))); });
+      r.onError((err: string) => { log('error', err); settle(() => reject(new Error(err))); });
     });
   };
 }

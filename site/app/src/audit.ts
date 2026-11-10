@@ -6,7 +6,7 @@ import { audit, bbVerifier, zkPassportVerifier, type AuditProgress, type AuditRe
 import { config } from './config.js';
 
 // Public Ethereum endpoints, tried in order: the passport check only reads the certificate registry's roots.
-const ETH_RPCS = ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'];
+export const ETH_RPCS = ['https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth'];
 
 export function mirrorBase(): string {
   const m = config.mirror;
