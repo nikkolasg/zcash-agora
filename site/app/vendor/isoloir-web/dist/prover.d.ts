@@ -87,6 +87,8 @@ export declare function srsPoints(g1: Uint8Array, g2: Uint8Array, grumpkin?: Uin
     g1: number;
     grumpkin: number;
 };
+/** How long the multi-threaded bb.js may take to come up before the prover goes on with one thread. */
+export declare const THREADS_UP_MS = 30000;
 /** Loads noir_js and bb.js for a circuit once; the first call fetches the SRS and sets up the key. */
 export declare function backendFor(circuit: string, artifact: ArtifactLoader, options?: ProverOptions): Promise<Backend>;
 /** Proves in the current thread (what the worker runs; usable directly in tests or tools). */
