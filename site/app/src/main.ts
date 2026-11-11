@@ -46,7 +46,7 @@ function header(s: SessionState): string {
   const status = s.pollStatus === 'open' ? `open until ${when(p!.closes)}` :
     s.pollStatus === 'upcoming' ? `opens ${when(p!.opens)}` :
     s.pollStatus === 'closed' ? `closed ${when(p!.closes)}` : '';
-  return `<h1>${title}</h1><p class="muted">${status}${s.checkpoint ? ` · log checkpoint ${s.checkpoint.index}, ${s.checkpoint.registries[0]?.size ?? 0} registered` : ''}</p>
+  return `<h1>${title}</h1><p class="muted">${status}${s.checkpoint ? ` · log checkpoint ${s.checkpoint.index}, ${s.checkpoint.registries.find((r) => r.id === config.registry)?.size ?? 0} registered` : ''}</p>
   <div class="card warn"><strong>This is a test poll.</strong> It is a trial of the technology on a sample question; its result decides nothing. The question behind it is whether you would use a tool like this to be counted as a person in Zcash. <a href="../why/">Why</a>.</div>`;
 }
 
