@@ -13,6 +13,7 @@ CONFIG=$ROOT/site/agora.config.json
 MIRROR=${MIRROR:-$(python3 -c 'import json,sys;c=json.load(open(sys.argv[1]));print("https://cdn.jsdelivr.net/gh/%s@%s"%(c["mirror"]["repo"],c["mirror"]["branch"]))' "$CONFIG")}
 LOG_KEY=${LOG_KEY:-$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["verifierKey"])' "$CONFIG")}
 [ -n "$LOG_KEY" ] || { echo "no verifierKey in $CONFIG yet (the ledger has no genesis)"; exit 1; }
+CIRCUITS=${CIRCUITS:-$MIRROR/circuits}
 cd "$ROOT/isoloir/zkverifier" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund >/dev/null
-exec "$ISOLOIR" audit --mirror "$MIRROR" --log-key "$LOG_KEY" ${CIRCUITS:+--circuits "$CIRCUITS"} \
+exec "$ISOLOIR" audit --mirror "$MIRROR" --log-key "$LOG_KEY" --circuits "$CIRCUITS" \
   --zkverifier "$ROOT/isoloir/zkverifier/verify.mjs" --bitcoin "$@"
