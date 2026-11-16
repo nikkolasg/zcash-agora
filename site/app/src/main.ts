@@ -150,6 +150,20 @@ async function main() {
   let castingAll = false;
   /** The question the ballot shows, among those not cast yet. */
   let step = 0;
+  /** What this device remembers of a ballot cast in full: the receipt shows at once, before the log is read again. */
+  const CAST_KEY = `agora:cast:${config.polls.join(',')}`;
+  let remembered: { picks: Record<number, number>; inLog: boolean } | null = null;
+  try { remembered = JSON.parse(localStorage.getItem(CAST_KEY) ?? 'null'); } catch { /* no storage: the log is read as before */ }
+  const remember = () => {
+    const picks: Record<number, number> = {};
+    for (const id of config.polls) {
+      const c = info[id]?.ballot.choice;
+      if (!isCast(id) || !c || !('pick' in c) || c.pick == null) { remembered = null; try { localStorage.removeItem(CAST_KEY); } catch { /* */ } return; }
+      picks[id] = c.pick;
+    }
+    remembered = { picks, inLog: config.polls.every((id) => info[id]?.ballot.state === 'verified') };
+    try { localStorage.setItem(CAST_KEY, JSON.stringify(remembered)); } catch { /* */ }
+  };
   let swept = false;
   let sweeping = false;
   let sweepTimer: ReturnType<typeof setTimeout> | null = null;
@@ -167,7 +181,7 @@ async function main() {
       try { await t.init(); take(id, t); } catch (e) { console.warn(`isoloir: reading poll ${id}`, e); } finally { t.destroy(); }
       render();
     })).then(() => {
-      swept = true; sweeping = false; render();
+      swept = true; sweeping = false; remember(); render();
       // A ballot the ledger accepted is looked for in the log until found; the result is looked for after the close.
       const again = config.polls.some((id) => info[id]?.ballot.state === 'acked') || (closedNow() && config.polls.some((id) => !info[id]?.tally));
       if (again && !sweepTimer) sweepTimer = setTimeout(() => { sweepTimer = null; void sweep(); }, 60_000);
@@ -227,12 +241,13 @@ async function main() {
         <p class="muted">Keep this page open. It takes a few seconds, up to a minute on a slow connection.</p></div>`;
     }
     // Cast: one receipt for the whole ballot.
-    if (swept && left.length === 0) {
-      const inLog = config.polls.every((id) => info[id]?.ballot.state === 'verified' || isStuck(id));
+    const known = open && !swept && remembered !== null && s.phase === 'ready';
+    if (known || (swept && left.length === 0)) {
+      const inLog = known ? remembered!.inLog : config.polls.every((id) => info[id]?.ballot.state === 'verified' || isStuck(id));
       return `<div class="verdict ok receipt"><svg viewBox="0 0 52 52" class="seal" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
         <h2>${inLog ? 'Your ballot is in the public log' : 'The ledger accepted your ballot'}</h2>
         <p>${inLog ? 'This browser read the log from the mirror and found your answers in it.' : 'It signed a receipt for it. Your answers appear in the next published snapshot of the log; this page checks that by itself.'} They stay sealed until the close, ${when(config.closes)}, under a pseudonym nothing links to you. The results appear here then.</p>
-        <ol class="answers">${config.polls.map((id) => `<li><span>${esc(QUESTIONS[id]?.title ?? `Poll ${id}`)}</span><strong>${isStuck(id) ? 'not counted' : esc(answer(id))}</strong></li>`).join('')}</ol>
+        <ol class="answers">${config.polls.map((id) => `<li><span>${esc(QUESTIONS[id]?.title ?? `Poll ${id}`)}</span><strong>${known ? esc(ANSWERS[remembered!.picks[id]] ?? '') : isStuck(id) ? 'not counted' : esc(answer(id))}</strong></li>`).join('')}</ol>
         <p class="muted">Your answers are shown from this device's memory; nobody else can read them before the close. Keep this device or your recovery code.</p></div>`;
     }
     // The poll closed on an unfinished ballot, or the ledger refused part of it: what became of each question.
@@ -511,7 +526,7 @@ async function main() {
     document.getElementById('showwords')?.addEventListener('click', () => { showWords = !showWords; render(); });
     document.getElementById('forget')?.addEventListener('click', () => {
       if (!window.confirm('Forget this key and start over? If it was registered, that registration stays in the log and this passport cannot register again.')) return;
-      pending = null; lastError = null; session.forgetKey(); render();
+      pending = null; lastError = null; remembered = null; try { localStorage.removeItem(CAST_KEY); } catch { /* */ } session.forgetKey(); render();
     });
     document.getElementById('wrote')?.addEventListener('click', () => {
       const words = session.words()!;

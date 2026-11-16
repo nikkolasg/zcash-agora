@@ -81,7 +81,7 @@ function stepOf(p: string): StepKey {
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
-/** Mounts the audit section; `closed` says whether the poll is over (the audit waits for it). Returns a re-render. */
+/** Mounts the audit section; `closed` says whether the poll is over (before that the report gives no counts). Returns a re-render. */
 export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: boolean, closed: () => boolean = () => true): () => void {
   let progress: AuditProgress | null = null;
   let result: AuditResult | null = null;
@@ -93,6 +93,13 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
 
   const count = (k: StepKey): string => {
     const r = result; if (!r) return '';
+    // While the poll is open the report says what was checked, not how many: the turnout is told at the close.
+    if (!closed()) switch (k) {
+      case 'log': return plural(r.checkpoints, 'checkpoint');
+      case 'registrations': return 'every registration, every passport proof checked';
+      case 'ballots': return 'every ballot proof verified';
+      case 'tallies': return 'this poll\'s ballots stay sealed until the close';
+    }
     switch (k) {
       case 'log': return plural(r.checkpoints, 'checkpoint');
       case 'registrations': return `${plural(r.registrations, 'registration')}, ${plural(r.passports.checked, 'passport proof')} checked`;
@@ -103,7 +110,7 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
   const live = (): string => {
     const p = progress; if (!p) return 'Starting…';
     if (p.phase === 'download') return `Reading the log · ${p.checkpoint}/${p.checkpoints}`;
-    if (p.phase === 'proofs') return `Checking the proofs · ${p.verified}/${p.asked}`;
+    if (p.phase === 'proofs') return closed() ? `Checking the proofs · ${p.verified}/${p.asked}` : 'Checking the proofs…';
     if (p.phase === 'replay') return `Recounting · ${p.checkpoint}/${p.checkpoints}`;
     return 'Done';
   };
@@ -129,17 +136,17 @@ export function mountAudit(container: HTMLElement, wasm: IsoloirWasm, enabled: b
       <h2 id="audit">Audit the vote</h2>
       <p class="muted">Your browser redoes every check, from the public log: the signatures, every passport proof, every ballot proof, the opened ballots. The same checks the command-line auditor runs.</p>
       ${enabled ? '' : '<div class="card warn">The audit opens with the ledger.</div>'}
-      ${enabled && !closed() && !running && !result ? '<p class="muted center">The audit opens when the poll closes: it then checks the opened ballots and the result too.</p>' : ''}
+      ${enabled && !closed() ? '<p class="muted center">The poll is open: the ballots are sealed, so this checks the log, the registrations and the ballot proofs. The opened ballots, the result and the number of voters are checked and told at the close.</p>' : ''}
       <div class="pipe" aria-hidden="true">
         ${NODES.map((n, i) => `${i ? `<span class="link ${running && i > cur ? 'wait' : ''}"></span>` : ''}<span class="node ${nodeClass(i)}"><span class="disc"><svg viewBox="0 0 24 24"><path d="${NODE_ICONS[i]}"/></svg>${!running && result && nodeClass(i) === '' ? '<span class="tick">✓</span>' : ''}</span><span class="name">${n}</span></span>`).join('')}
       </div>
       ${running ? `<div class="live"><span class="spin"></span><span>${esc(live())}</span><span class="bar"><span style="width:${pct()}%"></span></span><button class="btn secondary" id="audit-stop">Stop</button></div>` : ''}
       <ol class="stack">${told.map((k) => `<li class="${failed.has(k) ? 'ko' : ''}"><span class="icon"><svg viewBox="0 0 24 24"><path d="${failed.has(k) ? 'M7 7l10 10M17 7L7 17' : 'M5 12.5l4.5 4.5L19 7.5'}"/></svg></span><span class="text"><strong>${STEP_TEXT[k]}</strong><span class="n">${esc(count(k))}</span></span></li>`).join('')}</ol>
       ${!running && done && result ? (result.ok
-        ? `<div class="verdict ok" role="status"><svg viewBox="0 0 52 52" class="seal" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg><h2>Everything checks out</h2><p class="muted">${result.polls.map((p) => `${esc(p.title)}: ${plural(p.ballots, 'ballot')}`).join(' · ')}${result.warnings.length ? `<br>${result.warnings.map(esc).join('<br>')}` : ''}</p></div>`
+        ? `<div class="verdict ok" role="status"><svg viewBox="0 0 52 52" class="seal" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg><h2>Everything checks out</h2><p class="muted">${closed() ? result.polls.map((p) => `${esc(p.title)}: ${plural(p.ballots, 'ballot')}`).join(' · ') : 'Run it again after the close to check the result.'}${result.warnings.length ? `<br>${result.warnings.map(esc).join('<br>')}` : ''}</p></div>`
         : `<div class="verdict ko" role="alert"><h2>${plural(result.problems.length, 'problem')}</h2><ul>${result.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul><a class="btn secondary" href="https://github.com/nikkolasg/zcash-agora/issues/new">Report it</a></div>`) : ''}
       ${!running && failure ? `<div class="verdict ko" role="alert"><h2>The check stopped</h2><p>${esc(failure)}</p></div>` : ''}
-      ${!running && (!result || done) && enabled ? `<p class="center"><button class="btn" id="audit-start" ${closed() ? '' : 'disabled'}>${result || failure ? 'Audit again' : 'Audit the vote'}</button></p>` : ''}
+      ${!running && (!result || done) && enabled ? `<p class="center"><button class="btn" id="audit-start">${result || failure ? 'Audit again' : 'Audit the vote'}</button></p>` : ''}
       <p class="cite">The code of the check: <a href="https://github.com/lanterne-labs/isoloir/blob/main/js/src/audit.ts">@isoloir/web audit</a>, the same judge as <code>isoloir audit</code>. To run it outside a browser, with circuits you built yourself: <a href="https://github.com/nikkolasg/zcash-agora/blob/main/scripts/audit.sh">scripts/audit.sh</a>.</p>`;
     container.querySelector('#audit-start')?.addEventListener('click', start);
     container.querySelector('#audit-stop')?.addEventListener('click', () => ctl?.abort());
