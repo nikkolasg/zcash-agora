@@ -33,6 +33,12 @@ inclusion proofs and the browser verifies them before it uses them.
 - `revote: none`: under time-lock a correction is a pattern of its own,
   so one ballot per voter (SPEC §8).
 
+- Polls 4 to 8 repeat the five questions of the coinholder and community-panel
+  poll on NU7.1 (ZCG, the Dev Fund, the block time), with its three answers
+  (Support, Oppose, Abstain; no blank). They are on registry 2, open from
+  2026-11-16 and close 2026-11-30 23:59 UTC, round 34426592. The site lists
+  them (`site/agora.config.json`, `polls`) with poll 3.
+
 ## Later polls
 
 A new poll is a new file `polls/<id>.json` on the same registry: no new

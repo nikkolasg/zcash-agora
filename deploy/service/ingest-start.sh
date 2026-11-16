@@ -12,7 +12,7 @@ fi
   for r in 1 2; do
     if [ ! -f /app/mirror/registries/$r.json ]; then echo "submit registry $r:"; isoloir submit registry /app/agora/ledger/registries/$r.json; fi
   done
-  for n in 1 2 3; do
+  for n in 1 2 3 4 5 6 7 8; do
     if [ ! -f /app/mirror/polls/$n.json ]; then echo "submit poll $n:"; isoloir submit poll /app/agora/ledger/polls/$n.json; fi
   done
 ) &

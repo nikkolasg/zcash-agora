@@ -7,6 +7,7 @@ import QRCode from 'qrcode';
 import { config } from './config.js';
 import { zkpassportScan, devScan } from './zkpassport.js';
 import { mountAudit } from './audit.js';
+import { QUESTIONS, voted, markVoted } from './questions.js';
 
 const app = document.getElementById('app')!;
 const h = (html: string) => { app.innerHTML = html; };
@@ -42,12 +43,25 @@ function mirrorSources(): MirrorSource[] | string {
 
 function header(s: SessionState): string {
   const p = s.poll;
+  const q = QUESTIONS[config.poll];
   const title = p ? esc(p.title) : config.name;
   const status = s.pollStatus === 'open' ? `open until ${when(p!.closes)}` :
     s.pollStatus === 'upcoming' ? `opens ${when(p!.opens)}` :
     s.pollStatus === 'closed' ? `closed ${when(p!.closes)}` : '';
-  return `<h1>${title}</h1><p class="muted">${status}${s.checkpoint ? ` · log checkpoint ${s.checkpoint.index}, ${s.checkpoint.registries.find((r) => r.id === config.registry)?.size ?? 0} registered` : ''}</p>
-  <div class="card warn"><strong>This is a test poll.</strong> It is a trial of the technology on a sample question; its result decides nothing. The question behind it is whether you would use a tool like this to be counted as a person in Zcash. <a href="../why/">Why</a>.</div>`;
+  const done = voted();
+  // The question list: every poll of the page, the one shown marked, the ones voted ticked.
+  const list = config.polls.length > 1 ? `<nav class="qnav" aria-label="Questions">${config.polls.map((id, i) => {
+    const label = QUESTIONS[id]?.short ?? `Poll ${id}`;
+    const n = QUESTIONS[id]?.test ? '' : `<span class="qn">${done.includes(id) ? '✓' : i + 1}</span>`;
+    return `<a href="?q=${id}"${id === config.poll ? ' aria-current="page"' : ''} class="${done.includes(id) ? 'voted' : ''}">${n}${esc(label)}</a>`;
+  }).join('')}</nav>` : '';
+  const note = q?.test
+    ? `<div class="card warn"><strong>This is a test poll.</strong> It is a trial of the technology on a sample question; its result decides nothing. The question behind it is whether you would use a tool like this to be counted as a person in Zcash. <a href="../why/">Why</a>.</div>`
+    : `<div class="card warn"><strong>A count of people, beside the count of coins.</strong> These are the five questions of the Zcash coinholder poll of 16 to 30 November 2026, word for word, asked one person, one vote. This poll is unofficial and decides nothing. The number of voters stays hidden until the close. <a href="../why/">Why</a>.</div>`;
+  return `${list}<h1>${title}</h1>
+  ${q?.summary ? `<p class="qsum">${esc(q.summary)}${q.link ? ` <a href="${q.link}">The proposal and its discussion</a>.` : ''}</p>` : ''}
+  <p class="muted">${status}${s.checkpoint ? ` · log checkpoint ${s.checkpoint.index}` : ''}</p>
+  ${note}`;
 }
 
 function notOpenYet(): void {
@@ -83,7 +97,7 @@ async function main() {
 
   const wasm = await loadWasm();
   let pollClosed = false;
-  const renderAudit = mountAudit(document.getElementById('audit-root')!, wasm, true, () => pollClosed);
+  const renderAudit = mountAudit(document.getElementById('audit-root')!, wasm, true, () => pollClosed && Date.now() / 1000 >= config.auditFrom);
   const prover = new WorkerProver(
     () => new Worker(new URL('@isoloir/web/prove.worker', import.meta.url), { type: 'module' }) as unknown as import('@isoloir/web').WorkerLike,
     async (circuit) => {
@@ -232,6 +246,9 @@ async function main() {
       } else if (b.state === 'acked' || b.state === 'verified' || b.state === 'missing' || b.state === 'rejected' || b.state === 'failed') {
         // The receipt, in plain words: what the ledger said, and what this browser checked.
         const ok = b.state === 'verified' || b.state === 'acked';
+        if (ok) markVoted(config.poll);
+        const seen = voted();
+        const nextPoll = config.polls.find((id) => id !== config.poll && !seen.includes(id) && !QUESTIONS[id]?.test) ?? null;
         const cp = b.checkpoint ?? null;
         const at = place && place.hash === b.hash ? place : null;
         if (b.state === 'verified' && b.hash && cp != null && !at && Date.now() >= placeNext) void findPlace(b.hash, cp);
@@ -252,7 +269,8 @@ async function main() {
           cp != null ? `<dt>Where</dt><dd>Snapshot ${cp} of the log${b.state === 'verified' ? ' · locating the entry…' : ''}</dd>` : ''}
           <dt>Ballot hash</dt><dd><code>${esc(b.hash ?? '')}</code><br><span class="muted">This browser's own fingerprint of the ballot, the one it looks for in the log.</span></dd></dl>
           ${b.kept ? `<div class="row"><button class="btn" id="resend">No receipt arrived: post again</button></div>` : ''}
-          <p class="muted">Keep this device or your recovery code: after the close your ballot is readable in the log under its pseudonym.</p></div>`;
+          <p class="muted">Keep this device or your recovery code: after the close your ballot is readable in the log under its pseudonym.</p>
+          ${ok && nextPoll !== null ? `<div class="row"><a class="btn" href="?q=${nextPoll}">Next question: ${esc(QUESTIONS[nextPoll]?.short ?? `poll ${nextPoll}`)}</a></div>` : ok && config.polls.length > 1 ? `<p><strong>You have answered every question.</strong> The results appear here at the close.</p>` : ''}</div>`;
       }
     }
 

@@ -19,11 +19,11 @@
   <p class="lede">Zcash polls count coins. This one counts people: one passport, one vote, cast in private and recounted by anyone.</p>
 
   <section class="poll">
-    <p class="when">Test poll · 6 to 20 November 2026</p>
-    <h2>Zcash Shielded Assets: do you want them in the Zcash protocol?</h2>
-    <p>Register with your passport and vote. The poll is open now and closes on 20 November at 12:00 UTC. The result appears here the day it closes.<span id="registered"></span></p>
-    <p class="actions"><a class="btn" href="vote/">Register with my passport</a> <a class="btn secondary" href="how-it-works/">How it works</a></p>
-    <p class="muted">This is a trial of the tool, and its result decides nothing. The real question is whether you would use something like this to be counted as a person in Zcash.</p>
+    <p class="when">16 to 30 November 2026 · unofficial</p>
+    <h2>The coinholder poll's five questions, asked one person, one vote</h2>
+    <p>Zcash coinholders and panels are voting on the future of Zcash Community Grants, the Dev Fund and the block time. The same five questions are open here, word for word, until 30 November at 23:59 UTC. Register once with your passport and answer each. The results appear here at the close, and the number of voters stays hidden until then.</p>
+    <p class="actions"><a class="btn" href="vote/">Register and vote</a> <a class="btn secondary" href="how-it-works/">How it works</a></p>
+    <p class="muted">This count decides nothing. It shows how many people stand behind each answer, beside the count of coins. The test poll on Shielded Assets stays open until 20 November.</p>
   </section>
 </div>
 
@@ -48,18 +48,5 @@
 </div>
 </main>
 {{footer}}
-<script>
-(async () => {
-  try {
-    // GitHub raw, not jsDelivr: jsDelivr keeps a branch's files for 12 hours.
-    const r = await fetch('https://raw.githubusercontent.com/nikkolasg/zcash-agora-mirror/main/checkpoint.txt', { cache: 'no-store' });
-    if (!r.ok) return;
-    const m = (await r.text()).match(/^registry 2 (\d+) /m);
-    if (!m) return;
-    const n = Number(m[1]);
-    document.getElementById('registered').textContent = n === 0 ? ' Nobody has registered yet: be the first.' : ` ${n} ${n === 1 ? 'person has' : 'people have'} registered so far.`;
-  } catch {}
-})();
-</script>
 </body>
 </html>
