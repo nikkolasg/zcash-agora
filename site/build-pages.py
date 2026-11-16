@@ -10,7 +10,8 @@ base = cfg["site"]["base"]
 # (site/app builds that one, and it loads nothing of the kind). Off until both values are set.
 m = cfg.get("measure") or {}
 measured = bool(m.get("url") and m.get("website"))
-tag = f'<script defer src="{m.get("url", "").rstrip("/")}/script.js" data-website-id="{m.get("website", "")}" data-do-not-track="true" data-exclude-hash="true"{(' data-domains="' + m["domains"] + '"') if m.get("domains") else ""}></script>\n' if measured else ""
+only = f' data-domains="{m["domains"]}"' if m.get("domains") else ""
+tag = f'<script defer src="{m.get("url", "").rstrip("/")}/script.js" data-website-id="{m.get("website", "")}" data-do-not-track="true" data-exclude-hash="true"{only}></script>\n' if measured else ""
 note = ' Visits to these pages are counted with a self-hosted <a href="https://umami.is">Umami</a>: no cookie, no address kept, and Do Not Track is respected. The vote page is not measured.' if measured else ""
 header = (root / "_header.html").read_text()
 footer = (root / "_footer.html").read_text()

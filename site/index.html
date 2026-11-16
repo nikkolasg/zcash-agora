@@ -9,12 +9,13 @@
 <meta name="description" content="One person, one vote. Private polls for the Zcash ecosystem, counted per person and shown next to the count per coin.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/anim.css">
+<script defer src="https://umami-production-bced.up.railway.app/script.js" data-website-id="9e894de6-71a6-436b-96cf-cf7ab76f82d5" data-do-not-track="true" data-exclude-hash="true" data-domains="nikkolasg.github.io"></script>
 </head>
 <body>
 <header class="top"><div class="wrap wide">
   <a class="brand" href=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8M9 3v2.5a3 3 0 0 0 6 0V3M7 8h10l1 10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2l1-10z"/><path d="M12 11v5" stroke="var(--accent)"/></svg>Zcash Agora</a>
   <nav class="main">
-    <a class="cta" href="vote/">Vote</a>
+    <a class="cta" href="vote/" data-umami-event="go-vote">Vote</a>
     <a href="why/">Why</a>
     <a href="how-it-works/">How it works</a>
     <a href="comparison/">Comparison</a>
@@ -41,7 +42,7 @@
       <li>Assuming it can be done safely in a network upgrade, do you support reducing Zcash's target block time from 25 seconds to 20 seconds?</li>
     </ol>
     <dl class="dates"><div><dt>Voting closes</dt><dd>30 November 2026, 23:59 UTC</dd></div><div><dt>Results</dt><dd>Published here at the close</dd></div></dl>
-    <p class="actions"><a class="btn" href="vote/">Register and vote</a> <a class="btn secondary" href="how-it-works/">How it works</a></p>
+    <p class="actions"><a class="btn" href="vote/" data-umami-event="go-vote">Register and vote</a> <a class="btn secondary" href="how-it-works/">How it works</a></p>
     <p class="muted">This count is unofficial and decides nothing. It shows how many people stand behind each answer, beside the count of coins.</p>
   </section>
 </div>
@@ -67,7 +68,7 @@
 </div>
 </main>
 <footer class="bottom"><div class="wrap wide">
-  <p>Zcash Agora is an independent project, built on <a href="https://github.com/lanterne-labs/isoloir">isoloir</a>. It is independent of every Zcash organization and of the coinholder vote's operators. Polls here bind no one. <a href="https://github.com/nikkolasg/zcash-agora">Source</a> · <a href="vote/#audit">Audit the vote</a></p>
+  <p>Zcash Agora is an independent project, built on <a href="https://github.com/lanterne-labs/isoloir">isoloir</a>. It is independent of every Zcash organization and of the coinholder vote's operators. Polls here bind no one. <a href="https://github.com/nikkolasg/zcash-agora">Source</a> · <a href="vote/#audit">Audit the vote</a> Visits to these pages are counted with a self-hosted <a href="https://umami.is">Umami</a>: no cookie, no address kept, and Do Not Track is respected. The vote page is not measured.</p>
 </div></footer>
 <script src="assets/nav.js"></script>
 
