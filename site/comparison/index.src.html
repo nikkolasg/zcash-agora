@@ -115,6 +115,7 @@
 </svg>
 <ul class="who">
   <li><strong>Your phone</strong> runs the ZKPassport app. Your browser proves you are on the list and seals your ballot to the closing time.</li>
+  <li><strong>The state that issued your passport</strong> signed it; that signature is what the proof checks. <strong>The TACEO network</strong>, a few independent operators, salts the passport's number so that the state cannot recognize it in the log.</li>
   <li><strong>3 public Nostr relays</strong>, run by others, carry your messages. They see your IP, as any relay does.</li>
   <li><strong>The ledger</strong>, our one server, reads the relays, checks every proof and appends to the log. It never talks to a voter.</li>
   <li><strong>The public log</strong>, a git repository, holds every registration, ballot, refusal and tally.</li>
@@ -233,7 +234,7 @@
 <p>On the vote chain, nullifiers stop <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#verification-and-auditing">the same note voting twice</a>. Whether a note was still unspent at the snapshot is another matter. That is proven against a root that <a class="q" href="https://github.com/valargroup/zips/blob/greg/shielded-voting-setup/zips/draft-valargroup-shielded-voting-setup.md#poll-creation">the poll runner supplies</a>, and nothing in the protocol checks it against Zcash. A <a class="q" href="https://github.com/valargroup/vote-sdk/blob/main/docs/imt-verification.md">script</a> exists to check it. Anyone can run it, and nobody has to.</p>
 </div>
 <div class="side people"><h4>Zcash Agora</h4>
-<p>One passport, one registration: the log refuses a second registration with the same passport number. One registration, one ballot: the log refuses a second ballot under the same pseudonym. Both rules are checked again by <a href="vote/#audit">anyone who recounts</a>.</p>
+<p>One passport, one registration: the log refuses a second registration with the same passport number. One registration, one ballot: the log refuses a second ballot under the same pseudonym. Both rules are checked again by <a href="vote/#audit">anyone who recounts</a>. What it does not stop: a state can issue passports to people who do not exist, and a person can lend theirs for money. Each extra vote takes another passport.</p>
 </div>
 </div>
 </section>
