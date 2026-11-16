@@ -140,3 +140,6 @@ fieldset.q.done { border-color: var(--people, #3c8d5a); }
 .poll dl.dates { display: flex; flex-wrap: wrap; gap: .8rem 2.5rem; margin: 1.1rem 0; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 10px; }
 .poll dl.dates dt { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 .poll dl.dates dd { margin: .15rem 0 0; font-weight: 700; font-size: 1.08rem; }
+ol.answers { list-style: none; padding: 0; margin: 1rem 0; text-align: left; border-top: 1px solid var(--line); }
+ol.answers li { display: flex; justify-content: space-between; gap: 1.2rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+ol.answers li strong { flex: none; }

@@ -146,6 +146,8 @@ async function main() {
   const info: Record<number, Info> = {};
   const answers: Record<number, number> = {};
   let casting: number | null = null;
+  /** The whole ballot is being cast (every answer, one after the other): the page shows one box for it. */
+  let castingAll = false;
   let swept = false;
   let sweeping = false;
   let sweepTimer: ReturnType<typeof setTimeout> | null = null;
@@ -174,6 +176,8 @@ async function main() {
   const castAll = async () => {
     // The form shows before the questions' states are read: wait for them, an answer already in the log is not cast again.
     if (sweepRun) await sweepRun;
+    castingAll = true; render();
+    try {
     for (const id of config.polls) {
       if (isCast(id) || isStuck(id) || answers[id] === undefined) continue;
       casting = id; render();
@@ -191,6 +195,7 @@ async function main() {
         take(id, t);
       } finally { off(); t.destroy(); casting = null; }
     }
+    } finally { castingAll = false; }
     void sweep();
   };
   const resultHtml = (t: NonNullable<SessionState['tally']>, title: string | null, count = true): string => {
@@ -206,6 +211,28 @@ async function main() {
   const ballotForm = (s: SessionState): string => {
     const open = !closedNow();
     const left = config.polls.filter((id) => !isCast(id) && !isStuck(id));
+    const answer = (id: number) => { const c = info[id]?.ballot.choice; return c && 'pick' in c ? ANSWERS[c.pick ?? -1] ?? '' : ANSWERS[answers[id]] ?? ''; };
+    // Casting: one box for the whole ballot, whatever happens underneath.
+    if (castingAll) {
+      const total = config.polls.length;
+      const sent = config.polls.filter((id) => isCast(id)).length;
+      const st = casting !== null ? info[casting]?.ballot.state : undefined;
+      const step = sent === total ? 'Checking the receipts…' :
+        st === 'posting' || st === 'sent' ? 'Sending your sealed ballot and waiting for the ledger\'s receipt…' :
+        'Proving, in zero knowledge, that you are registered, and sealing your answers…';
+      return `<div class="phase"><h2>Casting your ballot…</h2><p class="qbusy"><span class="spin"></span> ${step}</p>
+        <div class="progress"><span style="width:${Math.max(6, Math.round((100 * (sent + (st === 'posting' || st === 'sent' ? 0.6 : 0.25))) / total))}%"></span></div>
+        <p class="muted">Keep this page open. It takes a few seconds, up to a minute on a slow connection.</p></div>`;
+    }
+    // Cast: one receipt for the whole ballot.
+    if (swept && left.length === 0) {
+      const inLog = config.polls.every((id) => info[id]?.ballot.state === 'verified' || isStuck(id));
+      return `<div class="verdict ok receipt"><svg viewBox="0 0 52 52" class="seal" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
+        <h2>${inLog ? 'Your ballot is in the public log' : 'The ledger accepted your ballot'}</h2>
+        <p>${inLog ? 'This browser read the log from the mirror and found your answers in it.' : 'It signed a receipt for it. Your answers appear in the next published snapshot of the log; this page checks that by itself.'} They stay sealed until the close, ${when(config.closes)}, under a pseudonym nothing links to you. The results appear here then.</p>
+        <ol class="answers">${config.polls.map((id) => `<li><span>${esc(QUESTIONS[id]?.title ?? `Poll ${id}`)}</span><strong>${isStuck(id) ? 'not counted' : esc(answer(id))}</strong></li>`).join('')}</ol>
+        <p class="muted">Your answers are shown from this device's memory; nobody else can read them before the close. Keep this device or your recovery code.</p></div>`;
+    }
     const state = (id: number): string => {
       const b = info[id]?.ballot;
       const mine = b?.choice && 'pick' in b.choice ? ANSWERS[b.choice.pick ?? -1] ?? '' : '';
