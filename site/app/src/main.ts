@@ -153,26 +153,27 @@ async function main() {
   const isCast = (id: number) => { const st = info[id]?.ballot.state; return st === 'acked' || st === 'verified'; };
   const isStuck = (id: number) => { const st = info[id]?.ballot.state; return st === 'missing' || st === 'rejected'; };
   /** Reads every question's state (this device's ballot, the result after the close), one after the other. */
-  const sweep = async () => {
-    if (sweeping || casting !== null) return;
+  let sweepRun: Promise<void> | null = null;
+  const sweep = (): Promise<void> => {
+    if (sweeping || casting !== null) return sweepRun ?? Promise.resolve();
     sweeping = true;
-    try {
-      for (const id of config.polls) {
-        const t = sessionFor(id);
-        try { await t.init(); take(id, t); } catch (e) { console.warn(`isoloir: reading poll ${id}`, e); } finally { t.destroy(); }
-        render();
-      }
-      swept = true;
-    } finally {
-      sweeping = false;
+    // Every question at once: each read is a handful of small files, most of them shared.
+    sweepRun = Promise.all(config.polls.map(async (id) => {
+      const t = sessionFor(id);
+      try { await t.init(); take(id, t); } catch (e) { console.warn(`isoloir: reading poll ${id}`, e); } finally { t.destroy(); }
       render();
+    })).then(() => {
+      swept = true; sweeping = false; render();
       // A ballot the ledger accepted is looked for in the log until found; the result is looked for after the close.
       const again = config.polls.some((id) => info[id]?.ballot.state === 'acked') || (closedNow() && config.polls.some((id) => !info[id]?.tally));
       if (again && !sweepTimer) sweepTimer = setTimeout(() => { sweepTimer = null; void sweep(); }, 60_000);
-    }
+    });
+    return sweepRun;
   };
   /** Casts the answers not cast yet, one ballot per question, in order. */
   const castAll = async () => {
+    // The form shows before the questions' states are read: wait for them, an answer already in the log is not cast again.
+    if (sweepRun) await sweepRun;
     for (const id of config.polls) {
       if (isCast(id) || isStuck(id) || answers[id] === undefined) continue;
       casting = id; render();
@@ -203,7 +204,6 @@ async function main() {
   };
   /** The ballot of a several-poll page: every question, one submit. */
   const ballotForm = (s: SessionState): string => {
-    if (!swept) return `<div class="phase"><p class="muted">Reading the questions and this device's ballots from the log…</p></div>`;
     const open = !closedNow();
     const left = config.polls.filter((id) => !isCast(id) && !isStuck(id));
     const state = (id: number): string => {
@@ -231,7 +231,7 @@ async function main() {
       : `<p class="muted">One ballot per question, no changes. Sealed until ${when(config.closes)} with the drand beacon; then public under your anonymous pseudonym.</p>
         <div class="row"><button class="btn" type="submit" ${busy ? 'disabled' : ''}>${busy ? 'Casting…' : left.length < config.polls.length ? `Seal and cast the ${left.length} remaining` : 'Seal and cast my answers'}</button></div>
         ${s.storage !== 'persistent' ? `<p class="muted">Storage: ${s.storage} (your key may not survive a browser cleanup; keep the words).</p>` : ''}`;
-    const partial = open && left.length > 0 && left.length < config.polls.length && casting === null && !busy
+    const partial = swept && open && left.length > 0 && left.length < config.polls.length && casting === null && !busy
       ? `<p class="err"><strong>Your ballot is not complete.</strong> ${left.length} of your ${config.polls.length} answers did not go through. Cast the remaining ones: a ballot counts in full.</p>` : '';
     return `<div class="phase"><h2>Your ballot</h2><p>${esc(ELECTION.instructions)}</p>${partial}<form id="ballots">${qs}${foot}</form></div>`;
   };
