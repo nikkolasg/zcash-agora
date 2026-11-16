@@ -13,10 +13,9 @@
     5,
     6,
     7,
-    8,
-    3
+    8
   ],
-  "auditFrom": 1796083140,
+  "closes": 1796083140,
   "zkpassport": {
     "name": "Zcash Agora",
     "purpose": "Prove once that you hold a valid passport, to vote anonymously in Zcash Agora polls"

@@ -75,6 +75,12 @@ PORT=8080 "$ISOLOIR" ingest --mirror-dir "$TRIAL/mirror" "${PROVIDER_ARGS[@]}" -
 sleep 2
 "$ISOLOIR" submit registry "$TRIAL/registry.json"
 "$ISOLOIR" submit poll "$TRIAL/poll.json"
+# POLLS=n: n-1 more polls with three answers, for the several-question ballot of the site.
+POLLS=${POLLS:-1}
+for n in $(seq 2 "$POLLS"); do
+  python3 -c 'import json,sys;p=json.load(open(sys.argv[1]));p["id"]=int(sys.argv[2]);p["title"]="Trial question "+sys.argv[2];p["kind"]={"type":"choice","options":["Support","Oppose","Abstain"],"blank":False};json.dump(p,open(sys.argv[3],"w"))' "$TRIAL/poll.json" "$n" "$TRIAL/poll$n.json"
+  "$ISOLOIR" submit poll "$TRIAL/poll$n.json"
+done
 
 if [ -z "$PASSPORT" ]; then
 for i in 0 1 2; do
@@ -96,7 +102,8 @@ VITE_AGORA_ORIGIN=trial.local/agora
 VITE_AGORA_VERIFIER_KEY=$LOG_KEY
 VITE_AGORA_MIRROR=http://127.0.0.1:8787
 VITE_AGORA_REGISTRY=1
-VITE_AGORA_POLL=1
+VITE_AGORA_POLL=$(seq -s, 1 "$POLLS" | sed 's/,$//')
+VITE_AGORA_CLOSES=$CLOSES
 $([ -z "$PASSPORT" ] && echo VITE_AGORA_DEV=1)
 E
   echo "waiting for the close ($CLOSE_IN s) ... vote from the site meanwhile"

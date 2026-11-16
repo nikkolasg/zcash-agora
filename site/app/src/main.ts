@@ -7,7 +7,11 @@ import QRCode from 'qrcode';
 import { config } from './config.js';
 import { zkpassportScan, devScan } from './zkpassport.js';
 import { mountAudit } from './audit.js';
-import { QUESTIONS, voted, markVoted } from './questions.js';
+import { ELECTION, QUESTIONS } from './questions.js';
+
+/** Several polls: the page is one ballot, a question per poll. */
+const multi = config.polls.length > 1;
+const ANSWERS = ['Support', 'Oppose', 'Abstain'];
 
 const app = document.getElementById('app')!;
 const h = (html: string) => { app.innerHTML = html; };
@@ -42,26 +46,18 @@ function mirrorSources(): MirrorSource[] | string {
 }
 
 function header(s: SessionState): string {
+  const cp = s.checkpoint ? ` · log checkpoint ${s.checkpoint.index}` : '';
+  if (multi) {
+    const open = Date.now() / 1000 < config.closes;
+    return `<h1>${esc(ELECTION.title)}</h1><p class="muted">${open ? 'open until' : 'closed'} ${when(config.closes)}${cp}</p>
+    <div class="card warn"><strong>A count of people, beside the count of coins.</strong> These are the five questions of the Zcash coinholder poll of 16 to 30 November 2026, word for word. Here every person has one vote, whatever they hold. This poll is unofficial and decides nothing. The number of voters stays hidden until the close. <a href="../why/">Why</a>.</div>`;
+  }
   const p = s.poll;
-  const q = QUESTIONS[config.poll];
   const title = p ? esc(p.title) : config.name;
   const status = s.pollStatus === 'open' ? `open until ${when(p!.closes)}` :
     s.pollStatus === 'upcoming' ? `opens ${when(p!.opens)}` :
     s.pollStatus === 'closed' ? `closed ${when(p!.closes)}` : '';
-  const done = voted();
-  // The question list: every poll of the page, the one shown marked, the ones voted ticked.
-  const list = config.polls.length > 1 ? `<nav class="qnav" aria-label="Questions">${config.polls.map((id, i) => {
-    const label = QUESTIONS[id]?.short ?? `Poll ${id}`;
-    const n = QUESTIONS[id]?.test ? '' : `<span class="qn">${done.includes(id) ? '✓' : i + 1}</span>`;
-    return `<a href="?q=${id}"${id === config.poll ? ' aria-current="page"' : ''} class="${done.includes(id) ? 'voted' : ''}">${n}${esc(label)}</a>`;
-  }).join('')}</nav>` : '';
-  const note = q?.test
-    ? `<div class="card warn"><strong>This is a test poll.</strong> It is a trial of the technology on a sample question; its result decides nothing. The question behind it is whether you would use a tool like this to be counted as a person in Zcash. <a href="../why/">Why</a>.</div>`
-    : `<div class="card warn"><strong>A count of people, beside the count of coins.</strong> These are the five questions of the Zcash coinholder poll of 16 to 30 November 2026, word for word, asked one person, one vote. This poll is unofficial and decides nothing. The number of voters stays hidden until the close. <a href="../why/">Why</a>.</div>`;
-  return `${list}<h1>${title}</h1>
-  ${q?.summary ? `<p class="qsum">${esc(q.summary)}${q.link ? ` <a href="${q.link}">The proposal and its discussion</a>.` : ''}</p>` : ''}
-  <p class="muted">${status}${s.checkpoint ? ` · log checkpoint ${s.checkpoint.index}` : ''}</p>
-  ${note}`;
+  return `<h1>${title}</h1><p class="muted">${status}${cp}</p>`;
 }
 
 function notOpenYet(): void {
@@ -97,7 +93,8 @@ async function main() {
 
   const wasm = await loadWasm();
   let pollClosed = false;
-  const renderAudit = mountAudit(document.getElementById('audit-root')!, wasm, true, () => pollClosed && Date.now() / 1000 >= config.auditFrom);
+  const renderAudit = mountAudit(document.getElementById('audit-root')!, wasm, true, () => pollClosed);
+  const closedNow = () => Date.now() / 1000 >= config.closes;
   const prover = new WorkerProver(
     () => new Worker(new URL('@isoloir/web/prove.worker', import.meta.url), { type: 'module' }) as unknown as import('@isoloir/web').WorkerLike,
     async (circuit) => {
@@ -130,17 +127,114 @@ async function main() {
       );
     }
   };
-  const session = new Session({
+  const sessionFor = (poll: number) => new Session({
     core: wasm,
     origin: config.origin,
     verifierKey: config.verifierKey,
     registry: config.registry,
-    poll: config.poll,
+    poll,
     mirror: mirrorSources(),
     prover: guarded,
     wordsLang: 'en',
     passkey: { rpName: config.name } as never
   });
+  // The page's session: the key and the registration, on the first poll. With several polls each question
+  // has a session of its own, opened to read its state or to cast its ballot, then closed; this one casts nothing.
+  const session = sessionFor(config.polls[0]);
+
+  type Info = { ballot: SessionState['ballot']; tally: SessionState['tally']; unverified: SessionState['tallyUnverified'] };
+  const info: Record<number, Info> = {};
+  const answers: Record<number, number> = {};
+  let casting: number | null = null;
+  let swept = false;
+  let sweeping = false;
+  let sweepTimer: ReturnType<typeof setTimeout> | null = null;
+  const take = (id: number, t: Session) => { const st = t.state(); info[id] = { ballot: st.ballot, tally: st.tally, unverified: st.tallyUnverified }; };
+  const isCast = (id: number) => { const st = info[id]?.ballot.state; return st === 'acked' || st === 'verified'; };
+  const isStuck = (id: number) => { const st = info[id]?.ballot.state; return st === 'missing' || st === 'rejected'; };
+  /** Reads every question's state (this device's ballot, the result after the close), one after the other. */
+  const sweep = async () => {
+    if (sweeping || casting !== null) return;
+    sweeping = true;
+    try {
+      for (const id of config.polls) {
+        const t = sessionFor(id);
+        try { await t.init(); take(id, t); } catch (e) { console.warn(`isoloir: reading poll ${id}`, e); } finally { t.destroy(); }
+        render();
+      }
+      swept = true;
+    } finally {
+      sweeping = false;
+      render();
+      // A ballot the ledger accepted is looked for in the log until found; the result is looked for after the close.
+      const again = config.polls.some((id) => info[id]?.ballot.state === 'acked') || (closedNow() && config.polls.some((id) => !info[id]?.tally));
+      if (again && !sweepTimer) sweepTimer = setTimeout(() => { sweepTimer = null; void sweep(); }, 60_000);
+    }
+  };
+  /** Casts the answers not cast yet, one ballot per question, in order. */
+  const castAll = async () => {
+    for (const id of config.polls) {
+      if (isCast(id) || isStuck(id) || answers[id] === undefined) continue;
+      casting = id; render();
+      const t = sessionFor(id);
+      const off = t.subscribe(() => { take(id, t); render(); });
+      try {
+        await t.init();
+        const b = t.state().ballot;
+        if (b.state !== 'acked' && b.state !== 'verified') {
+          const choice: Choice = { pick: answers[id] };
+          // A ballot proven before and never acknowledged waits on this device: the same answer is sent again, another replaces it.
+          if (b.kept && b.choice && 'pick' in b.choice && b.choice.pick === choice.pick) await t.resendBallot();
+          else { if (b.kept) t.discardKeptBallot(); await t.cast(choice); }
+        }
+        take(id, t);
+      } finally { off(); t.destroy(); casting = null; }
+    }
+    void sweep();
+  };
+  const resultHtml = (t: NonNullable<SessionState['tally']>, title: string | null, count = true): string => {
+    if (t.results.type !== 'choice') return '';
+    const r = t.results;
+    const max = Math.max(1, ...r.slots.map((x) => x.count));
+    const pct = (n: number) => (r.counted ? Math.round((1000 * n) / r.counted) / 10 : 0);
+    return `${title ? `<h3>${esc(title)}</h3>` : ''}
+      <div class="slots">${r.slots.map((x) => `<div class="slot${x.blank ? ' blank' : ''}"><div class="line"><span class="label">${esc(x.label ?? (x.blank ? 'Blank' : `slot ${x.slot}`))}</span><span class="n">${x.count} · ${pct(x.count)}%</span></div><div class="bar"><span style="width:${(100 * x.count) / max}%"></span></div></div>`).join('')}</div>
+      ${count ? `<p class="muted">${r.counted} ${r.counted === 1 ? 'person' : 'persons'} voted${t.tally.void?.length ? `, ${t.tally.void.length} void ballot${t.tally.void.length === 1 ? '' : 's'}` : ''}.</p>` : ''}`;
+  };
+  /** The ballot of a several-poll page: every question, one submit. */
+  const ballotForm = (s: SessionState): string => {
+    if (!swept) return `<div class="phase"><p class="muted">Reading the questions and this device's ballots from the log…</p></div>`;
+    const open = !closedNow();
+    const left = config.polls.filter((id) => !isCast(id) && !isStuck(id));
+    const state = (id: number): string => {
+      const b = info[id]?.ballot;
+      const mine = b?.choice && 'pick' in b.choice ? ANSWERS[b.choice.pick ?? -1] ?? '' : '';
+      if (isCast(id)) return `<p class="qdone"><span class="tick">✓</span> Your answer: <strong>${esc(mine)}</strong> <span class="muted">· ${b!.state === 'verified' ? 'found in the public log' : 'accepted by the ledger, being published'}</span></p>`;
+      if (b?.state === 'missing') return `<p class="err">The ledger signed a receipt for your ballot but did not publish it. A complaint was posted to the relays.</p>`;
+      if (b?.state === 'rejected') return `<p class="err">The ledger refused this ballot: ${esc(b.reason ?? '')}</p>`;
+      if (casting === id) {
+        const step = b?.state === 'posting' || b?.state === 'sent' ? 'Sending the sealed ballot and waiting for the receipt…' : 'Proving, in zero knowledge, that you are registered, and sealing your answer…';
+        return `<p class="qbusy"><span class="spin"></span> ${step}</p>`;
+      }
+      if (!open) return `<p class="muted">Not answered.</p>`;
+      return `<div class="options inline">${ANSWERS.map((a, i) => `<label><input type="radio" name="pick-${id}" value="${i}" required ${answers[id] === i ? 'checked' : ''} ${busy ? 'disabled' : ''}>${a}</label>`).join('')}</div>`;
+    };
+    const qs = config.polls.map((id, i) => {
+      const q = QUESTIONS[id];
+      return `<fieldset class="q${isCast(id) ? ' done' : ''}"><legend><span class="qn">${i + 1}</span>${esc(q?.title ?? `Poll ${id}`)}</legend>
+        ${q?.summary ? `<p class="qsum">${esc(q.summary)}</p>` : ''}${q?.link ? `<p class="qlink"><a href="${q.link}" target="_blank" rel="noopener">Read the proposal and its discussion</a></p>` : ''}
+        ${state(id)}</fieldset>`;
+    }).join('');
+    const foot = left.length === 0
+      ? `<div class="verdict ok receipt"><svg viewBox="0 0 52 52" class="seal" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg><h2>Your answers are in</h2><p>Each one is a sealed ballot in the public log, under a pseudonym nothing links to you. They open at the close, ${when(config.closes)}, and the results appear here.</p><p class="muted">Keep this device or your recovery code.</p></div>`
+      : !open ? `<p class="muted">The poll is closed.</p>`
+      : `<p class="muted">One ballot per question, no changes. Sealed until ${when(config.closes)} with the drand beacon; then public under your anonymous pseudonym.</p>
+        <div class="row"><button class="btn" type="submit" ${busy ? 'disabled' : ''}>${busy ? 'Casting…' : left.length < config.polls.length ? `Seal and cast the ${left.length} remaining` : 'Seal and cast my answers'}</button></div>
+        ${s.storage !== 'persistent' ? `<p class="muted">Storage: ${s.storage} (your key may not survive a browser cleanup; keep the words).</p>` : ''}`;
+    const partial = open && left.length > 0 && left.length < config.polls.length && casting === null && !busy
+      ? `<p class="err"><strong>Your ballot is not complete.</strong> ${left.length} of your ${config.polls.length} answers did not go through. Cast the remaining ones: a ballot counts in full.</p>` : '';
+    return `<div class="phase"><h2>Your ballot</h2><p>${esc(ELECTION.instructions)}</p>${partial}<form id="ballots">${qs}${foot}</form></div>`;
+  };
 
   let pending: { kind: 'scan'; url?: string; text: string } | { kind: 'words'; words: string } | { kind: 'confirm'; words: string; positions: number[] } | null = null;
   let lastError: unknown = null;
@@ -166,7 +260,9 @@ async function main() {
 
   const render = () => {
     const s = session.state();
-    if ((s.pollStatus === 'closed') !== pollClosed) { pollClosed = s.pollStatus === 'closed'; renderAudit(); }
+    const closed = multi ? closedNow() : s.pollStatus === 'closed';
+    if (closed !== pollClosed) { pollClosed = closed; renderAudit(); }
+    if (multi && !closed && !closeTimer) closeTimer = setTimeout(() => { closeTimer = null; render(); }, Math.max(0, config.closes * 1000 - Date.now()) + 1500);
     // The close is a moment, not an event: re-render then, so the page and the audit follow it.
     if (s.poll && s.pollStatus === 'open' && !closeTimer) closeTimer = setTimeout(() => { closeTimer = null; render(); }, Math.max(0, s.poll.closes * 1000 - session.serverNow()) + 1500);
     let body = (config.dev ? `<div class="card warn"><strong>Test mode.</strong> This ledger runs on your machine with isoloir's <em>dev</em> registry: you register by typing an identifier, no passport. A production ingest refuses such a registry; the real poll takes ZKPassport proofs only.</div>` : '') + header(s);
@@ -222,7 +318,12 @@ async function main() {
     }
 
     // 2. Ready: vote, or show the receipt / the result.
-    if (s.phase === 'ready' || s.phase === 'joining') {
+    if (multi && s.phase === 'joining') booth += `<div class="phase"><h2>Registration confirmed</h2><p class="muted">It is being published in the public log: the ballot appears here by itself in a minute or two, no reload needed.</p></div>`;
+    if (multi && s.phase === 'ready') {
+      if (!swept && !sweeping) void sweep();
+      booth += ballotForm(s);
+    }
+    if (!multi && (s.phase === 'ready' || s.phase === 'joining')) {
       const b = s.ballot;
       if (s.phase === 'joining') booth += `<div class="phase"><h2>Registration confirmed</h2><p class="muted">It is being published in the public log: the ballot form appears here by itself in a minute or two, no reload needed.</p></div>`;
       if (s.phase === 'joining') {
@@ -246,9 +347,6 @@ async function main() {
       } else if (b.state === 'acked' || b.state === 'verified' || b.state === 'missing' || b.state === 'rejected' || b.state === 'failed') {
         // The receipt, in plain words: what the ledger said, and what this browser checked.
         const ok = b.state === 'verified' || b.state === 'acked';
-        if (ok) markVoted(config.poll);
-        const seen = voted();
-        const nextPoll = config.polls.find((id) => id !== config.poll && !seen.includes(id) && !QUESTIONS[id]?.test) ?? null;
         const cp = b.checkpoint ?? null;
         const at = place && place.hash === b.hash ? place : null;
         if (b.state === 'verified' && b.hash && cp != null && !at && Date.now() >= placeNext) void findPlace(b.hash, cp);
@@ -269,13 +367,12 @@ async function main() {
           cp != null ? `<dt>Where</dt><dd>Snapshot ${cp} of the log${b.state === 'verified' ? ' · locating the entry…' : ''}</dd>` : ''}
           <dt>Ballot hash</dt><dd><code>${esc(b.hash ?? '')}</code><br><span class="muted">This browser's own fingerprint of the ballot, the one it looks for in the log.</span></dd></dl>
           ${b.kept ? `<div class="row"><button class="btn" id="resend">No receipt arrived: post again</button></div>` : ''}
-          <p class="muted">Keep this device or your recovery code: after the close your ballot is readable in the log under its pseudonym.</p>
-          ${ok && nextPoll !== null ? `<div class="row"><a class="btn" href="?q=${nextPoll}">Next question: ${esc(QUESTIONS[nextPoll]?.short ?? `poll ${nextPoll}`)}</a></div>` : ok && config.polls.length > 1 ? `<p><strong>You have answered every question.</strong> The results appear here at the close.</p>` : ''}</div>`;
+          <p class="muted">Keep this device or your recovery code: after the close your ballot is readable in the log under its pseudonym.</p></div>`;
       }
     }
 
     // The booth: one box, a status, the steps, the recovery code on demand.
-    const done = s.ballot.state === 'acked' || s.ballot.state === 'verified' || s.ballot.state === 'missing';
+    const done = multi ? swept && config.polls.every((id) => isCast(id) || isStuck(id)) : s.ballot.state === 'acked' || s.ballot.state === 'verified' || s.ballot.state === 'missing';
     const step = s.phase === 'loading' ? 0 :
       done ? 5 :
       (s.phase === 'ready' || s.phase === 'joining') ? 4 :
@@ -295,16 +392,30 @@ async function main() {
     // The result, first: the headline of a closed poll.
     const t = s.tally ?? s.tallyUnverified?.verdict ?? null;
     let result = '';
-    if (t && t.results.type === 'choice' && s.poll) {
+    if (multi) {
+      if (closedNow()) {
+        if (!swept && !sweeping) void sweep();
+        const got = config.polls.filter((id) => info[id]?.tally ?? info[id]?.unverified?.verdict);
+        const verdict = (id: number) => (info[id].tally ?? info[id].unverified!.verdict)!;
+        // One ballot holds every question: the same number of persons answered each. A question with another
+        // count (someone stopped before the end, or cast outside this page) shows its own.
+        const counts = got.map((id) => { const r = verdict(id).results; return r.type === 'choice' ? r.counted : -1; });
+        const same = got.length === config.polls.length && counts.every((c) => c === counts[0]);
+        result = got.length
+          ? `<section class="result-hero"><p class="rtag">Results</p>${same ? `<p class="headline"><span class="big">${counts[0]}</span> ${counts[0] === 1 ? 'person' : 'persons'} voted</p>` : ''}
+            ${got.map((id) => resultHtml(verdict(id), QUESTIONS[id]?.title ?? `Poll ${id}`, !same)).join('')}
+            <p class="muted">One passport, one voice; the poll closed ${when(config.closes)}.</p><p class="center"><a class="btn" href="#audit">Audit the vote in this browser</a></p></section>`
+          : `<section class="result-hero wait"><p class="rtag">Closed</p><p class="muted">The poll closed ${when(config.closes)}. The results appear here once the drand round is published and the ballots opened.</p></section>`;
+      }
+    } else if (t && t.results.type === 'choice' && s.poll) {
       const r = t.results;
-      const max = Math.max(1, ...r.slots.map((x) => x.count));
       const pct = (n: number) => (r.counted ? Math.round((1000 * n) / r.counted) / 10 : 0);
       const top = r.slots.filter((x) => !x.blank).reduce((best, x) => (x.count > (best?.count ?? -1) ? x : best), null as typeof r.slots[number] | null);
       result = `<section class="result-hero">
         <p class="rtag">${t.tally.final ? 'Final result' : 'Provisional result'}</p>
         ${top && r.counted ? `<p class="headline"><span class="big">${pct(top.count)}%</span> ${esc(top.label ?? '')}</p>` : ''}
-        <div class="slots">${r.slots.map((x) => `<div class="slot${x.blank ? ' blank' : ''}"><div class="line"><span class="label">${esc(x.label ?? (x.blank ? 'Blank' : `slot ${x.slot}`))}</span><span class="n">${x.count} · ${pct(x.count)}%</span></div><div class="bar"><span style="width:${(100 * x.count) / max}%"></span></div></div>`).join('')}</div>
-        <p class="muted">${r.counted} ${r.counted === 1 ? 'person' : 'persons'} voted${t.tally.void?.length ? `, ${t.tally.void.length} void ballot${t.tally.void.length === 1 ? '' : 's'}` : ''}. One passport, one voice; the poll closed ${when(s.poll.closes)}. ${t.checked === 'beacon' ? (t.beacon_ok ? 'The drand beacon that opened the ballots verified in this browser.' : 'The beacon did not verify.') : ''}</p>
+        ${resultHtml(t, null)}
+        <p class="muted">One passport, one voice; the poll closed ${when(s.poll.closes)}. ${t.checked === 'beacon' ? (t.beacon_ok ? 'The drand beacon that opened the ballots verified in this browser.' : 'The beacon did not verify.') : ''}</p>
         <p class="center"><a class="btn" href="#audit">Audit the vote in this browser</a></p></section>`;
     } else if (s.pollStatus === 'closed' && s.poll) {
       result = `<section class="result-hero wait"><p class="rtag">Closed</p><p class="muted">The poll closed ${when(s.poll.closes)}. The result appears here once the drand round is published and the ballots opened.</p></section>`;
@@ -315,6 +426,7 @@ async function main() {
     const typed = new Map<string, string>();
     app.querySelectorAll<HTMLInputElement>('input[data-pos]').forEach((i) => typed.set(i.dataset.pos!, i.value));
     const picked = app.querySelector<HTMLInputElement>('input[name=pick]:checked')?.value ?? null;
+    app.querySelectorAll<HTMLInputElement>('input[name^="pick-"]:checked').forEach((i) => { answers[Number(i.name.slice(5))] = Number(i.value); });
     h(body);
     app.querySelectorAll<HTMLInputElement>('input[data-pos]').forEach((i) => { const v = typed.get(i.dataset.pos!); if (v) i.value = v; });
     if (picked !== null) { const r = app.querySelector<HTMLInputElement>(`input[name=pick][value="${picked}"]`); if (r) r.checked = true; }
@@ -422,6 +534,11 @@ async function main() {
       });
     });
     document.getElementById('resend')?.addEventListener('click', () => run(() => session.resendBallot()));
+    document.getElementById('ballots')?.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      new FormData(ev.target as HTMLFormElement).forEach((v, k) => { if (k.startsWith('pick-')) answers[Number(k.slice(5))] = Number(v); });
+      run(castAll);
+    });
   };
 
   let lastSig = '';
@@ -433,7 +550,9 @@ async function main() {
   });
   await session.init();
   render();
-  if (session.state().poll) prover.warm(session.state().poll!.circuit.name).then(() => console.info('isoloir: prover warm'), (e) => console.warn('isoloir: prover warm failed', e));
+  if (multi && closedNow()) void sweep();
+  const circuit = multi ? ELECTION.circuit : session.state().poll?.circuit.name;
+  if (circuit) prover.warm(circuit).then(() => console.info('isoloir: prover warm'), (e) => console.warn('isoloir: prover warm failed', e));
 }
 
 main().catch((e) => { h(`<h1>Vote</h1>${errorBox(e)}<p class="muted">Reload the page; if it persists, the mirror or the relays may be unreachable from your network.</p>`); console.error(e); });

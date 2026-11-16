@@ -10,20 +10,17 @@ export interface AgoraConfig {
   verifierKey: string;
   mirror: { repo: string; branch: string } | { url: string };
   registry: number;
-  /** The poll shown: `?q=<id>` among `polls`, else the first. */
-  poll: number;
-  /** The polls of the page, in the order of the question list. */
+  /** The polls of the page. One: the page is that poll. Several: one ballot, a question per poll, cast together. */
   polls: number[];
-  /** The audit opens once every poll of the list has closed (Unix time): before, it would count the ballots. */
-  auditFrom: number;
+  /** When the polls of a several-poll page close (Unix time; they close together). */
+  closes: number;
   /** The dev passport provider of a local trial: type an identifier instead of scanning. */
   dev: boolean;
   zkpassport: { name: string; purpose: string; logo?: string };
 }
 
 const env = import.meta.env;
-const polls: number[] = env.VITE_AGORA_POLL ? [Number(env.VITE_AGORA_POLL)] : cfg.polls;
-const asked = Number(new URLSearchParams(location.search).get('q'));
+const polls: number[] = env.VITE_AGORA_POLL ? env.VITE_AGORA_POLL.split(',').map(Number) : cfg.polls;
 
 export const config: AgoraConfig = {
   name: cfg.name,
@@ -31,9 +28,8 @@ export const config: AgoraConfig = {
   verifierKey: env.VITE_AGORA_VERIFIER_KEY || cfg.verifierKey,
   mirror: env.VITE_AGORA_MIRROR ? { url: env.VITE_AGORA_MIRROR } : cfg.mirror,
   registry: Number(env.VITE_AGORA_REGISTRY || cfg.registry),
-  poll: polls.includes(asked) ? asked : polls[0],
   polls,
-  auditFrom: env.VITE_AGORA_POLL ? 0 : cfg.auditFrom,
+  closes: Number(env.VITE_AGORA_CLOSES || cfg.closes),
   dev: env.VITE_AGORA_DEV === '1',
   zkpassport: cfg.zkpassport
 };
