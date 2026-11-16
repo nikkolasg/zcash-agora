@@ -93,6 +93,9 @@ main { padding: 2.2rem 0 3rem; }
 .steps li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: .05rem; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--accent); color: #1c1a16; font-weight: 700; display: grid; place-items: center; font-size: .95rem; }
 .btn { display: inline-block; background: var(--accent); color: #1c1a16; font-weight: 600; padding: .55rem 1.1rem; border-radius: 999px; text-decoration: none; border: 0; font: inherit; cursor: pointer; }
 .btn.secondary { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+/* A button that is a link keeps its ink on hover (a:hover would paint it the button's own amber). */
+.btn:hover { color: #1c1a16; filter: brightness(1.08); }
+.btn.secondary:hover { color: var(--ink); border-color: var(--accent); filter: none; }
 .btn:disabled { opacity: .5; cursor: default; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 @media (max-width: 760px) { .grid3 { grid-template-columns: 1fr; } }
@@ -112,6 +115,7 @@ footer.bottom a { color: inherit; }
 .wrap.centered ul { display: inline-block; text-align: left; margin-left: auto; margin-right: auto; }
 .wrap.centered td ul { display: block; text-align: center; padding-left: 0; list-style-position: inside; }
 .btn.danger { background: transparent; border: 1px solid #b3261e; color: #b3261e; }
+.btn.danger:hover { color: #b3261e; filter: none; }
 
 /* The comparison page: two sides, six questions. */
 .cmp h1, .cmp h2, .cmp > .lede { text-align: center; }
