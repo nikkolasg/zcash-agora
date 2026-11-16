@@ -24,7 +24,8 @@
     "base": "/zcash-agora/"
   },
   "measure": {
-    "url": "",
-    "website": ""
+    "url": "https://umami-production-bced.up.railway.app",
+    "website": "9e894de6-71a6-436b-96cf-cf7ab76f82d5",
+    "domains": "nikkolasg.github.io"
   }
 }
