@@ -82,7 +82,22 @@
 </div>
 <div class="side people wide">
 <h3>Zcash Agora</h3>
-<div class="pair"><svg viewBox="0 0 360 230" class="anim actors" role="img" aria-label="Zcash Agora: your phone and browser, public Nostr relays, one ledger server, a public log on GitHub, and two networks read only: drand and Bitcoin">
+<div class="pair"><svg viewBox="0 0 360 286" class="anim actors" role="img" aria-label="Zcash Agora: the state that issued your passport and the TACEO network that salts its number, both met only by your phone; your phone and browser, public Nostr relays, one ledger server, a public log on GitHub, and two networks read only: drand and Bitcoin">
+  <!-- the issuing state and the OPRF network: met by the phone only, at registration -->
+  <rect x="12" y="8" width="22" height="30" rx="3" class="frame2"/><circle cx="23" cy="19" r="5" class="frame"/><line x1="17" y1="30" x2="29" y2="30" class="wire"/>
+  <text x="42" y="16" class="label">Issuing state</text>
+  <text x="42" y="27" class="tiny">signed your passport</text>
+  <text x="42" y="36" class="tiny">cannot spot it in the log</text>
+  <g class="server"><circle cx="150" cy="14" r="5" class="frame2"/><circle cx="140" cy="32" r="5" class="frame2"/><circle cx="160" cy="32" r="5" class="frame2"/></g>
+  <line x1="147" y1="19" x2="142" y2="27" class="wire"/><line x1="153" y1="19" x2="158" y2="27" class="wire"/><line x1="145" y1="32" x2="155" y2="32" class="wire"/>
+  <text x="172" y="16" class="label">TACEO network</text>
+  <text x="172" y="27" class="tiny">salts the passport's number</text>
+  <text x="172" y="36" class="tiny">2 of 3 operators · sees it blinded</text>
+  <line x1="26" y1="42" x2="44" y2="130" class="wire"/>
+  <text x="18" y="92" class="tiny" transform="rotate(-78 18 92)">signature</text>
+  <line x1="142" y1="41" x2="68" y2="130" class="wire"/>
+  <text x="112" y="70" class="tiny">blinded query</text>
+  <g transform="translate(0 56)">
   <!-- drand + bitcoin -->
   <g class="clock" transform="translate(250 22)"><circle r="12"/><line class="hand" x1="0" y1="0" x2="0" y2="-8"/><line class="hand" x1="0" y1="0" x2="6" y2="3"/></g>
   <text x="250" y="48" text-anchor="middle" class="label">drand</text>
@@ -123,6 +138,7 @@
   <line x1="250" y1="62" x2="236" y2="76" class="wire"/>
   <line x1="316" y1="50" x2="316" y2="76" class="wire"/>
   <text x="195" y="212" text-anchor="middle" class="good">nobody of ours holds a key or sees an address</text>
+</g>
 </svg>
 <ul class="who">
   <li><strong>Your phone</strong> runs the ZKPassport app. Your browser proves you are on the list and seals your ballot to the closing time.</li>
