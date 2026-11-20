@@ -84,6 +84,12 @@ function errorBox(e: unknown): string {
     no_path: 'Your registration is in the log but not yet in a published snapshot of it. Wait a minute and cast again.',
     cast_retries: 'The ballot could not be sealed against the current snapshot after several tries. Reload the page and cast again.'
   };
+  // The app accepted the passport and the ledger's verifier did not: the verifier is behind the app (issue #1), or the
+  // proof is wrong. Either way the operator must hear of it, and the voter loses nothing.
+  if (code === 'bad_proof' || code.endsWith(':bad_proof')) {
+    const report = `https://github.com/nikkolasg/zcash-agora/issues/new?title=${encodeURIComponent('The ledger refused my passport proof (bad_proof)')}&body=${encodeURIComponent(`The ZKPassport app verified my passport and the vote page answered ${code}.\n\nWhen (UTC): ${new Date().toISOString()}\nPhone: iOS or Android?\nZKPassport app version:\n`)}`;
+    return `<p class="err"><strong>${esc(code)}</strong>: the ledger's verifier refused the proof your phone made. If the ZKPassport app said your passport was verified, the fault is most likely ours: the verifier can lag behind a new version of the app. Nothing is lost, your key is kept on this device. <a href="${report}" target="_blank" rel="noopener">Tell us</a> (one click, nothing about your passport is sent), and scan again once we answer.</p>`;
+  }
   return `<p class="err"><strong>${esc(code)}</strong>: ${esc(hints[code] ?? detail)}</p>`;
 }
 
