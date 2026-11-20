@@ -143,3 +143,41 @@ Both workflows check out the `isoloir` submodule over https (a public
 repository, no secret). `release.yml` pushes the image to
 `ghcr.io/<owner>/isoloir` with the workflow's own token; `site.yml` needs
 GitHub Pages enabled with "GitHub Actions" as the source.
+
+## 9. When ZKPassport moves
+
+The ingest verifies passport proofs with the SDK pinned in
+`../isoloir/zkverifier/package.json`. The ZKPassport app updates on its
+own: when it starts proving with circuits the pinned SDK does not know,
+the app says "verified" and the ingest answers `reg:bad_proof` (issue #1,
+20 November 2026: circuits 0.23.0 against SDK 0.18.2).
+
+`zkpassport-watch.yml` runs `../scripts/zkpassport-watch.mjs` every hour:
+the pin against npm's latest SDK, the circuit version the app proves with
+(ZKPassport's registry on Ethereum), and every registration on the log
+replayed with the pin and with the latest SDK. A new SDK comes out before
+the app uses its circuits, so the issue it opens (label
+`zkpassport-watch`, assigned to the repository's owner) normally arrives
+before a voter is refused. When it does:
+
+1. Read the issue: it says whether the latest SDK verifies every
+   registration on the log. If it does not, stop and find out why (the
+   audit and the authority would stop on those registrations).
+2. In isoloir: set `@zkpassport/sdk` in `zkverifier/package.json`, run
+   `npm install --ignore-scripts` there, open the pull request, merge it.
+3. Here: move the submodule to that commit, then deploy **both** services
+   (the authority verifies every passport before it opens a poll):
+   `scripts/deploy-tree.sh ingest <dir>` and `… authority <dir>`, each
+   deployed as its service. Check the running version:
+   `grep '"version"' /app/zkverifier/node_modules/@zkpassport/sdk/package.json`
+   in the container.
+4. The issue closes by itself at the next run.
+
+A voter who was refused meanwhile lost nothing: their key is kept by the
+page, and they scan again. The ingest logs the verifier's reason for every
+refused proof ("passport proof refused", a warning), and keeps the refused
+message 30 days in `isoloir_refused`: `verify.mjs` can replay it.
+
+The watch cannot see a break that comes without a new SDK or a new
+circuit version. The first registration after any change of the app is
+the real test: watch the ingest's warnings during a poll.

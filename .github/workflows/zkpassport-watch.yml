@@ -1,0 +1,72 @@
+# Every hour: has the ZKPassport app moved ahead of the verifier the ingest
+# runs? (scripts/zkpassport-watch.mjs says what it checks, and why: issue #1.)
+# When there is something to do, one issue labelled `zkpassport-watch` is
+# opened and assigned to the repository's owner (GitHub mails it); it is kept
+# up to date, and closed when the check is clean again. A check that could not
+# run (npm, the registry or the mirror unreachable) fails the run and opens
+# nothing.
+name: zkpassport-watch
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["isoloir", "scripts/zkpassport-watch.mjs", ".github/workflows/zkpassport-watch.yml"]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: zkpassport-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+        working-directory: isoloir/zkverifier
+      - name: The mirror
+        run: |
+          repo=$(node -p "require('./site/agora.config.json').mirror.repo")
+          git clone --quiet --depth 1 "https://github.com/$repo.git" "$RUNNER_TEMP/mirror"
+      - name: Watch
+        id: watch
+        run: |
+          set +e
+          node scripts/zkpassport-watch.mjs --mirror "$RUNNER_TEMP/mirror" --report "$RUNNER_TEMP/report.md"
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          [ -f "$RUNNER_TEMP/report.md" ] && cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"
+          # 0: clean, 1: something to do (the issue below). Anything else fails the run.
+          [ $code -le 1 ] || exit $code
+      - name: The issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CODE: ${{ steps.watch.outputs.code }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          gh label create zkpassport-watch --color B60205 --description "The ZKPassport app may be ahead of the verifier" --force >/dev/null
+          open=$(gh issue list --label zkpassport-watch --state open --json number --jq '.[0].number // empty')
+          if [ "$CODE" = "1" ]; then
+            if [ -z "$open" ]; then
+              gh issue create --label zkpassport-watch --assignee "$OWNER" \
+                --title "ZKPassport has moved: the verifier needs attention" --body-file "$RUNNER_TEMP/report.md"
+            elif ! gh issue view "$open" --json body --jq .body | diff -q - "$RUNNER_TEMP/report.md" >/dev/null; then
+              gh issue edit "$open" --body-file "$RUNNER_TEMP/report.md"
+              gh issue comment "$open" --body "The check changed; the description is the current state."
+            fi
+            exit 1
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "The check is clean again."
+          fi
